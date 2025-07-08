@@ -31,10 +31,12 @@ const delegateTask = ai.defineTool({
       userInput: task,
       tools: await getToolsForAgent(targetAgent),
   });
+  
+  const resultText = response.text ?? `Agent '${agentName}' did not return a result.`;
 
-  console.log(`[Coordinator] Received response from "${agentName}": ${response}`);
+  console.log(`[Coordinator] Received response from "${agentName}": ${resultText}`);
 
-  return `Result from agent "${agentName}": ${response}`;
+  return `Result from agent "${agentName}": ${resultText}`;
 });
 
 export default delegateTask;

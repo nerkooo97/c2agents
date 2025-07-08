@@ -25,13 +25,12 @@ export async function runAgent(
     
     let systemPrompt = agent.systemPrompt;
 
-    // If this is the coordinator agent, inject the list of other agents into the system prompt.
     if (agent.name === 'Coordinator Agent') {
         const allAgents = await getAgents();
-        const availableAgents = allAgents.filter(a => a.name !== agent.name); // Exclude self
+        const availableAgents = allAgents.filter(a => a.name !== agent.name);
         
         const agentListForPrompt = availableAgents.map(a => 
-            `- **${a.name}**: ${a.description} (Tools: ${a.tools.join(', ') || 'none'})`
+            `- **${a.name}**: ${a.description} (Tags: ${a.tags?.join(', ') || 'none'})`
         ).join('\n');
 
         if (agentListForPrompt) {
@@ -41,15 +40,42 @@ export async function runAgent(
     }
 
 
-    const finalResponse = await runAgentWithConfig({
+    const genkitResponse = await runAgentWithConfig({
       systemPrompt: systemPrompt,
       userInput: prompt,
       tools: await getToolsForAgent(agent),
     });
+
+    if (genkitResponse.history) {
+      for (const message of genkitResponse.history) {
+        if (message.role === 'model' && message.content.some(p => p.toolRequest)) {
+          const toolRequestPart = message.content.find(p => p.toolRequest)!;
+          const toolRequest = toolRequestPart.toolRequest!;
+           steps.push({
+            type: 'tool',
+            title: `Tool Call: ${toolRequest.name}`,
+            content: `The agent decided to use the '${toolRequest.name}' tool.`,
+            toolName: toolRequest.name,
+            toolInput: JSON.stringify(toolRequest.input, null, 2),
+          });
+        } else if (message.role === 'tool') {
+          const toolResponsePart = message.content.find(p => p.toolResponse)!;
+          const toolResponse = toolResponsePart.toolResponse!;
+           steps.push({
+            type: 'tool',
+            title: `Tool Result: ${toolResponse.name}`,
+            content: `${JSON.stringify(toolResponse.output, null, 2)}`,
+            toolName: toolResponse.name,
+          });
+        }
+      }
+    }
+
+    const finalResponse = genkitResponse.text ?? 'I was unable to generate a response.';
     
     steps.push({
       type: 'response',
-      title: 'Agent Response',
+      title: 'Final Response',
       content: finalResponse,
     });
 

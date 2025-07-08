@@ -4,6 +4,7 @@
  */
 import { ai } from '@/ai/genkit';
 import type { Tool } from 'genkit/tool';
+import type { GenerateResponse } from 'genkit';
 
 interface RunAgentConfig {
     systemPrompt: string;
@@ -11,12 +12,12 @@ interface RunAgentConfig {
     tools: Tool<any, any>[];
 }
 
-export async function runAgentWithConfig({ systemPrompt, userInput, tools }: RunAgentConfig): Promise<string> {
+export async function runAgentWithConfig({ systemPrompt, userInput, tools }: RunAgentConfig): Promise<GenerateResponse> {
   const response = await ai.generate({
     system: systemPrompt,
     prompt: userInput,
     tools: tools,
   });
 
-  return response.text ?? 'I was unable to generate a response.';
+  return response;
 }
