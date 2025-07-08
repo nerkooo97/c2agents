@@ -24,7 +24,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Separator } from '@/components/ui/separator';
-import { Bot, Code, MoreVertical, Pencil, PlusCircle, TestTube2, Trash2, Workflow } from 'lucide-react';
+import { Bot, Code, Mic, MoreVertical, Pencil, PlusCircle, TestTube2, Trash2, Workflow } from 'lucide-react';
 
 type ToolMetadata = {
   name: string;
@@ -290,11 +290,22 @@ const AgentCard = ({
              {agent.realtime ? <Badge>Enabled</Badge> : <Badge variant="destructive">Disabled</Badge>}
         </div>
       </CardContent>
-      <CardFooter className="border-t pt-4">
+      <CardFooter className="border-t pt-4 flex flex-col gap-4 items-start">
         <div className="flex items-center w-full justify-between">
             <Label htmlFor={`api-toggle-${agent.name}`} className="text-sm font-medium">Toggle API Access</Label>
             <Switch id={`api-toggle-${agent.name}`} checked={agent.enableApiAccess} onCheckedChange={(checked) => onToggleApi(agent.name, checked)} />
         </div>
+        {agent.realtime && (
+            <>
+                <Separator className="w-full" />
+                <Link href={`/voice/${agent.name}`} passHref className="w-full">
+                    <Button variant="outline" className="w-full">
+                        <Mic className="mr-2"/>
+                        Voice Chat
+                    </Button>
+                </Link>
+            </>
+        )}
       </CardFooter>
     </Card>
   );

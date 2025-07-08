@@ -3,6 +3,7 @@
 import { getAgent, getAgents } from '@/lib/agent-registry';
 import { getToolsForAgent } from '@/ai/tools';
 import { runAgentWithConfig } from '@/ai/flows/run-agent';
+import { generateSpeech } from '@/ai/flows/text-to-speech';
 import type { ExecutionStep } from '@/lib/types';
 
 export async function runAgent(
@@ -90,4 +91,15 @@ export async function runAgent(
       error: errorMessage,
     };
   }
+}
+
+export async function generateSpeechAction(text: string): Promise<{ audioUrl?: string; error?: string; }> {
+    try {
+        const audioUrl = await generateSpeech(text);
+        return { audioUrl };
+    } catch (error) {
+        console.error('Error generating speech:', error);
+        const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
+        return { error: errorMessage };
+    }
 }
