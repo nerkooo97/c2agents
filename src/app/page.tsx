@@ -22,7 +22,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Bot, MoreVertical, Pencil, PlusCircle, TestTube2, Trash2, Workflow } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Separator } from '@/components/ui/separator';
+import { Bot, Code, MoreVertical, Pencil, PlusCircle, TestTube2, Trash2, Workflow } from 'lucide-react';
 
 type ToolMetadata = {
   name: string;
@@ -261,6 +263,28 @@ const AgentCard = ({
             <span className="font-medium text-muted-foreground">API Access</span>
             {agent.enableApiAccess ? <Badge>Enabled</Badge> : <Badge variant="destructive">Disabled</Badge>}
         </div>
+        {agent.enableApiAccess && (
+            <div className="text-sm">
+                <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="api-details" className="border-none">
+                        <AccordionTrigger className="py-1 font-medium text-muted-foreground hover:no-underline">
+                            <div className="flex items-center gap-2">
+                                <Code className="h-4 w-4" />
+                                <span>API Details</span>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pt-2 pb-0 text-xs">
+                            <div className="space-y-2 rounded-md bg-muted p-3 font-code">
+                                <p><span className="font-semibold text-green-500">POST</span> /api/agents/{agent.name}</p>
+                                <Separator className="bg-border/50"/>
+                                <p className="font-semibold">Body:</p>
+                                <pre><code>{JSON.stringify({ input: "<user_prompt>", sessionId: "<optional>" }, null, 2)}</code></pre>
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+            </div>
+        )}
         <div className="flex items-center justify-between text-sm">
             <span className="font-medium text-muted-foreground">Realtime</span>
              {agent.realtime ? <Badge>Enabled</Badge> : <Badge variant="destructive">Disabled</Badge>}
