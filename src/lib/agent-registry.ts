@@ -67,8 +67,4 @@ export const mcpServers: Record<string, McpServerConfig> = {
     command: 'npx',
     args: ['@playwright/mcp@latest'],
   },
-  customMcp: {
-    command: 'node',
-    args: ['./custom-mcp-server.js'],
-  },
 };

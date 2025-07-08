@@ -6,6 +6,7 @@
     "dev": "next dev",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
     "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
+    "mcp:playwright": "npx @playwright/mcp@latest",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
