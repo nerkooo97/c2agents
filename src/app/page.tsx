@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import Link from 'next/link'
 import type { Message, ExecutionStep } from '@/lib/types'
 import { runAgent } from '@/lib/actions'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -12,7 +13,7 @@ import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Bot, BrainCircuit, Code, Cpu, FileSystem, Send, User, Wrench } from 'lucide-react'
+import { Bot, BrainCircuit, Code, Cpu, FileSystem, Send, User, Wrench, LayoutDashboard } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 const AgentExecutionGraph = ({ steps, isLoading }: { steps: ExecutionStep[]; isLoading: boolean }) => {
@@ -154,10 +155,18 @@ export default function MyAgentPage() {
           </Avatar>
           <h1 className="text-lg font-semibold font-headline">MyAgent</h1>
         </div>
-        <Avatar>
-          <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="person" />
-          <AvatarFallback>U</AvatarFallback>
-        </Avatar>
+        <div className="flex items-center gap-4">
+          <Link href="/dashboard" passHref>
+            <Button variant="outline">
+              <LayoutDashboard className="mr-2 h-4 w-4"/>
+              Dashboard
+            </Button>
+          </Link>
+          <Avatar>
+            <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="person" />
+            <AvatarFallback>U</AvatarFallback>
+          </Avatar>
+        </div>
       </header>
       <main className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 lg:p-6">
         <div className="lg:col-span-2 flex flex-col gap-6">

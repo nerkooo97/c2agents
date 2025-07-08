@@ -10,3 +10,12 @@ export interface ExecutionStep {
   toolName?: string;
   toolInput?: string;
 }
+
+export interface AgentInfo {
+  name: string;
+  description: string;
+  model: string;
+  toolsCount: number;
+  apiAccess: boolean;
+  realtime: boolean;
+}
