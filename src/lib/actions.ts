@@ -5,12 +5,13 @@ import { runAgentWithConfig } from '@/ai/flows/run-agent';
 import type { ExecutionStep } from '@/lib/types';
 
 export async function runAgent(
+  agentName: string,
   prompt: string
 ): Promise<{ response?: string; steps?: ExecutionStep[]; error?: string }> {
   try {
-    const agent = getAgent('my-agent');
+    const agent = getAgent(agentName);
     if (!agent) {
-      throw new Error("Default agent 'my-agent' not found.");
+      throw new Error(`Agent '${agentName}' not found.`);
     }
 
     const steps: ExecutionStep[] = [];
