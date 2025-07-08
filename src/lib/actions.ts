@@ -1,6 +1,6 @@
 'use server';
 
-import { getAgent } from '@/lib/agent-registry';
+import { getAgent, getAgents } from '@/lib/agent-registry';
 import { getToolsForAgent } from '@/ai/tools';
 import { runAgentWithConfig } from '@/ai/flows/run-agent';
 import type { ExecutionStep } from '@/lib/types';
@@ -22,9 +22,27 @@ export async function runAgent(
       title: 'User Prompt',
       content: prompt,
     });
+    
+    let systemPrompt = agent.systemPrompt;
+
+    // If this is the coordinator agent, inject the list of other agents into the system prompt.
+    if (agent.name === 'Coordinator Agent') {
+        const allAgents = await getAgents();
+        const availableAgents = allAgents.filter(a => a.name !== agent.name); // Exclude self
+        
+        const agentListForPrompt = availableAgents.map(a => 
+            `- **${a.name}**: ${a.description} (Tools: ${a.tools.join(', ') || 'none'})`
+        ).join('\n');
+
+        if (agentListForPrompt) {
+          const contextHeader = 'You can delegate tasks to the following available agents:\n\n';
+          systemPrompt = `${contextHeader}${agentListForPrompt}\n\n---\n\n${agent.systemPrompt}`;
+        }
+    }
+
 
     const finalResponse = await runAgentWithConfig({
-      systemPrompt: agent.systemPrompt,
+      systemPrompt: systemPrompt,
       userInput: prompt,
       tools: await getToolsForAgent(agent),
     });

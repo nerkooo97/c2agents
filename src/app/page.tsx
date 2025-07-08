@@ -43,12 +43,13 @@ const AgentForm = ({
 }) => {
   const form = useForm<AgentFormData>({
     resolver: zodResolver(AgentDefinitionSchema),
-    defaultValues: agent || {
+    defaultValues: agent ? { ...agent, tags: agent.tags || [] } : {
       name: '',
       description: '',
       systemPrompt: '',
       model: 'gemini-2.0-flash',
       tools: [],
+      tags: [],
       enableApiAccess: true,
       realtime: false,
     },
@@ -110,6 +111,29 @@ const AgentForm = ({
               <FormMessage />
             </FormItem>
           )}
+        />
+        <FormField
+            control={form.control}
+            name="tags"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Tags</FormLabel>
+                <FormControl>
+                    <Input
+                    placeholder="e.g., planner, writer, coder"
+                    value={Array.isArray(field.value) ? field.value.join(', ') : ''}
+                    onChange={(e) => {
+                        const tags = e.target.value.split(',').map(tag => tag.trim()).filter(Boolean);
+                        field.onChange(tags);
+                    }}
+                    />
+                </FormControl>
+                <FormDescription>
+                    Comma-separated tags to help other agents discover this one.
+                </FormDescription>
+                <FormMessage />
+                </FormItem>
+            )}
         />
         <FormField
           control={form.control}
@@ -221,7 +245,19 @@ const AgentCard = ({
             <span className="font-medium text-muted-foreground">Tools</span>
             <Badge variant="secondary">{agent.tools.length}</Badge>
         </div>
-         <div className="flex items-center justify-between text-sm">
+        <div className="space-y-1 text-sm">
+            <span className="font-medium text-muted-foreground">Tags</span>
+            <div className="flex flex-wrap gap-1 pt-1">
+                {agent.tags && agent.tags.length > 0 ? (
+                    agent.tags.map(tag => (
+                        <Badge key={tag} variant="outline" className="font-normal">{tag}</Badge>
+                    ))
+                ) : (
+                    <span className="text-muted-foreground text-xs">No tags</span>
+                )}
+            </div>
+        </div>
+         <div className="flex items-center justify-between text-sm pt-2">
             <span className="font-medium text-muted-foreground">API Access</span>
             {agent.enableApiAccess ? <Badge>Enabled</Badge> : <Badge variant="destructive">Disabled</Badge>}
         </div>
@@ -345,9 +381,10 @@ export default function AgentsDashboardPage() {
 
   const handleSaveAgent = async (data: AgentFormData) => {
     const isEditing = !!editingAgent;
+    const originalName = editingAgent?.name;
 
     const apiEndpoint = isEditing ? '/api/agents/update' : '/api/agents/create';
-    const body = isEditing ? JSON.stringify({ originalName: editingAgent.name, agentData: data }) : JSON.stringify(data);
+    const body = isEditing ? JSON.stringify({ originalName: originalName, agentData: data }) : JSON.stringify(data);
     
     try {
       const response = await fetch(apiEndpoint, {
@@ -361,13 +398,14 @@ export default function AgentsDashboardPage() {
         throw new Error(errorData.error || `Failed to ${isEditing ? 'update' : 'create'} agent`);
       }
 
-      // Optimistic UI update
+      const { agent: savedAgent } = await response.json();
+
       if (isEditing) {
-        setAgents(prev => prev.map(a => a.name === editingAgent.name ? { ...a, ...data } : a));
+        setAgents(prev => prev.map(a => a.name === originalName ? { ...savedAgent } : a));
         toast({ title: "Agent Updated", description: `Agent "${data.name}" has been saved.` });
       } else {
-        setAgents(prev => [...prev, data]);
-        toast({ title: "Agent Created", description: `Agent "${data.name}" has been saved.` });
+        setAgents(prev => [...prev, savedAgent]);
+        toast({ title: "Agent Created", description: `Agent "${data.name}" has been created.` });
       }
 
     } catch (e) {
@@ -385,9 +423,14 @@ export default function AgentsDashboardPage() {
 
 
   const handleToggleApi = (name: string, enabled: boolean) => {
-    setAgents(prev => prev.map(a => a.name === name ? { ...a, enableApiAccess: enabled } : a));
-    toast({ title: "API Access Updated", description: `API access for "${name}" is now ${enabled ? 'enabled' : 'disabled'}.` });
+    const agentToUpdate = agents.find(a => a.name === name);
+    if (!agentToUpdate) return;
+    
+    const updatedAgentData = { ...agentToUpdate, enableApiAccess: enabled };
+    
+    handleSaveAgent(updatedAgentData);
   };
+  
 
   const filteredAgents = useMemo(() => {
     return agents.filter(agent =>

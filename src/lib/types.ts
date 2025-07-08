@@ -28,6 +28,7 @@ export interface AgentDefinition {
   model: string;
   systemPrompt: string;
   tools: string[]; // Array of tool names
+  tags?: string[]; // Optional tags for agent capabilities
   enableApiAccess: boolean;
   realtime: boolean;
 }
@@ -38,6 +39,7 @@ export const AgentDefinitionSchema = z.object({
   systemPrompt: z.string().min(1, 'System prompt is required.'),
   model: z.string(),
   tools: z.array(z.string()).default([]),
+  tags: z.array(z.string()).optional().default([]),
   enableApiAccess: z.boolean().default(true),
   realtime: z.boolean().default(false),
 });

@@ -6,6 +6,7 @@ const agent: AgentDefinition = {
   model: 'gemini-2.0-flash',
   systemPrompt: 'You are a document summarizer.',
   tools: [],
+  tags: ['text', 'summarizer'],
   enableApiAccess: false,
   realtime: false,
 };

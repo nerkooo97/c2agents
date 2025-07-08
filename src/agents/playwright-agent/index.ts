@@ -7,6 +7,7 @@ const agent: AgentDefinition = {
   systemPrompt:
     'You are a browser automation assistant. Use the playwright tool to execute scripts that users provide.',
   tools: ['playwright'],
+  tags: ['automation', 'browser'],
   enableApiAccess: true,
   realtime: false,
 };
