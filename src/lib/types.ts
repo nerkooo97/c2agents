@@ -50,3 +50,9 @@ export interface McpServerConfig {
   command: string;
   args: string[];
 }
+
+export interface PlanStep {
+  id: string;
+  agentName: string;
+  task: string;
+}

@@ -22,7 +22,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Bot, MoreVertical, Pencil, PlusCircle, TestTube2, Trash2 } from 'lucide-react';
+import { Bot, MoreVertical, Pencil, PlusCircle, TestTube2, Trash2, Workflow } from 'lucide-react';
 
 type ToolMetadata = {
   name: string;
@@ -450,9 +450,16 @@ export default function AgentsDashboardPage() {
             <span className="text-lg text-muted-foreground">/</span>
             <h1 className="text-lg font-semibold">Dashboard</h1>
         </div>
-        <Button onClick={handleCreateNew}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Create Agent
-        </Button>
+         <div className="flex items-center gap-2">
+          <Link href="/composer" passHref>
+            <Button variant="outline">
+              <Workflow className="mr-2 h-4 w-4" /> Composer
+            </Button>
+          </Link>
+          <Button onClick={handleCreateNew}>
+            <PlusCircle className="mr-2 h-4 w-4" /> Create Agent
+          </Button>
+        </div>
       </header>
       <main className="flex-1 p-4 md:p-6">
         <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
