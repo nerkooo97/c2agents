@@ -24,7 +24,7 @@ async function loadTools(): Promise<Record<string, Tool<any, any>>> {
                 try {
                     const toolConfigPath = path.join(toolsDir, toolFolderName, 'index.ts');
                     if (fs.existsSync(toolConfigPath)) {
-                        const toolModule = require(toolConfigPath);
+                        const toolModule = await import(toolConfigPath);
                         const tool = toolModule.default as Tool<any, any>;
                         if (tool && tool.name) {
                             loadedToolMap[tool.name] = tool;

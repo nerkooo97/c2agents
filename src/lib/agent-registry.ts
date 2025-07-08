@@ -24,7 +24,7 @@ async function loadAgents(): Promise<AgentDefinition[]> {
         try {
           const agentConfigPath = path.join(agentsDir, agentFolderName, 'index.ts');
           if (fs.existsSync(agentConfigPath)) {
-            const agentModule = require(agentConfigPath);
+            const agentModule = await import(agentConfigPath);
             if (agentModule.default && agentModule.default.name) {
               loadedAgents.push(agentModule.default as AgentDefinition);
             } else {
