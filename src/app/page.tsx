@@ -234,12 +234,12 @@ export default function MyAgentPage() {
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground space-y-4">
               <p>
-                You are a helpful AI assistant called MyAgent. You have access to a variety of tools to help answer user questions and complete tasks.
+                This is a configurable AI agent with access to a variety of tools to help answer user questions and complete tasks. The agent's core prompt and toolset are defined programmatically in <code>src/lib/agent-registry.ts</code>.
               </p>
               <div className="flex items-center space-x-2">
                 <Wrench className="h-4 w-4 text-accent" />
-                <span className="font-medium">Tools:</span>
-                <span>Calculator, Web Search, File System</span>
+                <span className="font-medium">Enabled Tools:</span>
+                <span>Calculator, Web Search</span>
               </div>
               <div className="flex items-center space-x-2">
                 <BrainCircuit className="h-4 w-4 text-accent" />

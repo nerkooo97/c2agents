@@ -3,5 +3,3 @@ config();
 
 import '@/ai/flows/summarize-and-store-memory.ts';
 import '@/ai/flows/generate-agent-definition.ts';
-import '@/ai/flows/smart-tool-selection.ts';
-import '@/ai/flows/generate-response.ts';
