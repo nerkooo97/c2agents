@@ -1,56 +1,57 @@
-import {ai} from '@/ai/genkit';
-import {z} from 'zod';
+
+import fs from 'fs';
+import path from 'path';
 import type { Tool } from 'genkit/tool';
+import type { AgentDefinition } from '@/lib/types';
 
-export const calculator = ai.defineTool({
-  name: 'calculator',
-  description: 'Useful for getting the answer to a mathematical expression.',
-  inputSchema: z.object({
-    expression: z.string().describe('A plain mathematical expression that can be evaluated.'),
-  }),
-  outputSchema: z.number(),
-}, async (input) => {
-  try {
-    // eslint-disable-next-line no-eval
-    return eval(input.expression) as number;
-  } catch (e) {
-    return NaN;
+// Dynamically load tools from the src/ai/tools directory.
+// Each tool should be in its own folder, with an index.ts file
+// that default exports the Genkit Tool object.
+const toolsDir = path.join(process.cwd(), 'src', 'ai', 'tools');
+const loadedToolMap: Record<string, Tool<any, any>> = {};
+
+// This code runs on server start. It scans the directory, and if it finds
+// valid tool definition files, it registers them with the application.
+// This allows you to add or remove tools just by adding or removing folders.
+try {
+  if (fs.existsSync(toolsDir)) {
+    const toolFolders = fs.readdirSync(toolsDir, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory())
+      .map(dirent => dirent.name);
+
+    for (const toolFolderName of toolFolders) {
+      try {
+        // We use a dynamic require here, which relies on the server environment's
+        // ability to resolve and execute TypeScript files (as `next dev` does).
+        const toolConfigPath = path.join(toolsDir, toolFolderName, 'index.ts');
+        if (fs.existsSync(toolConfigPath)) {
+          const toolModule = require(toolConfigPath);
+          const tool = toolModule.default as Tool<any, any>;
+          if (tool && tool.name) {
+            loadedToolMap[tool.name] = tool;
+          } else {
+            console.warn(`[Tool Loader] Tool in '${toolFolderName}' is missing a default export or a name.`);
+          }
+        }
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        console.error(`[Tool Loader] Error loading tool from '${toolFolderName}': ${errorMessage}`);
+      }
+    }
+    console.log(`[Tool Loader] Successfully loaded ${Object.keys(loadedToolMap).length} tools.`);
+  } else {
+     console.warn(`[Tool Loader] Tools directory not found at ${toolsDir}. No tools will be loaded.`);
   }
-});
-
-export const webSearch = ai.defineTool({
-  name: 'webSearch',
-  description: 'Useful for searching the web to get up-to-date information on any topic.',
-  inputSchema: z.object({
-    query: z.string().describe('A search query to run on the web.'),
-  }),
-  outputSchema: z.string(),
-}, async (input) => {
-  // In a real app, you would implement a call to a search API here.
-  return `Web search results for "${input.query}": Fictional placeholder search results.`;
-});
-
-export const playwrightTool = ai.defineTool({
-    name: 'playwright',
-    description: 'Runs Playwright commands via an MCP server to automate browser actions.',
-    inputSchema: z.object({
-        script: z.string().describe('The Playwright script to execute.'),
-    }),
-    outputSchema: z.string().describe('The result from the Playwright script execution.'),
-}, async (input) => {
-    // In a real application, this function would communicate with the running
-    // MCP server process identified by the name 'playwright'. This could be
-    // via an HTTP request, a message queue, or another IPC mechanism.
-    console.log(`Calling 'playwright' MCP server with script: ${input.script}`);
-    // Fictional placeholder response.
-    return `Placeholder response: Successfully executed Playwright script for "${input.script}".`;
-});
+} catch (error) {
+    console.error(`[Tool Loader] Could not read tools directory at ${toolsDir}:`, error);
+}
 
 
-export const allTools = [calculator, webSearch, playwrightTool];
+export const toolMap = loadedToolMap;
+export const allTools = Object.values(toolMap);
 
-export const toolMap: Record<string, Tool<any, any>> = {
-  calculator,
-  webSearch,
-  playwright: playwrightTool,
+// Helper to get full tool objects from agent's tool names
+export const getToolsForAgent = (agent: AgentDefinition): Tool<any, any>[] => {
+  if (!agent.tools) return [];
+  return agent.tools.map(toolName => toolMap[toolName]).filter(Boolean);
 };

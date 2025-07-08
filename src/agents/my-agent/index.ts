@@ -1,0 +1,14 @@
+import type { AgentDefinition } from '@/lib/types';
+
+const agent: AgentDefinition = {
+  name: 'my-agent',
+  description: 'A helpful AI assistant that can use tools to answer questions.',
+  model: 'gemini-2.0-flash',
+  systemPrompt:
+    'You are a helpful AI assistant called MyAgent. You have access to a variety of tools to help answer user questions and complete tasks. When you use a tool, tell the user which tool you are using and what the result was.',
+  tools: ['calculator', 'webSearch'],
+  enableApiAccess: true,
+  realtime: false,
+};
+
+export default agent;

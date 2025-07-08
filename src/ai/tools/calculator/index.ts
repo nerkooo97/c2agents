@@ -1,0 +1,20 @@
+import {ai} from '@/ai/genkit';
+import {z} from 'zod';
+
+const calculator = ai.defineTool({
+  name: 'calculator',
+  description: 'Useful for getting the answer to a mathematical expression.',
+  inputSchema: z.object({
+    expression: z.string().describe('A plain mathematical expression that can be evaluated.'),
+  }),
+  outputSchema: z.number(),
+}, async (input) => {
+  try {
+    // eslint-disable-next-line no-eval
+    return eval(input.expression) as number;
+  } catch (e) {
+    return NaN;
+  }
+});
+
+export default calculator;
