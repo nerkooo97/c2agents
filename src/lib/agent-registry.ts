@@ -30,6 +30,16 @@ export const agents: AgentDefinition[] = [
     tools: [],
     enableApiAccess: true,
     realtime: true,
+  },
+  {
+    name: 'Game Server Admin',
+    description: 'An AI assistant to help manage and query game servers.',
+    model: 'gemini-2.0-flash',
+    systemPrompt:
+      'You are a game server administrator assistant. You can query game servers to get their status.',
+    tools: ['gameServerQuery'],
+    enableApiAccess: true,
+    realtime: false,
   }
 ];
 
