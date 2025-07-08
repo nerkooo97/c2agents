@@ -111,6 +111,11 @@ const AgentForm = ({
                     <SelectItem value="gemini-1.5-pro">gemini-1.5-pro</SelectItem>
                     <SelectItem value="gemini-2.0-flash">gemini-2.0-flash</SelectItem>
                   </SelectGroup>
+                  <SelectGroup>
+                    <SelectLabel>OpenAI</SelectLabel>
+                    <SelectItem value="gpt-4o">gpt-4o</SelectItem>
+                    <SelectItem value="gpt-4-turbo">gpt-4-turbo</SelectItem>
+                  </SelectGroup>
                 </SelectContent>
               </Select>
               <FormMessage />

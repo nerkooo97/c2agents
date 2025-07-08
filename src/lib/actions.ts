@@ -6,6 +6,18 @@ import { runAgentWithConfig } from '@/ai/flows/run-agent';
 import { generateSpeech } from '@/ai/flows/text-to-speech';
 import type { ExecutionStep } from '@/lib/types';
 
+// Helper to construct the full model reference string
+const getModelReference = (modelName: string): string => {
+    if (modelName.startsWith('gemini')) {
+        return `googleai/${modelName}`;
+    }
+    if (modelName.startsWith('gpt')) {
+        return `openai/${modelName}`;
+    }
+    // This handles cases where the full path might already be stored, or for other providers in the future.
+    return modelName;
+};
+
 export async function runAgent(
   agentName: string,
   prompt: string
@@ -45,7 +57,7 @@ export async function runAgent(
       systemPrompt: systemPrompt,
       userInput: prompt,
       tools: await getToolsForAgent(agent),
-      model: agent.model,
+      model: getModelReference(agent.model),
     });
 
     if (genkitResponse.history) {
