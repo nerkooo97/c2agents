@@ -24,7 +24,8 @@ async function loadTools(): Promise<Record<string, Tool<any, any>>> {
                 try {
                     const toolConfigPath = path.join(toolsDir, toolFolderName, 'index.ts');
                     if (fs.existsSync(toolConfigPath)) {
-                        const toolModule = await import(toolConfigPath);
+                        // Use a dynamic import with a path alias and template literal for better bundler compatibility
+                        const toolModule = await import(`@/ai/tools/${toolFolderName}/index.ts`);
                         const tool = toolModule.default as Tool<any, any>;
                         if (tool && tool.name) {
                             loadedToolMap[tool.name] = tool;
