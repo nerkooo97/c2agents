@@ -1,1 +1,7 @@
-// Flows will be imported for their side effects in this file.
+import { config } from 'dotenv';
+config();
+
+import '@/ai/flows/summarize-and-store-memory.ts';
+import '@/ai/flows/generate-agent-definition.ts';
+import '@/ai/flows/smart-tool-selection.ts';
+import '@/ai/flows/generate-response.ts';
