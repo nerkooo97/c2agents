@@ -45,6 +45,7 @@ export async function runAgent(
       systemPrompt: systemPrompt,
       userInput: prompt,
       tools: await getToolsForAgent(agent),
+      model: agent.model,
     });
 
     if (genkitResponse.history) {

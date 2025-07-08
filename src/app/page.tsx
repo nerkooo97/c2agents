@@ -19,7 +19,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -49,7 +49,7 @@ const AgentForm = ({
       name: '',
       description: '',
       systemPrompt: '',
-      model: 'gemini-2.0-flash',
+      model: 'gemini-1.5-pro',
       tools: [],
       tags: [],
       enableApiAccess: true,
@@ -106,8 +106,11 @@ const AgentForm = ({
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl><SelectTrigger><SelectValue placeholder="Select a model" /></SelectTrigger></FormControl>
                 <SelectContent>
-                  <SelectItem value="gemini-2.0-flash">gemini-2.0-flash</SelectItem>
-                  <SelectItem value="gemini-1.5-pro">gemini-1.5-pro</SelectItem>
+                  <SelectGroup>
+                    <SelectLabel>Google</SelectLabel>
+                    <SelectItem value="gemini-1.5-pro">gemini-1.5-pro</SelectItem>
+                    <SelectItem value="gemini-2.0-flash">gemini-2.0-flash</SelectItem>
+                  </SelectGroup>
                 </SelectContent>
               </Select>
               <FormMessage />
