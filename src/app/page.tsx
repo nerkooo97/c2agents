@@ -149,7 +149,7 @@ export default function MyAgentPage() {
       <header className="flex h-16 items-center justify-between border-b px-6 shrink-0 bg-card">
         <div className="flex items-center gap-3">
           <Avatar className="h-8 w-8">
-             <AvatarImage src="/icon.svg" alt="MyAgent" />
+             <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="robot logo" alt="MyAgent" />
             <AvatarFallback>MA</AvatarFallback>
           </Avatar>
           <h1 className="text-lg font-semibold font-headline">MyAgent</h1>
@@ -173,7 +173,7 @@ export default function MyAgentPage() {
                     <div key={index} className={`flex items-start gap-4 ${message.role === 'user' ? 'justify-end' : ''}`}>
                       {message.role === 'assistant' && (
                         <Avatar className="h-9 w-9 border">
-                          <AvatarImage src="/icon.svg" alt="MyAgent" />
+                          <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="robot logo" alt="MyAgent" />
                           <AvatarFallback>MA</AvatarFallback>
                         </Avatar>
                       )}
