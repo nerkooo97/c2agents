@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -57,8 +56,6 @@ const AgentForm = ({
 
   const onSubmit = (data: AgentFormData) => {
     onSave(data);
-    form.reset();
-    onClose();
   };
 
   return (
@@ -135,7 +132,7 @@ const AgentForm = ({
                           checked={field.value?.includes(tool.name)}
                           onCheckedChange={(checked) => {
                             return checked
-                              ? field.onChange([...field.value, tool.name])
+                              ? field.onChange([...(field.value || []), tool.name])
                               : field.onChange(field.value?.filter((value) => value !== tool.name));
                           }}
                         />
@@ -314,30 +311,78 @@ export default function AgentsDashboardPage() {
 
   const handleDelete = (agent: AgentDefinition) => {
     setDeletingAgent(agent);
-  }
-
-  const confirmDelete = () => {
-    if (!deletingAgent) return;
-    setAgents(prev => prev.filter(a => a.name !== deletingAgent.name));
-    toast({ title: "Agent Deleted", description: `Agent "${deletingAgent.name}" has been deleted.` });
-    setDeletingAgent(undefined);
-  }
-
-  const handleSaveAgent = (data: AgentFormData) => {
-    setAgents(prev => {
-        const existing = prev.find(a => a.name === (editingAgent?.name || data.name));
-        if (existing) {
-            // Update existing
-            return prev.map(a => a.name === existing.name ? { ...a, ...data } : a);
-        } else {
-            // Create new
-            return [...prev, data];
-        }
-    });
-    toast({ title: "Agent Saved", description: `Agent "${data.name}" has been saved.` });
-    setIsSheetOpen(false);
-    setEditingAgent(undefined);
   };
+
+  const confirmDelete = async () => {
+    if (!deletingAgent) return;
+
+    try {
+      const response = await fetch('/api/agents/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: deletingAgent.name }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete agent');
+      }
+
+      setAgents(prev => prev.filter(a => a.name !== deletingAgent.name));
+      toast({ title: "Agent Deleted", description: `Agent "${deletingAgent.name}" has been deleted.` });
+      
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
+      toast({
+        variant: 'destructive',
+        title: 'Error deleting agent',
+        description: errorMessage,
+      });
+    } finally {
+        setDeletingAgent(undefined);
+    }
+  };
+
+  const handleSaveAgent = async (data: AgentFormData) => {
+    const isEditing = !!editingAgent;
+
+    const apiEndpoint = isEditing ? '/api/agents/update' : '/api/agents/create';
+    const body = isEditing ? JSON.stringify({ originalName: editingAgent.name, agentData: data }) : JSON.stringify(data);
+    
+    try {
+      const response = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Failed to ${isEditing ? 'update' : 'create'} agent`);
+      }
+
+      // Optimistic UI update
+      if (isEditing) {
+        setAgents(prev => prev.map(a => a.name === editingAgent.name ? { ...a, ...data } : a));
+        toast({ title: "Agent Updated", description: `Agent "${data.name}" has been saved.` });
+      } else {
+        setAgents(prev => [...prev, data]);
+        toast({ title: "Agent Created", description: `Agent "${data.name}" has been saved.` });
+      }
+
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
+      toast({
+        variant: 'destructive',
+        title: `Error ${isEditing ? 'updating' : 'creating'} agent`,
+        description: errorMessage,
+      });
+    } finally {
+      setIsSheetOpen(false);
+      setEditingAgent(undefined);
+    }
+  };
+
 
   const handleToggleApi = (name: string, enabled: boolean) => {
     setAgents(prev => prev.map(a => a.name === name ? { ...a, enableApiAccess: enabled } : a));
