@@ -1,6 +1,7 @@
 'use server';
 
-import { getAgent, getToolsForAgent } from '@/lib/agent-registry';
+import { getAgent } from '@/lib/agent-registry';
+import { getToolsForAgent } from '@/ai/tools';
 import { runAgentWithConfig } from '@/ai/flows/run-agent';
 import type { ExecutionStep } from '@/lib/types';
 
@@ -9,7 +10,7 @@ export async function runAgent(
   prompt: string
 ): Promise<{ response?: string; steps?: ExecutionStep[]; error?: string }> {
   try {
-    const agent = getAgent(agentName);
+    const agent = await getAgent(agentName);
     if (!agent) {
       throw new Error(`Agent '${agentName}' not found.`);
     }
@@ -25,7 +26,7 @@ export async function runAgent(
     const finalResponse = await runAgentWithConfig({
       systemPrompt: agent.systemPrompt,
       userInput: prompt,
-      tools: getToolsForAgent(agent),
+      tools: await getToolsForAgent(agent),
     });
     
     steps.push({

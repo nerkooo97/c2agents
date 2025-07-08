@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getAgent, getToolsForAgent } from '@/lib/agent-registry';
+import { getAgent } from '@/lib/agent-registry';
+import { getToolsForAgent } from '@/ai/tools';
 import { runAgentWithConfig } from '@/ai/flows/run-agent';
 
 export async function POST(
@@ -7,7 +8,7 @@ export async function POST(
   { params }: { params: { agentName: string } }
 ) {
   const { agentName } = params;
-  const agent = getAgent(agentName);
+  const agent = await getAgent(agentName);
 
   if (!agent) {
     return NextResponse.json({ error: 'Agent not found' }, { status: 404 });
@@ -28,7 +29,7 @@ export async function POST(
     const response = await runAgentWithConfig({
         systemPrompt: agent.systemPrompt,
         userInput: input,
-        tools: getToolsForAgent(agent),
+        tools: await getToolsForAgent(agent),
     });
 
     return NextResponse.json({ response, sessionId });
