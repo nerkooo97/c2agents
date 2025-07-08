@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAgent } from '@/lib/agent-registry';
+import { getAgent, getToolsForAgent } from '@/lib/agent-registry';
 import { runAgentWithConfig } from '@/ai/flows/run-agent';
 
 export async function POST(
@@ -28,7 +28,7 @@ export async function POST(
     const response = await runAgentWithConfig({
         systemPrompt: agent.systemPrompt,
         userInput: input,
-        tools: agent.tools,
+        tools: getToolsForAgent(agent),
     });
 
     return NextResponse.json({ response, sessionId });

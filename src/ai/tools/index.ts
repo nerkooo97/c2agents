@@ -1,7 +1,6 @@
-'use server';
-
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
+import type { Tool } from 'genkit/tool';
 
 export const calculator = ai.defineTool({
   name: 'calculator',
@@ -30,3 +29,11 @@ export const webSearch = ai.defineTool({
   // In a real app, you would implement a call to a search API here.
   return `Web search results for "${input.query}": Fictional placeholder search results.`;
 });
+
+
+export const allTools = [calculator, webSearch];
+
+export const toolMap: Record<string, Tool<any, any>> = {
+  calculator,
+  webSearch,
+};

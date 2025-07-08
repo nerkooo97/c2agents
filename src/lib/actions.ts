@@ -1,6 +1,6 @@
 'use server';
 
-import { getAgent } from '@/lib/agent-registry';
+import { getAgent, getToolsForAgent } from '@/lib/agent-registry';
 import { runAgentWithConfig } from '@/ai/flows/run-agent';
 import type { ExecutionStep } from '@/lib/types';
 
@@ -24,7 +24,7 @@ export async function runAgent(
     const finalResponse = await runAgentWithConfig({
       systemPrompt: agent.systemPrompt,
       userInput: prompt,
-      tools: agent.tools,
+      tools: getToolsForAgent(agent),
     });
     
     steps.push({
