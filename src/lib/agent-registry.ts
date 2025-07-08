@@ -32,12 +32,12 @@ export const agents: AgentDefinition[] = [
     realtime: true,
   },
   {
-    name: 'Game Server Admin',
-    description: 'An AI assistant to help manage and query game servers.',
+    name: 'Context-Aware Agent',
+    description: 'An agent that can fetch internal context before answering.',
     model: 'gemini-2.0-flash',
     systemPrompt:
-      'You are a game server administrator assistant. You can query game servers to get their status.',
-    tools: ['gameServerQuery'],
+      'You are a context-aware assistant. Before answering questions about projects, deadlines, or budgets, you must use the fetchModelContext tool to get the latest internal information. Only use other tools if the context is insufficient.',
+    tools: ['fetchModelContext', 'webSearch'],
     enableApiAccess: true,
     realtime: false,
   }

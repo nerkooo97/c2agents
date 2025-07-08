@@ -30,26 +30,26 @@ export const webSearch = ai.defineTool({
   return `Web search results for "${input.query}": Fictional placeholder search results.`;
 });
 
-export const gameServerQuery = ai.defineTool({
-  name: 'gameServerQuery',
-  description: 'Useful for getting the status of a game server, like player count and current map.',
+export const fetchModelContext = ai.defineTool({
+  name: 'fetchModelContext',
+  description: 'Useful for retrieving specific, internal context from a Model Context Protocol (MCP) server.',
   inputSchema: z.object({
-    serverAddress: z.string().describe('The address of the game server, e.g., "play.example.com:25565".'),
+    topic: z.string().describe('The topic to retrieve context for.'),
   }),
-  outputSchema: z.string().describe('A summary of the server status.'),
+  outputSchema: z.string().describe('The context retrieved from the MCP server.'),
 }, async (input) => {
-  // In a real app, you would implement a call to the server here.
-  // This could involve using a library like 'gamedig' or making a direct TCP/UDP request.
-  console.log(`Querying game server at: ${input.serverAddress}`);
+  // In a real app, you would implement a client to call your MCP server here.
+  // This could involve an HTTP request to an endpoint.
+  console.log(`Fetching context for topic "${input.topic}" from MCP server...`);
   // Fictional placeholder response.
-  return `Server status for "${input.serverAddress}": 16/100 players online on map "world".`;
+  return `Fictional context for "${input.topic}": The project's internal deadline is Q4. The budget is $50,000.`;
 });
 
 
-export const allTools = [calculator, webSearch, gameServerQuery];
+export const allTools = [calculator, webSearch, fetchModelContext];
 
 export const toolMap: Record<string, Tool<any, any>> = {
   calculator,
   webSearch,
-  gameServerQuery,
+  fetchModelContext,
 };
