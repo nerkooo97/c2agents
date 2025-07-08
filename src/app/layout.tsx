@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster"
 export const metadata: Metadata = {
   title: 'MyAgent',
   description: 'An open-source AI agent framework',
+  icons: null,
 };
 
 export default function RootLayout({
