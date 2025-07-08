@@ -1,21 +1,4 @@
-import type {NextConfig} from 'next';
-
-const nextConfig: NextConfig = {
-  /* config options here */
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'placehold.co',
-      },
-    ],
-  },
-};
-
-export default nextConfig;
+// This file is intentionally left mostly blank to resolve a build issue.
+// The correct configuration is in the root next.config.ts file.
+const config = {};
+export default config;
