@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -6,7 +7,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { AgentDefinition, AgentFormData } from '@/lib/types';
 import { AgentDefinitionSchema } from '@/lib/types';
-import { allTools, toolMap } from '@/ai/tools';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -25,15 +25,22 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Bot, MoreVertical, Pencil, PlusCircle, Send, TestTube2, Trash2 } from 'lucide-react';
 
+type ToolMetadata = {
+  name: string;
+  description: string;
+};
+
 // AGENT FORM COMPONENT
 const AgentForm = ({
   agent,
   onSave,
   onClose,
+  availableTools,
 }: {
   agent?: AgentDefinition;
   onSave: (data: AgentFormData) => void;
   onClose: () => void;
+  availableTools: ToolMetadata[];
 }) => {
   const form = useForm<AgentFormData>({
     resolver: zodResolver(AgentDefinitionSchema),
@@ -116,7 +123,7 @@ const AgentForm = ({
                 <FormLabel>Tools</FormLabel>
                 <FormDescription>Select the tools this agent can use.</FormDescription>
               </div>
-              {allTools.map((tool) => (
+              {availableTools.map((tool) => (
                 <FormField
                   key={tool.name}
                   control={form.control}
@@ -308,6 +315,7 @@ const AgentCard = ({
 // MAIN DASHBOARD PAGE
 export default function AgentsDashboardPage() {
   const [agents, setAgents] = useState<AgentDefinition[]>([]);
+  const [availableTools, setAvailableTools] = useState<ToolMetadata[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -322,20 +330,43 @@ export default function AgentsDashboardPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchAgents = async () => {
+    const fetchInitialData = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
-        const response = await fetch('/api/agents');
-        if (!response.ok) throw new Error('Failed to fetch agents');
-        const data = await response.json();
-        setAgents(data);
+        const [agentsResponse, toolsResponse] = await Promise.all([
+          fetch('/api/agents'),
+          fetch('/api/tools'),
+        ]);
+
+        if (!agentsResponse.ok) {
+          const errorData = await agentsResponse.json();
+          throw new Error(errorData.error || 'Failed to fetch agents');
+        }
+        if (!toolsResponse.ok) {
+          const errorData = await toolsResponse.json();
+          throw new Error(errorData.error || 'Failed to fetch tools');
+        }
+
+        const agentsData = await agentsResponse.json();
+        const toolsData = await toolsResponse.json();
+
+        setAgents(agentsData);
+        setAvailableTools(toolsData);
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'An unknown error occurred');
+        const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
+        setError(errorMessage);
+        toast({
+          variant: 'destructive',
+          title: 'Failed to load dashboard data',
+          description: errorMessage,
+        });
       } finally {
         setIsLoading(false);
       }
     };
-    fetchAgents();
-  }, []);
+    fetchInitialData();
+  }, [toast]);
 
   const handleCreateNew = () => {
     setEditingAgent(undefined);
@@ -449,7 +480,12 @@ export default function AgentsDashboardPage() {
           <SheetHeader>
             <SheetTitle>{editingAgent ? 'Edit Agent' : 'Create New Agent'}</SheetTitle>
           </SheetHeader>
-          <AgentForm agent={editingAgent} onSave={handleSaveAgent} onClose={() => setIsSheetOpen(false)} />
+          <AgentForm
+             agent={editingAgent} 
+             onSave={handleSaveAgent} 
+             onClose={() => setIsSheetOpen(false)}
+             availableTools={availableTools}
+            />
         </SheetContent>
       </Sheet>
 
@@ -477,3 +513,5 @@ export default function AgentsDashboardPage() {
     </div>
   );
 }
+
+    
