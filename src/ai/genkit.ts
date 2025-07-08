@@ -5,7 +5,7 @@ import {openai} from 'genkitx-openai';
 const plugins: GenkitPlugin[] = [googleAI()];
 
 if (process.env.OPENAI_API_KEY) {
-  plugins.push(openai());
+  plugins.push(openai({apiKey: process.env.OPENAI_API_KEY}));
 }
 
 export const ai = genkit({
