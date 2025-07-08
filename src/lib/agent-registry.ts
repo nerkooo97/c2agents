@@ -1,6 +1,20 @@
 import type { Tool } from 'genkit/tool';
 import { toolMap } from '@/ai/tools';
-import type { AgentDefinition } from '@/lib/types';
+import type { AgentDefinition, McpServerConfig } from '@/lib/types';
+
+// Definition for Model Context Protocol (MCP) servers.
+// In a real application, a separate process manager would be responsible for
+// starting and stopping these servers based on this configuration.
+export const mcpServers: Record<string, McpServerConfig> = {
+  playwright: {
+    command: 'npx',
+    args: ['@playwright/mcp@latest'],
+  },
+  customMcp: {
+    command: 'node',
+    args: ['./custom-mcp-server.js'],
+  },
+};
 
 export const agents: AgentDefinition[] = [
   {
@@ -32,15 +46,15 @@ export const agents: AgentDefinition[] = [
     realtime: true,
   },
   {
-    name: 'Context-Aware Agent',
-    description: 'An agent that can fetch internal context before answering.',
+    name: 'Playwright Agent',
+    description: 'An agent that can run Playwright scripts via an MCP server.',
     model: 'gemini-2.0-flash',
     systemPrompt:
-      'You are a context-aware assistant. Before answering questions about projects, deadlines, or budgets, you must use the fetchModelContext tool to get the latest internal information. Only use other tools if the context is insufficient.',
-    tools: ['fetchModelContext', 'webSearch'],
+      'You are a browser automation assistant. Use the playwright tool to execute scripts that users provide.',
+    tools: ['playwright'],
     enableApiAccess: true,
     realtime: false,
-  }
+  },
 ];
 
 export const getAgent = (name: string): AgentDefinition | undefined => {

@@ -43,3 +43,8 @@ export const AgentDefinitionSchema = z.object({
 });
 
 export type AgentFormData = z.infer<typeof AgentDefinitionSchema>;
+
+export interface McpServerConfig {
+  command: string;
+  args: string[];
+}

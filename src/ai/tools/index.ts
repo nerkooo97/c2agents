@@ -30,26 +30,27 @@ export const webSearch = ai.defineTool({
   return `Web search results for "${input.query}": Fictional placeholder search results.`;
 });
 
-export const fetchModelContext = ai.defineTool({
-  name: 'fetchModelContext',
-  description: 'Useful for retrieving specific, internal context from a Model Context Protocol (MCP) server.',
-  inputSchema: z.object({
-    topic: z.string().describe('The topic to retrieve context for.'),
-  }),
-  outputSchema: z.string().describe('The context retrieved from the MCP server.'),
+export const playwrightTool = ai.defineTool({
+    name: 'playwright',
+    description: 'Runs Playwright commands via an MCP server to automate browser actions.',
+    inputSchema: z.object({
+        script: z.string().describe('The Playwright script to execute.'),
+    }),
+    outputSchema: z.string().describe('The result from the Playwright script execution.'),
 }, async (input) => {
-  // In a real app, you would implement a client to call your MCP server here.
-  // This could involve an HTTP request to an endpoint.
-  console.log(`Fetching context for topic "${input.topic}" from MCP server...`);
-  // Fictional placeholder response.
-  return `Fictional context for "${input.topic}": The project's internal deadline is Q4. The budget is $50,000.`;
+    // In a real application, this function would communicate with the running
+    // MCP server process identified by the name 'playwright'. This could be
+    // via an HTTP request, a message queue, or another IPC mechanism.
+    console.log(`Calling 'playwright' MCP server with script: ${input.script}`);
+    // Fictional placeholder response.
+    return `Placeholder response: Successfully executed Playwright script for "${input.script}".`;
 });
 
 
-export const allTools = [calculator, webSearch, fetchModelContext];
+export const allTools = [calculator, webSearch, playwrightTool];
 
 export const toolMap: Record<string, Tool<any, any>> = {
   calculator,
   webSearch,
-  fetchModelContext,
+  playwright: playwrightTool,
 };
