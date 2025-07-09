@@ -17,41 +17,6 @@ import { Label } from '@/components/ui/label'
 
 type SpeechRecognition = typeof window.SpeechRecognition
 
-// Helper function to convert a raw PCM buffer to a WAV buffer
-const toWavBuffer = (pcmData: Buffer): Buffer => {
-    const header = Buffer.alloc(44);
-    
-    // RIFF identifier
-    header.write('RIFF', 0);
-    // file length placeholder
-    header.writeUInt32LE(36 + pcmData.length, 4);
-    // RIFF type
-    header.write('WAVE', 8);
-    // format chunk identifier
-    header.write('fmt ', 12);
-    // format chunk length
-    header.writeUInt32LE(16, 16);
-    // sample format (raw)
-    header.writeUInt16LE(1, 20);
-    // channel count
-    header.writeUInt16LE(1, 22);
-    // sample rate
-    header.writeUInt32LE(24000, 24);
-    // byte rate (sample rate * block align)
-    header.writeUInt32LE(24000 * 2, 28);
-    // block align (channel count * bytes per sample)
-    header.writeUInt16LE(2, 32);
-    // bits per sample
-    header.writeUInt16LE(16, 34);
-    // data chunk identifier
-    header.write('data', 36);
-    // data chunk length
-    header.writeUInt32LE(pcmData.length, 40);
-
-    return Buffer.concat([header, pcmData]);
-};
-
-
 export default function VoiceChatPage() {
   const params = useParams()
   const agentName = decodeURIComponent(Array.isArray(params.agentName) ? params.agentName[0] : (params.agentName as string) || '')
@@ -66,8 +31,6 @@ export default function VoiceChatPage() {
 
   const recognitionRef = useRef<InstanceType<SpeechRecognition> | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null);
-  const audioQueueRef = useRef<AudioBufferSourceNode[]>([]);
-  const isPlayingRef = useRef(false);
   
   const { toast } = useToast()
   
@@ -137,55 +100,34 @@ export default function VoiceChatPage() {
   }, [toast])
 
 
-  const playAudioQueue = useCallback(async () => {
-    if (isPlayingRef.current || audioQueueRef.current.length === 0) {
-      return;
-    }
-    isPlayingRef.current = true;
-
-    const source = audioQueueRef.current.shift();
-    if (source) {
-      source.onended = () => {
-        isPlayingRef.current = false;
-        playAudioQueue();
-      };
-      source.start();
-    } else {
-      isPlayingRef.current = false;
-    }
-  }, []);
-
- const playAudioStream = useCallback(async (response: Response) => {
-    if (!response.body) return;
-    const reader = response.body.getReader();
-
-    const processStream = async () => {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          setIsLoading(false);
-          break;
-        }
-        if (value && audioContextRef.current) {
-          const pcmBuffer = Buffer.from(value.buffer);
-          const wavBuffer = toWavBuffer(pcmBuffer);
+  const playAudio = useCallback(async (audioDataUri: string) => {
+      if (!audioContextRef.current) return;
+      
+      try {
+          const base64Audio = audioDataUri.split(',')[1];
+          if (!base64Audio) throw new Error('Invalid audio data URI');
           
-          try {
-            const audioBuffer = await audioContextRef.current.decodeAudioData(wavBuffer.buffer.slice(wavBuffer.byteOffset, wavBuffer.byteOffset + wavBuffer.byteLength));
-            const source = audioContextRef.current.createBufferSource();
-            source.buffer = audioBuffer;
-            source.connect(audioContextRef.current.destination);
-            audioQueueRef.current.push(source);
-            playAudioQueue();
-          } catch (e) {
-            console.error("Error decoding audio data:", e);
-            toast({ variant: 'destructive', title: 'Audio Playback Error', description: 'Could not decode audio chunk.' });
-          }
-        }
+          const audioBuffer = Buffer.from(base64Audio, 'base64');
+          const decodedAudio = await audioContextRef.current.decodeAudioData(audioBuffer.buffer.slice(audioBuffer.byteOffset, audioBuffer.byteOffset + audioBuffer.byteLength));
+          
+          const source = audioContextRef.current.createBufferSource();
+          source.buffer = decodedAudio;
+          source.connect(audioContextRef.current.destination);
+          source.start();
+
+          source.onended = () => {
+              setIsLoading(false);
+          };
+
+      } catch (error) {
+           toast({
+              variant: 'destructive',
+              title: 'Audio Playback Error',
+              description: 'Could not decode or play audio.',
+          });
+          setIsLoading(false);
       }
-    };
-    processStream();
-  }, [playAudioQueue, toast]);
+  }, [toast]);
 
 
   const processRequest = useCallback(async (text: string) => {
@@ -210,22 +152,20 @@ export default function VoiceChatPage() {
       setMessages(prev => [...prev, modelMessage]);
       setSubtitle(responseText);
       
-      setSubtitle('Receiving audio...');
+      setSubtitle('Generating audio...');
       const response = await fetch('/api/speech', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: responseText, model: ttsModel }),
       });
 
+      const result = await response.json();
+      
       if (!response.ok) {
-          const errorData = await response.json().catch(() => ({error: `Failed to get audio stream: ${response.status}`}));
-          if (response.status === 429) {
-            throw new Error("Audio generation failed: You may have exceeded the daily quota for this model.");
-          }
-          throw new Error(errorData.error);
+          throw new Error(result.error || `Failed to get audio stream: ${response.status}`);
       }
       
-      await playAudioStream(response);
+      await playAudio(result.audio);
 
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred'
@@ -239,7 +179,7 @@ export default function VoiceChatPage() {
       })
       setIsLoading(false);
     }
-  }, [agentName, messages, toast, playAudioStream, ttsModel]);
+  }, [agentName, messages, toast, playAudio, ttsModel]);
 
   useEffect(() => {
     if (!isListening && transcript.trim() && !isLoading) {

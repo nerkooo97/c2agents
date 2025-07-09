@@ -345,6 +345,33 @@
       "inputTokens": 81,
       "outputTokens": 50,
       "totalTokens": 131
+    },
+    {
+      "id": "c7392d6d-43ce-452e-a151-3bdc9494d602",
+      "timestamp": "2025-07-09T19:09:14.165Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "inputTokens": 79,
+      "outputTokens": 28,
+      "totalTokens": 107
+    },
+    {
+      "id": "f77c87e8-97a2-4436-9119-5d26bd78e05b",
+      "timestamp": "2025-07-09T19:09:50.448Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "inputTokens": 81,
+      "outputTokens": 28,
+      "totalTokens": 109
+    },
+    {
+      "id": "c95218f7-bc96-4d30-883e-06733a686b2b",
+      "timestamp": "2025-07-09T19:10:11.835Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "inputTokens": 81,
+      "outputTokens": 23,
+      "totalTokens": 104
     }
   ]
 }

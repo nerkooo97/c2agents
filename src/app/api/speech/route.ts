@@ -1,6 +1,6 @@
 'use server';
 
-import { streamSpeech } from '@/ai/flows/text-to-speech';
+import { generateSpeech } from '@/ai/flows/text-to-speech';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
@@ -14,15 +14,9 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Model is required' }, { status: 400 });
     }
 
-    // Use the new streaming function
-    const audioStream = await streamSpeech(text, model);
+    const audioDataUri = await generateSpeech(text, model);
 
-    // Return the stream directly to the client
-    return new NextResponse(audioStream, {
-        headers: {
-            'Content-Type': 'audio/pcm',
-        },
-    });
+    return NextResponse.json({ audio: audioDataUri });
 
   } catch (error) {
     console.error('Error in speech API:', error);
