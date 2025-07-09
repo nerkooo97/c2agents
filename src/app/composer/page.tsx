@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -519,45 +520,9 @@ export default function ComposerPage() {
           </Link>
         </div>
       </header>
-      <main className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 lg:p-6">
-        {/* Left column for building */}
-        <div className="flex flex-col gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Workflow Goal</CardTitle>
-              <CardDescription>Define the overall objective. This goal is the input for the first agent in the execution plan.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                placeholder="e.g., Research the top 3 AI trends for 2024 and write a blog post about them."
-                value={goal}
-                onChange={(e) => setGoal(e.target.value)}
-                className="min-h-[100px]"
-              />
-              {currentWorkflow && currentWorkflow.enableApiAccess && (
-                  <div className="mt-4">
-                    <Accordion type="single" collapsible className="w-full">
-                        <AccordionItem value="api-details" className="border rounded-md px-3">
-                            <AccordionTrigger className="py-2 text-sm font-medium text-muted-foreground hover:no-underline">
-                                <div className="flex items-center gap-2">
-                                    <Code className="h-4 w-4" />
-                                    <span>API Details</span>
-                                </div>
-                            </AccordionTrigger>
-                            <AccordionContent className="pt-2 pb-2 text-xs">
-                                <div className="space-y-2 rounded-md bg-muted p-3 font-code">
-                                    <p><span className="font-semibold text-green-500">POST</span> /api/workflows/{currentWorkflow.id}</p>
-                                    <Separator className="bg-border/50"/>
-                                    <p className="font-semibold">Body:</p>
-                                    <pre><code>{JSON.stringify({ input: "<optional_goal_override>" }, null, 2)}</code></pre>
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+      <main className="flex-1 grid grid-cols-1 lg:grid-cols-10 gap-6 p-4 lg:p-6">
+        {/* Left column for building - 70% */}
+        <div className="lg:col-span-7 flex flex-col">
           <Card className="flex-1 flex flex-col">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
@@ -582,8 +547,46 @@ export default function ComposerPage() {
             </CardContent>
           </Card>
         </div>
-        {/* Right column for results */}
-        <div className="flex flex-col gap-6">
+        
+        {/* Right column for results - 30% */}
+        <div className="lg:col-span-3 flex flex-col gap-6">
+            <Card>
+                <CardHeader>
+                  <CardTitle>Workflow Goal</CardTitle>
+                  <CardDescription>Define the overall objective for the workflow.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Textarea
+                    placeholder="e.g., Research the top 3 AI trends for 2024 and write a blog post about them."
+                    value={goal}
+                    onChange={(e) => setGoal(e.target.value)}
+                    className="min-h-[100px]"
+                  />
+                  {currentWorkflow && currentWorkflow.enableApiAccess && (
+                      <div className="mt-4">
+                        <Accordion type="single" collapsible className="w-full">
+                            <AccordionItem value="api-details" className="border rounded-md px-3">
+                                <AccordionTrigger className="py-2 text-sm font-medium text-muted-foreground hover:no-underline">
+                                    <div className="flex items-center gap-2">
+                                        <Code className="h-4 w-4" />
+                                        <span>API Details</span>
+                                    </div>
+                                </AccordionTrigger>
+                                <AccordionContent className="pt-2 pb-2 text-xs">
+                                    <div className="space-y-2 rounded-md bg-muted p-3 font-code">
+                                        <p><span className="font-semibold text-green-500">POST</span> /api/workflows/{currentWorkflow.id}</p>
+                                        <Separator className="bg-border/50"/>
+                                        <p className="font-semibold">Body:</p>
+                                        <pre><code>{JSON.stringify({ input: "<optional_goal_override>" }, null, 2)}</code></pre>
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        </Accordion>
+                    </div>
+                  )}
+                </CardContent>
+            </Card>
+
             <Card>
                 <CardHeader>
                     <CardTitle>Final Response</CardTitle>
@@ -599,6 +602,7 @@ export default function ComposerPage() {
                     )}
                 </CardContent>
             </Card>
+
             <Card className="flex-1">
                 <CardHeader>
                     <CardTitle>Execution Graph</CardTitle>
@@ -628,3 +632,5 @@ export default function ComposerPage() {
     </div>
   );
 }
+
+    
