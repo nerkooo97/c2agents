@@ -19,10 +19,11 @@ const nextConfig: NextConfig = {
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
-      // Don't resolve 'async_hooks' on the client
+      // Don't resolve server-only packages on the client
       config.resolve.fallback = {
         ...config.resolve.fallback,
         async_hooks: false,
+        handlebars: false,
       };
     }
     return config;
