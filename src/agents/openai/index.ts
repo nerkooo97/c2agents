@@ -9,6 +9,7 @@ const agent: AgentDefinition = {
   tools: [],
   enableApiAccess: true,
   realtime: false,
+  enableMemory: true,
 };
 
 export default agent;
