@@ -4,7 +4,7 @@ import type { AgentDefinition } from '@/lib/types';
 const agent: AgentDefinition = {
   name: 'test agent 1',
   description: 'test agent',
-  model: 'gemini-2.0-flash',
+  model: 'gpt-4o',
   systemPrompt: `test agent`,
   tools: [],
   enableApiAccess: true,
