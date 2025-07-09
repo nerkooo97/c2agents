@@ -417,6 +417,24 @@
       "inputTokens": 74,
       "outputTokens": 98,
       "totalTokens": 172
+    },
+    {
+      "id": "507e2cd1-05f1-4a26-9f5a-121243235849",
+      "timestamp": "2025-07-09T22:34:26.405Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "inputTokens": 66,
+      "outputTokens": 151,
+      "totalTokens": 217
+    },
+    {
+      "id": "8c6b5a43-d2fd-449f-bf2a-9af392904867",
+      "timestamp": "2025-07-09T22:34:39.973Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "inputTokens": 70,
+      "outputTokens": 64,
+      "totalTokens": 134
     }
   ],
   "conversations": [
@@ -446,6 +464,35 @@
         {
           "role": "model",
           "content": "Trenutno smo započeli naš razgovor upitom o tome da li vam mogu sažeti sadržaj našeg razgovora. Još uvijek nismo pokrili specifične teme ili detalje. Ako imate neki specifičan zadatak ili pitanje, slobodno mi recite kako bih mogao bolje da vam asistiram!"
+        }
+      ]
+    },
+    {
+      "sessionId": "98983ba0-59d4-4345-88fc-292302da5e83",
+      "messages": [
+        {
+          "role": "model",
+          "content": "Hello! I'm ready to help. Send a message to start testing the \"my-agent\" agent."
+        },
+        {
+          "role": "user",
+          "content": "koja je tvoja uloga"
+        },
+        {
+          "role": "model",
+          "content": "Moja uloga kao AI asistent je da pružim informacije, odgovorim na pitanja, i pomognem u različitim zadacima. To može uključiti pomoć u organizaciji, istraživanju, učenju novih stvari, rešavanju problema, i mnogo drugih aktivnosti. Mogu da asistiram u različitim oblastima znanja i da pružam podršku u svakodnevnim zadacima. Ako imate bilo kakva pitanja ili trebate pomoć, slobodno se obratite!"
+        },
+        {
+          "role": "user",
+          "content": "mozes li uraditi summary ovog razgovora"
+        },
+        {
+          "role": "user",
+          "content": "mozes li uraditi summary ovog razgovora"
+        },
+        {
+          "role": "model",
+          "content": "Dosad nismo imali mnogo detalja u razgovoru, samo si me upitao da li mogu sažeti razgovor. Ako imaš neki specifičan tekst ili detalje koje želiš sumirati, slobodno ih pošalji!"
         }
       ]
     }

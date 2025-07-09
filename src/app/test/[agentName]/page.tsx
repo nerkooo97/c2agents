@@ -87,16 +87,16 @@ export default function AgentTestPage() {
     if (!input.trim() || isLoading || !agentName || !sessionId) return
 
     const userMessage: Message = { role: 'user', content: input }
-    const newMessages = [...messages, userMessage];
-
-    setMessages(newMessages)
+    setMessages(prev => [...prev, userMessage]);
+    
+    const currentInput = input;
     setInput('')
     setIsLoading(true)
     setExecutionSteps([])
 
     try {
-      // Pass the entire message history to the agent
-      const result = await runAgent(agentName, input, sessionId, newMessages)
+      // We only send the new prompt and the session ID. The server will handle the history.
+      const result = await runAgent(agentName, currentInput, sessionId)
 
       if (result.error) {
         toast({
