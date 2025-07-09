@@ -1,8 +1,17 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
 import { getAgent } from '@/lib/agent-registry';
-import { getToolsForAgent } from '@/ai/tools';
-import { runAgentWithConfig } from '@/ai/flows/run-agent';
+
+// Helper to construct the full model reference string
+const getModelReference = (modelName: string): string => {
+    if (modelName.startsWith('gemini')) {
+        return `googleai/${modelName}`;
+    }
+    if (modelName.startsWith('gpt')) {
+        return `openai/${modelName}`;
+    }
+    return modelName;
+};
 
 const delegateTask = ai.defineTool({
   name: 'delegateTask',
@@ -13,6 +22,10 @@ const delegateTask = ai.defineTool({
   }),
   outputSchema: z.string(),
 }, async ({ agentName, task }) => {
+  // Dynamically import to break circular dependencies
+  const { getToolsForAgent } = await import('@/ai/tools');
+  const { runAgentWithConfig } = await import('@/ai/flows/run-agent');
+  
   const targetAgent = await getAgent(agentName);
 
   if (!targetAgent) {
@@ -30,6 +43,7 @@ const delegateTask = ai.defineTool({
       systemPrompt: targetAgent.systemPrompt,
       userInput: task,
       tools: await getToolsForAgent(targetAgent),
+      model: getModelReference(targetAgent.model),
   });
   
   const resultText = response.text ?? `Agent '${agentName}' did not return a result.`;
