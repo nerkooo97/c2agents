@@ -1,0 +1,18 @@
+{
+  "workflows": [
+    {
+      "id": "8ff70be5-c77e-4d31-b8e9-43cfda135094",
+      "name": "test",
+      "description": "test",
+      "goal": "test",
+      "enableApiAccess": false,
+      "planSteps": [
+        {
+          "id": "506bf41d-beeb-4244-9735-6e154edce289",
+          "agentName": "my-agent",
+          "task": ""
+        }
+      ]
+    }
+  ]
+}

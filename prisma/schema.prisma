@@ -1,39 +1,51 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
+  // By default, this is set to use SQLite for easy development.
+  // When you're ready, you can switch to a different database like PostgreSQL or MySQL.
+  // Just change the provider and the `url` which should point to your database connection string.
   provider = "sqlite"
   url      = "file:./dev.db"
-  // To switch to MySQL, uncomment the following and comment out the SQLite lines
+  //
+  // EXAMPLE FOR MYSQL:
   // provider = "mysql"
   // url      = env("DATABASE_URL")
+  //
 }
 
-generator client {
-  provider   = "prisma-client-js"
-  // Use the Node-API library engine to avoid libssl dependency issues
-  engineType = "library"
-}
+// =================================================================================
+// Data Models
+// =================================================================================
 
+// Represents a workflow, which is a sequence of agent steps to achieve a goal.
 model Workflow {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  description String
-  goal      String
-  enableApiAccess Boolean @default(false)
+  id              String     @id @default(uuid())
+  name            String     @unique
+  description     String
+  goal            String
+  enableApiAccess Boolean    @default(false)
+  planSteps       PlanStep[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  planSteps PlanStep[]
 }
 
+// Represents a single step within a workflow plan.
 model PlanStep {
-  id         String   @id @default(cuid())
-  workflowId String
-  stepNumber Int
-  agentName  String
-  task       String
-  createdAt  DateTime @default(now())
+  id        String   @id @default(uuid())
+  agentName String
+  task      String
 
-  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId String
+  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  // Defines the order of the step within the workflow
+  order Int
+
+  @@unique([workflowId, order])
 }
