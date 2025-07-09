@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
@@ -86,14 +87,17 @@ export default function AgentTestPage() {
     if (!input.trim() || isLoading || !agentName || !sessionId) return
 
     const userMessage: Message = { role: 'user', content: input }
+    const newMessages = [...messages, userMessage];
 
-    setMessages(prev => [...prev, userMessage])
+    setMessages(newMessages)
     setInput('')
     setIsLoading(true)
     setExecutionSteps([])
 
     try {
-      const result = await runAgent(agentName, input, sessionId)
+      // Pass the entire message history to the agent
+      const result = await runAgent(agentName, input, sessionId, newMessages)
+
       if (result.error) {
         toast({
           variant: "destructive",
