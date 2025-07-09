@@ -462,6 +462,24 @@
       "inputTokens": 73,
       "outputTokens": 77,
       "totalTokens": 150
+    },
+    {
+      "id": "72a4bb8f-b641-451a-88df-497c00aede37",
+      "timestamp": "2025-07-09T22:40:29.026Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "inputTokens": 62,
+      "outputTokens": 13,
+      "totalTokens": 75
+    },
+    {
+      "id": "acaf4f9f-15d7-4ab0-97f9-e59a114bedd0",
+      "timestamp": "2025-07-09T22:40:36.934Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "inputTokens": 65,
+      "outputTokens": 72,
+      "totalTokens": 137
     }
   ],
   "conversations": [
@@ -549,6 +567,27 @@
         {
           "role": "model",
           "content": "Trenutno nemam pristup prethodnim interakcijama ili istoriji razgovora, pa ne mogu da vidim koje su bile prethodne poruke. Ako imate neko pitanje ili trebate pomoć, slobodno napišite, rado ću pomoći!"
+        }
+      ]
+    },
+    {
+      "sessionId": "a743b8e4-fec9-4ee0-8092-52926ade5cc1",
+      "messages": [
+        {
+          "role": "user",
+          "content": "8 + 1"
+        },
+        {
+          "role": "model",
+          "content": "The result of adding 8 and 1 is 9."
+        },
+        {
+          "role": "user",
+          "content": "sta sam te prvo pitao"
+        },
+        {
+          "role": "model",
+          "content": "Nemam pristup prethodnim porukama u ovoj sesiji, pa ne mogu vidjeti što ste me prvo pitali. Ako mi možete ponovno postaviti vaše pitanje ili traženu informaciju, rado ću vam pomoći!"
         }
       ]
     }
