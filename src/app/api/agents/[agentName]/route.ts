@@ -92,7 +92,7 @@ export async function POST(
         userInput: input,
         tools: getToolsForAgent(agent),
         model: getModelReference(agent.model),
-        history: conversationHistory.length > 0 ? conversationHistory : undefined,
+        history: conversationHistory,
     });
     
     const finalResponseText = response.text ?? "No response generated.";

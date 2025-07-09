@@ -62,8 +62,7 @@ const getModelReference = (modelName: string): string => {
 export async function runAgent(
   agentName: string,
   prompt: string,
-  sessionId?: string,
-  historyOverride?: Message[],
+  sessionId?: string
 ): Promise<{ response?: string; steps?: ExecutionStep[]; error?: string }> {
   try {
     const agent = await getAgent(agentName);
@@ -72,9 +71,7 @@ export async function runAgent(
     }
 
     let conversationHistory: Message[] = [];
-    if (historyOverride) {
-        conversationHistory = historyOverride;
-    } else if (agent.enableMemory && sessionId) {
+    if (agent.enableMemory && sessionId) {
         const conversation = await db.conversation.findUnique({ where: { sessionId } });
         if (conversation) {
             conversationHistory = conversation.messages;
@@ -96,7 +93,7 @@ export async function runAgent(
       userInput: prompt,
       tools: getToolsForAgent(agent),
       model: getModelReference(agent.model),
-      history: conversationHistory.length > 0 ? conversationHistory : undefined,
+      history: conversationHistory,
     });
 
     // Log successful execution

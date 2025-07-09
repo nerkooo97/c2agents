@@ -435,6 +435,33 @@
       "inputTokens": 70,
       "outputTokens": 64,
       "totalTokens": 134
+    },
+    {
+      "id": "69bc14be-0b1a-4d80-9d4a-4ba3decef4c5",
+      "timestamp": "2025-07-09T22:37:35.385Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "inputTokens": 62,
+      "outputTokens": 14,
+      "totalTokens": 76
+    },
+    {
+      "id": "b717d40a-0594-4981-8277-4bc4ff5c197d",
+      "timestamp": "2025-07-09T22:37:45.845Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "inputTokens": 62,
+      "outputTokens": 15,
+      "totalTokens": 77
+    },
+    {
+      "id": "59a0aca7-e8c3-4d03-bfb7-e2c7a2fae93f",
+      "timestamp": "2025-07-09T22:38:07.969Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "inputTokens": 73,
+      "outputTokens": 77,
+      "totalTokens": 150
     }
   ],
   "conversations": [
@@ -493,6 +520,35 @@
         {
           "role": "model",
           "content": "Dosad nismo imali mnogo detalja u razgovoru, samo si me upitao da li mogu sažeti razgovor. Ako imaš neki specifičan tekst ili detalje koje želiš sumirati, slobodno ih pošalji!"
+        }
+      ]
+    },
+    {
+      "sessionId": "6fe640ca-bd02-404f-8122-8a0e28aeb251",
+      "messages": [
+        {
+          "role": "user",
+          "content": "8 + 1"
+        },
+        {
+          "role": "model",
+          "content": "The result of \\(8 + 1\\) is \\(9\\)."
+        },
+        {
+          "role": "user",
+          "content": "2 - 1"
+        },
+        {
+          "role": "model",
+          "content": "The result of calculating \\(2 - 1\\) is \\(1\\)."
+        },
+        {
+          "role": "user",
+          "content": "koja je bila moja prva poruka prema tebi"
+        },
+        {
+          "role": "model",
+          "content": "Trenutno nemam pristup prethodnim interakcijama ili istoriji razgovora, pa ne mogu da vidim koje su bile prethodne poruke. Ako imate neko pitanje ili trebate pomoć, slobodno napišite, rado ću pomoći!"
         }
       ]
     }
