@@ -2,7 +2,7 @@
 /**
  * @fileOverview Converts text to speech.
  * - `generateSpeech`: Converts a string of text into a WAV audio data URI.
- * - `generateSpeechStream`: Converts a string of text into a stream of WAV audio data chunks.
+ * - `generateSpeechStream`: Converts a string of text into a stream of raw PCM audio data chunks.
  */
 
 import {ai} from '@/ai/genkit';
@@ -79,11 +79,11 @@ const textToSpeechStreamFlow = ai.defineFlow(
   {
     name: 'textToSpeechStreamFlow',
     inputSchema: z.string(),
-    outputSchema: z.any(),
+    outputSchema: z.any(), // Output is a stream, so 'any' is appropriate here
     stream: true,
   },
   async (query) => {
-    const { stream } = ai.generateStream({
+    const { stream: ttsStream } = ai.generateStream({
       model: googleAI.model('gemini-2.5-flash-preview-tts'),
       config: {
         responseModalities: ['AUDIO'],
@@ -96,11 +96,12 @@ const textToSpeechStreamFlow = ai.defineFlow(
       prompt: query,
     });
 
+    // Use a PassThrough stream to forward the chunks
     const passthrough = new PassThrough();
 
     (async () => {
-        // We don't use the wav writer here, just pass the raw PCM chunks
-        for await (const chunk of stream) {
+      try {
+        for await (const chunk of ttsStream) {
             if (chunk.media) {
                  const audioBuffer = Buffer.from(
                     chunk.media.url.substring(chunk.media.url.indexOf(',') + 1),
@@ -109,9 +110,15 @@ const textToSpeechStreamFlow = ai.defineFlow(
                 passthrough.write(audioBuffer);
             }
         }
+      } catch(e) {
+        console.error("Error in TTS stream processing:", e);
+        passthrough.emit('error', e);
+      } finally {
         passthrough.end();
+      }
     })();
     
+    // Return the readable part of the PassThrough stream
     return { stream: passthrough };
   }
 );

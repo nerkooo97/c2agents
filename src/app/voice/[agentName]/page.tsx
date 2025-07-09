@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { runAgent, generateSpeechAction } from '@/lib/actions'
+import { runAgent } from '@/lib/actions'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -116,7 +116,6 @@ export default function VoiceChatPage() {
     }
 
     let nextStartTime = audioContext.currentTime;
-    let combinedPcmData: Float32Array = new Float32Array(0);
 
     const processChunk = async (pcmChunk: ArrayBuffer) => {
         try {
@@ -141,18 +140,32 @@ export default function VoiceChatPage() {
             
         } catch (error) {
             console.error("Error decoding or playing audio chunk:", error);
+            toast({
+              variant: "destructive",
+              title: "Audio Playback Error",
+              description: error instanceof Error ? error.message : "Could not play audio chunk.",
+            });
         }
     };
     
     let audioQueue = Promise.resolve();
-    for await (const chunk of streamToChunks(stream)) {
-        audioQueue = audioQueue.then(() => processChunk(chunk.buffer));
+    try {
+        for await (const chunk of streamToChunks(stream)) {
+            // Queue up processing to avoid race conditions with audio context
+            audioQueue = audioQueue.then(() => processChunk(chunk.buffer));
+        }
+        await audioQueue;
+    } catch (e) {
+        console.error("Error processing audio stream:", e);
+        toast({
+            variant: "destructive",
+            title: "Audio Stream Error",
+            description: "Failed to read audio data from the server.",
+        });
+    } finally {
+        setIsLoading(false);
+        setStatusText('Tap to speak');
     }
-
-    await audioQueue;
-    
-    setIsLoading(false);
-    setStatusText('Tap to speak');
 
   }, [toast]);
 
@@ -185,10 +198,11 @@ export default function VoiceChatPage() {
       });
 
       if (!response.ok || !response.body) {
-          throw new Error('Failed to get audio stream.');
+          const errorText = await response.text();
+          throw new Error(`Failed to get audio stream: ${response.status} ${response.statusText} - ${errorText}`);
       }
       
-      playAudioStream(response.body);
+      await playAudioStream(response.body);
 
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred'
@@ -205,10 +219,14 @@ export default function VoiceChatPage() {
   }, [agentName, messages, toast, playAudioStream]);
 
   useEffect(() => {
+    // This effect will trigger when listening stops.
+    // We check if there's a final transcript and we are not already processing a request.
     if (!isListening && transcript.trim() && !isLoading) {
       processRequest(transcript)
     }
-  }, [isListening, transcript, isLoading, processRequest]);
+    // We only want this effect to run when `isListening` changes to false.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isListening]);
 
 
   const handleToggleListening = () => {
@@ -220,8 +238,8 @@ export default function VoiceChatPage() {
       setTranscript('')
       setStatusText('Listening...');
       recognitionRef.current?.start()
-      setIsListening(true)
     }
+     setIsListening(prev => !prev);
   }
 
   const agentDisplayName = agentName?.replace(/-/g, ' ') ?? 'Agent'
