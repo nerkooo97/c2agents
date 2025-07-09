@@ -7,10 +7,12 @@ import { runAgent } from '@/lib/actions'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Home, Mic, MicOff } from 'lucide-react'
+import { Home, Mic, MicOff, Settings } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import type { Message } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
 
 type SpeechRecognition = typeof window.SpeechRecognition
 
@@ -24,6 +26,7 @@ export default function VoiceChatPage() {
   const [statusText, setStatusText] = useState('Tap to speak')
   const [isSupported, setIsSupported] = useState(true)
   const [messages, setMessages] = useState<Message[]>([])
+  const [ttsModel, setTtsModel] = useState('gemini-2.5-flash-preview-tts');
 
   const recognitionRef = useRef<InstanceType<SpeechRecognition> | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -126,12 +129,15 @@ export default function VoiceChatPage() {
       const response = await fetch('/api/speech', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: responseText }),
+        body: JSON.stringify({ text: responseText, model: ttsModel }),
       });
 
       const responseData = await response.json();
 
       if (!response.ok) {
+          if (response.status === 429) {
+            throw new Error("Audio generation failed: You may have exceeded the daily quota for this model.");
+          }
           throw new Error(responseData.error || `Failed to get audio stream: ${response.status}`);
       }
       
@@ -149,7 +155,7 @@ export default function VoiceChatPage() {
       setIsLoading(false);
       setStatusText('Tap to speak');
     }
-  }, [agentName, messages, toast, playAudio]);
+  }, [agentName, messages, toast, playAudio, ttsModel]);
 
   useEffect(() => {
     if (!isListening && transcript.trim() && !isLoading) {
@@ -232,7 +238,23 @@ export default function VoiceChatPage() {
                 </div>
             </div>
 
-            <div className="flex flex-col items-center gap-3 pt-6">
+            <div className="flex flex-col items-center gap-6 pt-6 w-full max-w-xs">
+                <div className="w-full space-y-2">
+                    <Label htmlFor="tts-model-select" className="flex items-center gap-2 text-muted-foreground">
+                        <Settings className="h-4 w-4" />
+                        <span>Text-to-Speech Model</span>
+                    </Label>
+                    <Select value={ttsModel} onValueChange={setTtsModel}>
+                        <SelectTrigger id="tts-model-select">
+                            <SelectValue placeholder="Select a TTS model" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="gemini-2.5-flash-preview-tts">Google - Gemini TTS</SelectItem>
+                            <SelectItem value="tts-1">OpenAI - TTS-1</SelectItem>
+                            <SelectItem value="tts-1-hd">OpenAI - TTS-1-HD</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
                 <Button size="icon" className={cn('w-24 h-24 rounded-full transition-all', isListening && 'bg-destructive hover:bg-destructive/90 scale-110')} onClick={handleToggleListening} disabled={!isSupported}>
                     {isListening ? <MicOff className="h-10 w-10"/> : <Mic className="h-10 w-10"/>}
                 </Button>

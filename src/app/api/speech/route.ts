@@ -5,13 +5,16 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   try {
-    const { text } = await req.json();
+    const { text, model } = await req.json();
 
     if (!text) {
       return NextResponse.json({ error: 'Text is required' }, { status: 400 });
     }
+    if (!model) {
+        return NextResponse.json({ error: 'Model is required' }, { status: 400 });
+    }
 
-    const audioDataUri = await generateSpeech(text);
+    const audioDataUri = await generateSpeech(text, model);
 
     return NextResponse.json({ audioDataUri });
 
