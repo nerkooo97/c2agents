@@ -37,22 +37,7 @@ export async function runAgent(
       content: prompt,
     });
     
-    let systemPrompt = agent.systemPrompt;
-
-    if (agent.name === 'Coordinator Agent') {
-        const allAgents = await getAgents();
-        const availableAgents = allAgents.filter(a => a.name !== agent.name);
-        
-        const agentListForPrompt = availableAgents.map(a => 
-            `- **${a.name}**: ${a.description} (Tags: ${a.tags?.join(', ') || 'none'})`
-        ).join('\n');
-
-        if (agentListForPrompt) {
-          const contextHeader = 'You can delegate tasks to the following available agents:\n\n';
-          systemPrompt = `${contextHeader}${agentListForPrompt}\n\n---\n\n${agent.systemPrompt}`;
-        }
-    }
-
+    const systemPrompt = agent.systemPrompt;
 
     const genkitResponse = await runAgentWithConfig({
       systemPrompt: systemPrompt,

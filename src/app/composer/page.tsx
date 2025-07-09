@@ -28,8 +28,6 @@ import CustomAgentNode from '@/components/custom-agent-node';
 import { Bot, Home, PlusCircle, Trash2, Workflow, Save, FilePlus2, ChevronsUpDown, Code } from 'lucide-react';
 import { useNodesState, useEdgesState, addEdge, type Node, type Edge } from 'reactflow';
 
-const COORDINATOR_AGENT_NAME = 'Coordinator Agent';
-
 const WorkflowSaveForm = ({
   currentWorkflow,
   onSave,
@@ -191,8 +189,7 @@ export default function ComposerPage() {
         const agentsData = await agentsResponse.json();
         const workflowsData = await workflowsResponse.json();
         
-        const availableAgents = agentsData.filter((a: AgentDefinition) => a.name !== COORDINATOR_AGENT_NAME);
-        setAgents(availableAgents);
+        setAgents(agentsData);
         setWorkflows(workflowsData);
 
       } catch (error) {
@@ -264,51 +261,67 @@ export default function ComposerPage() {
   };
   
   const handleRunWorkflow = async () => {
-      const planSteps = flowToPlanSteps();
-      if (!goal.trim()) {
-          toast({ variant: 'destructive', title: 'Please define a goal for the workflow.'});
-          return;
-      }
-      if (planSteps.some(step => !step.agentName || !step.task.trim())) {
-          toast({ variant: 'destructive', title: 'Please complete all plan steps.'});
-          return;
-      }
-      
-      setIsLoading(true);
-      setExecutionSteps([]);
-      setFinalResponse(null);
+    const planSteps = flowToPlanSteps();
+    if (!goal.trim()) {
+        toast({ variant: 'destructive', title: 'Please define a goal for the workflow.'});
+        return;
+    }
+    if (planSteps.length === 0 || planSteps.some(step => !step.agentName || !step.task.trim())) {
+        toast({ variant: 'destructive', title: 'Please complete all plan steps.'});
+        return;
+    }
 
-      const planString = planSteps.map((step, index) => 
-        `${index + 1}. Use the '${step.agentName}' agent to perform the following task: ${step.task}`
-      ).join('\n');
+    setIsLoading(true);
+    setExecutionSteps([]);
+    setFinalResponse(null);
 
-      const fullPrompt = `Your primary goal is: ${goal}.
+    let previousStepOutput = `Initial goal: ${goal}`;
+    const allSteps: ExecutionStep[] = [];
 
-You MUST follow this explicit plan to achieve the goal. Do not deviate from it.
-${planString}
+    try {
+        for (let i = 0; i < planSteps.length; i++) {
+            const step = planSteps[i];
+            
+            const currentPrompt = `Based on the overall goal and the previous step's result, perform your task.
+\nOverall Goal: "${goal}"
+\nPrevious Step Result: "${previousStepOutput}"
+\nYour Task: "${step.task}"`;
+            
+            const result = await runAgent(step.agentName, currentPrompt);
+            
+            if (result.error) {
+                throw new Error(`Error in step ${i + 1} (${step.agentName}): ${result.error}`);
+            }
 
-After executing the plan, synthesize the results from all steps into a final, coherent answer that addresses the original goal.
-      `;
-      
-      try {
-        const result = await runAgent(COORDINATOR_AGENT_NAME, fullPrompt);
+            previousStepOutput = result.response || 'No output from this step.';
 
-        if (result.error) {
-            throw new Error(result.error);
+            if (result.steps) {
+                const stepSpecificExecutionSteps = result.steps.map(s => {
+                    if (s.type === 'prompt') {
+                        return { ...s, title: `Prompt for ${step.agentName}` };
+                    }
+                    if (s.type === 'response') {
+                        return { ...s, title: `Response from ${step.agentName}` };
+                    }
+                    return s;
+                })
+                allSteps.push(...stepSpecificExecutionSteps);
+            }
+            setExecutionSteps([...allSteps]);
         }
-        
-        setFinalResponse(result.response ?? 'The agent did not return a final response.');
-        setExecutionSteps(result.steps ?? []);
+        setFinalResponse(previousStepOutput);
 
-      } catch (e) {
-          toast({
-              variant: "destructive",
-              title: "An error occurred",
-              description: e instanceof Error ? e.message : 'Could not execute workflow.',
-          });
-      } finally {
-          setIsLoading(false);
-      }
+    } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : 'Could not execute workflow.';
+        toast({
+            variant: "destructive",
+            title: "An error occurred during workflow execution",
+            description: errorMessage,
+        });
+        setFinalResponse(`Workflow failed. ${errorMessage}`);
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   const handleNewWorkflow = () => {

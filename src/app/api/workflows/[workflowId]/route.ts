@@ -3,8 +3,8 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { runAgent } from '@/lib/actions';
+import type { ExecutionStep } from '@/lib/types';
 
-const COORDINATOR_AGENT_NAME = 'Coordinator Agent';
 
 export async function POST(
   request: Request,
@@ -34,26 +34,29 @@ export async function POST(
     if (!goal) {
         return NextResponse.json({ error: 'Workflow goal is not defined.' }, { status: 400 });
     }
-
-    const planString = workflow.planSteps.map((step, index) => 
-        `${index + 1}. Use the '${step.agentName}' agent to perform the following task: ${step.task}`
-      ).join('\n');
-
-    const fullPrompt = `Your primary goal is: ${goal}.
-
-You MUST follow this explicit plan to achieve the goal. Do not deviate from it.
-${planString}
-
-After executing the plan, synthesize the results from all steps into a final, coherent answer that addresses the original goal.
-      `;
-
-    const result = await runAgent(COORDINATOR_AGENT_NAME, fullPrompt);
-
-    if (result.error) {
-        return NextResponse.json({ error: result.error }, { status: 500 });
+    
+    let previousStepOutput = `Initial goal: ${goal}`;
+    const allSteps: ExecutionStep[] = [];
+    
+    for (const step of workflow.planSteps) {
+        const currentPrompt = `Based on the overall goal and the previous step's result, perform your task.
+\nOverall Goal: "${goal}"
+\nPrevious Step Result: "${previousStepOutput}"
+\nYour Task: "${step.task}"`;
+        
+        const result = await runAgent(step.agentName, currentPrompt);
+        
+        if (result.error) {
+            return NextResponse.json({ error: `Error in step for agent ${step.agentName}: ${result.error}` }, { status: 500 });
+        }
+        
+        previousStepOutput = result.response || 'No output from this step.';
+        if (result.steps) {
+            allSteps.push(...result.steps);
+        }
     }
 
-    return NextResponse.json({ response: result.response, steps: result.steps });
+    return NextResponse.json({ response: previousStepOutput, steps: allSteps });
 
   } catch (e) {
     console.error(`Error in workflow API call for ${workflowId}:`, e);
