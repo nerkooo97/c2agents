@@ -67,6 +67,39 @@ const AgentForm = ({
       enableMemory: false,
     },
   });
+  
+  const isRealtimeAgent = form.watch('realtime');
+
+  const models = useMemo(() => {
+    const allModels = {
+        google: [
+            { id: "gemini-1.5-pro", name: "gemini-1.5-pro" },
+            { id: "gemini-2.0-flash", name: "gemini-2.0-flash" },
+        ],
+        openai: [
+            { id: "gpt-4o", name: "gpt-4o" },
+            { id: "gpt-4-turbo", name: "gpt-4-turbo" },
+        ],
+    };
+    if (isRealtimeAgent) {
+        return {
+             google: [
+                { id: "gemini-1.5-pro", name: "gemini-1.5-pro (Voice Optimized)" },
+            ],
+            openai: [
+                { id: "gpt-4o", name: "gpt-4o (Voice Optimized)" },
+            ],
+        }
+    }
+    return allModels;
+  }, [isRealtimeAgent]);
+
+  useEffect(() => {
+    if (isRealtimeAgent && !['gpt-4o', 'gemini-1.5-pro'].includes(form.getValues('model'))) {
+        form.setValue('model', 'gpt-4o');
+    }
+  }, [isRealtimeAgent, form]);
+
 
   const onSubmit = (data: AgentFormData) => {
     onSave(data);
@@ -140,18 +173,16 @@ const AgentForm = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Model</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl><SelectTrigger><SelectValue placeholder="Select a model" /></SelectTrigger></FormControl>
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Google</SelectLabel>
-                    <SelectItem value="gemini-1.5-pro">gemini-1.5-pro</SelectItem>
-                    <SelectItem value="gemini-2.0-flash">gemini-2.0-flash</SelectItem>
+                    {models.google.map(model => <SelectItem key={model.id} value={model.id}>{model.name}</SelectItem>)}
                   </SelectGroup>
                   <SelectGroup>
                     <SelectLabel>OpenAI</SelectLabel>
-                    <SelectItem value="gpt-4o">gpt-4o</SelectItem>
-                    <SelectItem value="gpt-4-turbo">gpt-4-turbo</SelectItem>
+                    {models.openai.map(model => <SelectItem key={model.id} value={model.id}>{model.name}</SelectItem>)}
                   </SelectGroup>
                 </SelectContent>
               </Select>
