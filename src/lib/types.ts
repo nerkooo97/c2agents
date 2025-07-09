@@ -50,13 +50,6 @@ export const AgentDefinitionSchema = z.object({
 
 export type AgentFormData = z.infer<typeof AgentDefinitionSchema>;
 
-export interface McpServerConfig {
-  command: string;
-  args: string[];
-  env?: Record<string, string>;
-}
-
-
 // Workflow Types
 
 // This represents the shape of a PlanStep on the client-side.
