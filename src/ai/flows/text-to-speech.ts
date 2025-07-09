@@ -8,7 +8,6 @@ import {ai} from '@/ai/genkit';
 import {googleAI} from '@genkit-ai/googleai';
 import {z} from 'zod';
 import wav from 'wav';
-import type {ModelReference} from 'genkit/model';
 import OpenAI from 'openai';
 
 // This flow is defined but not directly used by the streaming endpoint.
