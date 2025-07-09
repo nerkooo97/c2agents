@@ -1,7 +1,15 @@
 'use server';
 
 import { spawn, type ChildProcess } from 'child_process';
-import { mcpServers } from '@/lib/agent-registry';
+import type { McpServerConfig } from '@/lib/types';
+
+// Configuration for MCP servers now lives here to avoid dependency issues.
+export const mcpServers: Record<string, McpServerConfig> = {
+  playwright: {
+    command: 'npx',
+    args: ['@playwright/mcp@latest'],
+  },
+};
 
 const runningServers = new Map<string, ChildProcess>();
 
@@ -22,7 +30,7 @@ export async function startServer(name: string): Promise<void> {
     const serverProcess = spawn(config.command, config.args, {
         env: { ...process.env, ...config.env },
         stdio: ['pipe', 'pipe', 'pipe'], // pipe stdout, stderr
-        detached: false, // Don't detach, manage as part of the main process lifecycle
+        detached: false,
     });
     
     runningServers.set(name, serverProcess);
@@ -46,7 +54,6 @@ export async function startServer(name: string): Promise<void> {
     });
     
     // Return a promise that resolves after a short delay to allow the server to initialize
-    // This helps prevent race conditions where the tool tries to fetch before the server is ready.
     return new Promise(resolve => setTimeout(resolve, 2000));
 }
 
@@ -68,16 +75,16 @@ export function stopAllServers(): void {
     }
 }
 
-// Graceful shutdown hooks
-// Ensure that child processes are killed when the main application exits.
-process.on('beforeExit', stopAllServers);
-process.on('SIGINT', () => {
-    stopAllServers();
-    process.exit();
-});
-process.on('SIGTERM', () => {
-    stopAllServers();
-    process.exit();
-});
-
-// We can import this file in a central server-side module to ensure these hooks are registered.
+// Graceful shutdown hooks, guarded to prevent re-registering on hot-reloads.
+if (!(global as any).mcpHooksRegistered) {
+    process.on('beforeExit', stopAllServers);
+    process.on('SIGINT', () => {
+        stopAllServers();
+        process.exit();
+    });
+    process.on('SIGTERM', () => {
+        stopAllServers();
+        process.exit();
+    });
+    (global as any).mcpHooksRegistered = true;
+}

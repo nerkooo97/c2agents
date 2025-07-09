@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import type { AgentDefinition, McpServerConfig } from '@/lib/types';
+import type { AgentDefinition } from '@/lib/types';
 
 let cachedAgents: AgentDefinition[] | null = null;
 
@@ -58,13 +58,3 @@ export async function getAgent(name: string): Promise<AgentDefinition | undefine
   const agents = await loadAgents();
   return agents.find((agent) => agent.name === name);
 }
-
-// Configuration for Model Context Protocol (MCP) servers.
-// In a real application, a separate process manager would be responsible for
-// starting and stopping these servers based on this configuration.
-export const mcpServers: Record<string, McpServerConfig> = {
-  playwright: {
-    command: 'npx',
-    args: ['@playwright/mcp@latest'],
-  },
-};
