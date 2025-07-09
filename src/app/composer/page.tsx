@@ -2,21 +2,88 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import type { AgentDefinition, ExecutionStep, PlanStep } from '@/lib/types';
+import type { AgentDefinition, ExecutionStep, PlanStep, WorkflowDefinition, WorkflowFormData } from '@/lib/types';
+import { WorkflowMetadataSchema } from '@/lib/types';
 import { runAgent } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import AgentExecutionGraph from '@/components/agent-execution-graph';
-import { Bot, Home, PlusCircle, Trash2, Workflow } from 'lucide-react';
+import { Bot, Home, PlusCircle, Trash2, Workflow, Save, FilePlus2, ChevronsUpDown } from 'lucide-react';
 
 const COORDINATOR_AGENT_NAME = 'Coordinator Agent';
+
+
+const WorkflowSaveForm = ({
+  currentWorkflow,
+  onSave,
+  onClose,
+}: {
+  currentWorkflow: WorkflowDefinition | null;
+  onSave: (data: WorkflowFormData) => void;
+  onClose: () => void;
+}) => {
+  const form = useForm<WorkflowFormData>({
+    resolver: zodResolver(WorkflowMetadataSchema),
+    defaultValues: {
+      name: currentWorkflow?.name || '',
+      description: currentWorkflow?.description || '',
+    },
+  });
+  
+  useEffect(() => {
+    form.reset({
+      name: currentWorkflow?.name || '',
+      description: currentWorkflow?.description || '',
+    });
+  }, [currentWorkflow, form]);
+
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSave)} className="space-y-6 p-4">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Workflow Name</FormLabel>
+              <FormControl><Input placeholder="e.g., Daily News Summary" {...field} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl><Textarea placeholder="A short summary of what this workflow does." {...field} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <div className="flex justify-end gap-2 pt-4">
+            <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
+            <Button type="submit">Save Workflow</Button>
+        </div>
+      </form>
+    </Form>
+  );
+};
+
 
 export default function ComposerPage() {
   const [goal, setGoal] = useState('');
@@ -27,28 +94,56 @@ export default function ComposerPage() {
   const [executionSteps, setExecutionSteps] = useState<ExecutionStep[]>([]);
   const [finalResponse, setFinalResponse] = useState<string | null>(null);
 
+  const [workflows, setWorkflows] = useState<WorkflowDefinition[]>([]);
+  const [currentWorkflow, setCurrentWorkflow] = useState<WorkflowDefinition | null>(null);
+  const [isSaveSheetOpen, setIsSaveSheetOpen] = useState(false);
+
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchAgents = async () => {
+    const fetchInitialData = async () => {
+      setIsDataLoading(true);
       try {
-        const response = await fetch('/api/agents');
-        if (!response.ok) throw new Error('Failed to fetch agents.');
-        const data = await response.json();
-        // Filter out the coordinator agent itself from the list of selectable agents
-        setAgents(data.filter((a: AgentDefinition) => a.name !== COORDINATOR_AGENT_NAME));
+        const [agentsResponse, workflowsResponse] = await Promise.all([
+            fetch('/api/agents'),
+            fetch('/api/workflows'),
+        ]);
+        if (!agentsResponse.ok) throw new Error('Failed to fetch agents.');
+        if (!workflowsResponse.ok) throw new Error('Failed to fetch workflows.');
+        
+        const agentsData = await agentsResponse.json();
+        const workflowsData = await workflowsResponse.json();
+
+        setAgents(agentsData.filter((a: AgentDefinition) => a.name !== COORDINATOR_AGENT_NAME));
+        setWorkflows(workflowsData);
+
       } catch (error) {
         toast({
           variant: 'destructive',
-          title: 'Error fetching agents',
+          title: 'Error fetching initial data',
           description: error instanceof Error ? error.message : 'Unknown error',
         });
       } finally {
         setIsDataLoading(false);
       }
     };
-    fetchAgents();
+    fetchInitialData();
   }, [toast]);
+
+  const fetchWorkflows = async () => {
+      try {
+        const response = await fetch('/api/workflows');
+        if (!response.ok) throw new Error('Failed to fetch workflows.');
+        const data = await response.json();
+        setWorkflows(data);
+      } catch (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Error fetching workflows',
+          description: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+  };
 
   const handleAddStep = () => {
     setPlanSteps([...planSteps, { id: Date.now().toString(), agentName: '', task: '' }]);
@@ -111,6 +206,95 @@ After executing the plan, synthesize the results from all steps into a final, co
       }
   };
 
+  const handleNewWorkflow = () => {
+    setCurrentWorkflow(null);
+    setGoal('');
+    setPlanSteps([]);
+    toast({ title: 'New workflow started', description: 'The composer has been cleared.' });
+  };
+
+  const handleLoadWorkflow = (workflow: WorkflowDefinition) => {
+    setCurrentWorkflow(workflow);
+    setGoal(workflow.goal);
+    setPlanSteps(workflow.planSteps);
+    toast({ title: `Workflow "${workflow.name}" loaded.`});
+  };
+
+  const handleDeleteWorkflow = async (workflowId: string) => {
+    if (!confirm(`Are you sure you want to delete this workflow?`)) return;
+
+    try {
+      const response = await fetch('/api/workflows/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: workflowId }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete workflow');
+      }
+      toast({ title: "Workflow Deleted", description: `The workflow has been deleted.` });
+      await fetchWorkflows(); // Refresh list
+      if (currentWorkflow?.id === workflowId) {
+        handleNewWorkflow();
+      }
+    } catch (e) {
+       toast({
+        variant: "destructive",
+        title: "Error deleting workflow",
+        description: e instanceof Error ? e.message : 'Could not delete workflow.',
+      });
+    }
+  };
+  
+  const handleOpenSaveSheet = () => {
+    if (!goal.trim() || planSteps.length === 0) {
+        toast({ variant: 'destructive', title: 'Cannot Save', description: 'A workflow must have a goal and at least one step.' });
+        return;
+    }
+    setIsSaveSheetOpen(true);
+  };
+
+  const handleSaveWorkflow = async (formData: WorkflowFormData) => {
+    const isUpdating = !!currentWorkflow;
+    const apiEndpoint = isUpdating ? '/api/workflows/update' : '/api/workflows/create';
+    
+    const workflowDataPayload = {
+        name: formData.name,
+        description: formData.description,
+        goal,
+        planSteps,
+    };
+
+    const body = isUpdating
+      ? JSON.stringify({ originalId: currentWorkflow.id, workflowData: workflowDataPayload })
+      : JSON.stringify(workflowDataPayload);
+    
+    try {
+      const response = await fetch(apiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save workflow');
+      }
+
+      const { workflow: savedWorkflow } = await response.json();
+      
+      toast({ title: `Workflow ${isUpdating ? 'Updated' : 'Saved'}`, description: `"${savedWorkflow.name}" has been saved.`});
+      
+      setCurrentWorkflow(savedWorkflow);
+      await fetchWorkflows(); // Refresh list
+
+    } catch (e) {
+       toast({
+        variant: "destructive",
+        title: "Error saving workflow",
+        description: e instanceof Error ? e.message : 'Could not save workflow.',
+      });
+    } finally {
+        setIsSaveSheetOpen(false);
+    }
+  };
 
   return (
     <div className="min-h-screen w-full bg-background flex flex-col">
@@ -122,15 +306,35 @@ After executing the plan, synthesize the results from all steps into a final, co
           </Link>
           <span className="text-lg text-muted-foreground">/</span>
           <h1 className="text-lg font-semibold">Composer</h1>
+           {currentWorkflow && <span className="text-sm text-muted-foreground hidden md:block">/ {currentWorkflow.name}</span>}
         </div>
-        <div className="flex items-center gap-4">
-          <Link href="/" passHref>
-            <Button variant="outline"><Home className="mr-2 h-4 w-4"/>Dashboard</Button>
-          </Link>
+        <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleNewWorkflow}><FilePlus2 /> New</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm"><ChevronsUpDown /> Load Workflow</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {workflows.length === 0 ? (
+                  <DropdownMenuItem disabled>No saved workflows</DropdownMenuItem>
+                ) : (
+                  workflows.map(wf => (
+                    <DropdownMenuItem key={wf.id} onSelect={() => handleLoadWorkflow(wf)} className="justify-between">
+                      {wf.name}
+                      <Trash2 className="h-4 w-4 ml-4 text-destructive/70 hover:text-destructive" onClick={(e) => { e.stopPropagation(); handleDeleteWorkflow(wf.id); }}/>
+                    </DropdownMenuItem>
+                  ))
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button size="sm" onClick={handleOpenSaveSheet}><Save/> {currentWorkflow ? 'Update' : 'Save'}</Button>
           <Button onClick={handleRunWorkflow} disabled={isLoading || isDataLoading}>
             <Workflow className="mr-2 h-4 w-4" />
             {isLoading ? 'Running...' : 'Run Workflow'}
           </Button>
+           <Link href="/" passHref>
+            <Button variant="ghost" size="icon"><Home/></Button>
+          </Link>
         </div>
       </header>
       <main className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 lg:p-6">
@@ -169,7 +373,7 @@ After executing the plan, synthesize the results from all steps into a final, co
                     </div>
                 )}
                 {planSteps.map((step, index) => (
-                    <Card key={step.id} className="p-4 relative">
+                    <Card key={step.id} className="p-4 relative bg-card/50">
                         <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => handleRemoveStep(step.id)}>
                             <Trash2 className="text-destructive" />
                         </Button>
@@ -234,6 +438,21 @@ After executing the plan, synthesize the results from all steps into a final, co
             </Card>
         </div>
       </main>
+      <Sheet open={isSaveSheetOpen} onOpenChange={setIsSaveSheetOpen}>
+        <SheetContent>
+            <SheetHeader>
+                <SheetTitle>{currentWorkflow ? 'Update Workflow' : 'Save New Workflow'}</SheetTitle>
+                <SheetDescription>
+                    Give your workflow a name and description so you can reuse it later.
+                </SheetDescription>
+            </SheetHeader>
+            <WorkflowSaveForm 
+                currentWorkflow={currentWorkflow}
+                onSave={handleSaveWorkflow}
+                onClose={() => setIsSaveSheetOpen(false)}
+            />
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
