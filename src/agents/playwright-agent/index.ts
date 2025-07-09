@@ -6,10 +6,12 @@ const agent: AgentDefinition = {
   model: 'gemini-2.0-flash',
   systemPrompt:
     'You are a browser automation assistant. Use the playwright tool to execute scripts that users provide.',
+  defaultTask: 'Execute the provided Playwright script to automate browser actions.',
   tools: ['playwright'],
   tags: ['automation', 'browser'],
   enableApiAccess: true,
   realtime: false,
+  enableMemory: false,
 };
 
 export default agent;

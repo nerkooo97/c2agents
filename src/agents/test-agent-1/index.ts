@@ -6,9 +6,11 @@ const agent: AgentDefinition = {
   description: 'test agent',
   model: 'gpt-4o',
   systemPrompt: `test agent`,
+  defaultTask: 'Perform the test task as instructed.',
   tools: [],
   enableApiAccess: true,
   realtime: false,
+  enableMemory: false,
 };
 
 export default agent;

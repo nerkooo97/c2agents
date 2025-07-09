@@ -6,6 +6,7 @@ const agent: AgentDefinition = {
   description: 'An example of an agent not exposed via the API.',
   model: 'gemini-1.5-pro',
   systemPrompt: `You are a document summarizer.`,
+  defaultTask: 'Summarize the provided document or text.',
   tools: [],
   enableApiAccess: false,
   realtime: false,
