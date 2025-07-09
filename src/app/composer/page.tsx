@@ -8,13 +8,12 @@ import { runAgent } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import ReactFlow, { useNodesState, useEdgesState, addEdge, type Node, type Edge, type OnConnect } from 'reactflow';
+import type { OnConnect } from 'reactflow';
 import 'reactflow/dist/style.css';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
@@ -27,6 +26,7 @@ import AgentExecutionGraph from '@/components/agent-execution-graph';
 import WorkflowGraphEditor from '@/components/workflow-graph-editor';
 import CustomAgentNode from '@/components/custom-agent-node';
 import { Bot, Home, PlusCircle, Trash2, Workflow, Save, FilePlus2, ChevronsUpDown, Code } from 'lucide-react';
+import { useNodesState, useEdgesState, addEdge, type Node, type Edge } from 'reactflow';
 
 const COORDINATOR_AGENT_NAME = 'Coordinator Agent';
 
