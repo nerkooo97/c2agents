@@ -6,7 +6,6 @@
 
 import {ai} from '@/ai/genkit';
 import {googleAI} from '@genkit-ai/googleai';
-import {openAI} from 'genkitx-openai';
 import {z} from 'zod';
 import wav from 'wav';
 import type {ModelReference} from 'genkit/model';
@@ -50,12 +49,11 @@ const textToSpeechFlow = ai.defineFlow(
     outputSchema: z.string(),
   },
   async ({ text, model }) => {
-    let modelRef: ModelReference<any>;
     
     if (model.startsWith('tts-')) {
-        modelRef = openAI.model(model);
+        // Correctly reference OpenAI models by their string name.
         const { media } = await ai.generate({
-          model: modelRef,
+          model: `openai/${model}`,
           prompt: text,
         });
 
@@ -66,7 +64,7 @@ const textToSpeechFlow = ai.defineFlow(
         return media.url;
 
     } else { // Assume Google model otherwise
-        modelRef = googleAI.model(model);
+        const modelRef = googleAI.model(model);
         const { media } = await ai.generate({
           model: modelRef,
           config: {
