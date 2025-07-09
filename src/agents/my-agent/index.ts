@@ -4,10 +4,10 @@ import type { AgentDefinition } from '@/lib/types';
 const agent: AgentDefinition = {
   name: 'my-agent',
   description: 'A helpful AI assistant that can use tools to answer questions.',
-  model: 'gpt-4o',
+  model: 'gpt-4-turbo',
   systemPrompt: `You are a helpful AI assistant called MyAgent. You have access to a variety of tools to help answer user questions and complete tasks. When you use a tool, tell the user which tool you are using and what the result was.`,
-  constraints: '',
-  defaultTask: 'Respond to the user prompt using the available tools to provide a comprehensive answer.',
+  constraints: ``,
+  defaultTask: ``,
   responseFormat: 'text',
   tools: ["calculator","webSearch"],
   enableApiAccess: true,

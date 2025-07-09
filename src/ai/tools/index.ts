@@ -19,7 +19,7 @@ async function loadTools(): Promise<Tool<any, any>[]> {
             if (fs.existsSync(indexPath)) {
                 try {
                     const { default: tool } = await import(`@/ai/tools/${folderName}`);
-                    if (tool && tool.name) {
+                    if (tool && tool.info?.name) { // Check tool.info.name
                         tools.push(tool);
                     }
                 } catch (e) {
@@ -44,8 +44,8 @@ export async function getToolMap(): Promise<Record<string, Tool<any, any>>> {
     const allTools = await getAllTools();
     const toolMap: Record<string, Tool<any, any>> = {};
     allTools.forEach(tool => {
-        if (tool && tool.name) {
-            toolMap[tool.name] = tool;
+        if (tool && tool.info?.name) {
+            toolMap[tool.info.name] = tool;
         }
     });
     return toolMap;
@@ -56,3 +56,4 @@ export async function getToolsForAgent(agent: AgentDefinition): Promise<Tool<any
   const toolMap = await getToolMap();
   return agent.tools.map(toolName => toolMap[toolName]).filter(Boolean);
 };
+
