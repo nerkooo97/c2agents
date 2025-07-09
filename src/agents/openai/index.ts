@@ -4,7 +4,7 @@ import type { AgentDefinition } from '@/lib/types';
 const agent: AgentDefinition = {
   name: 'openai',
   description: 'Calculator ai agent',
-  model: 'gemini-1.5-pro',
+  model: 'gpt-4o',
   systemPrompt: `Agent for calculate`,
   tools: [],
   enableApiAccess: true,
