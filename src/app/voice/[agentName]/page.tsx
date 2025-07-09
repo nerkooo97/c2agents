@@ -14,6 +14,19 @@ import { cn } from '@/lib/utils'
 
 type SpeechRecognition = typeof window.SpeechRecognition
 
+async function* streamToChunks(stream: ReadableStream<Uint8Array>): AsyncGenerator<Uint8Array> {
+    const reader = stream.getReader();
+    try {
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            yield value;
+        }
+    } finally {
+        reader.releaseLock();
+    }
+}
+
 export default function VoiceChatPage() {
   const params = useParams()
   const agentName = decodeURIComponent(Array.isArray(params.agentName) ? params.agentName[0] : (params.agentName as string) || '')
@@ -26,7 +39,7 @@ export default function VoiceChatPage() {
   const [messages, setMessages] = useState<Message[]>([])
 
   const recognitionRef = useRef<InstanceType<SpeechRecognition> | null>(null)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const audioContextRef = useRef<AudioContext | null>(null);
   const { toast } = useToast()
 
   useEffect(() => {
@@ -37,6 +50,17 @@ export default function VoiceChatPage() {
   }, [agentName]);
 
   useEffect(() => {
+    // Initialize AudioContext on first user interaction
+    const initAudio = () => {
+        if (!audioContextRef.current) {
+            audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        window.removeEventListener('click', initAudio);
+        window.removeEventListener('touchend', initAudio);
+    };
+    window.addEventListener('click', initAudio);
+    window.addEventListener('touchend', initAudio);
+
     const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SpeechRecognitionAPI) {
       setIsSupported(false)
@@ -74,7 +98,81 @@ export default function VoiceChatPage() {
     }
 
     recognitionRef.current = recognition
+    return () => {
+        window.removeEventListener('click', initAudio);
+        window.removeEventListener('touchend', initAudio);
+    };
   }, [toast])
+
+
+  const playAudioStream = useCallback(async (stream: ReadableStream<Uint8Array>) => {
+    if (!audioContextRef.current) {
+        toast({ variant: "destructive", title: "Audio Error", description: "Audio context not initialized. Please interact with the page first." });
+        return;
+    }
+    const audioContext = audioContextRef.current;
+    if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+    }
+
+    let audioBufferSource: AudioBufferSourceNode | null = null;
+    let nextStartTime = audioContext.currentTime;
+
+    const processChunk = async (wavChunk: ArrayBuffer) => {
+        try {
+            const audioBuffer = await audioContext.decodeAudioData(wavChunk);
+            audioBufferSource = audioContext.createBufferSource();
+            audioBufferSource.buffer = audioBuffer;
+            audioBufferSource.connect(audioContext.destination);
+            
+            const scheduleTime = nextStartTime;
+            audioBufferSource.start(scheduleTime);
+            nextStartTime += audioBuffer.duration;
+
+        } catch (error) {
+            console.error("Error decoding or playing audio chunk:", error);
+            // Ignore small chunk decoding errors
+        }
+    };
+
+    let audioQueue = Promise.resolve();
+    for await (const chunk of streamToChunks(stream)) {
+        // Create a proper WAV header for each chunk to make it playable
+        const wavChunk = new ArrayBuffer(44 + chunk.length);
+        const view = new DataView(wavChunk);
+        
+        // RIFF chunk descriptor
+        writeString(view, 0, 'RIFF');
+        view.setUint32(4, 36 + chunk.length, true);
+        writeString(view, 8, 'WAVE');
+        // "fmt " sub-chunk
+        writeString(view, 12, 'fmt ');
+        view.setUint32(16, 16, true); // Subchunk1Size
+        view.setUint16(20, 1, true); // AudioFormat
+        view.setUint16(22, 1, true); // NumChannels
+        view.setUint32(24, 24000, true); // SampleRate
+        view.setUint32(28, 24000 * 2, true); // ByteRate
+        view.setUint16(32, 2, true); // BlockAlign
+        view.setUint16(34, 16, true); // BitsPerSample
+        // "data" sub-chunk
+        writeString(view, 36, 'data');
+        view.setUint32(40, chunk.length, true);
+        new Uint8Array(wavChunk).set(chunk, 44);
+
+        audioQueue = audioQueue.then(() => processChunk(wavChunk));
+    }
+    await audioQueue;
+    
+    setIsLoading(false);
+    setStatusText('Tap to speak');
+
+  }, [toast]);
+
+  function writeString(view: DataView, offset: number, str: string) {
+    for (let i = 0; i < str.length; i++) {
+        view.setUint8(offset + i, str.charCodeAt(i));
+    }
+  }
 
   const processRequest = useCallback(async (text: string) => {
     if (!agentName) return
@@ -98,22 +196,18 @@ export default function VoiceChatPage() {
       setMessages(prev => [...prev, modelMessage]);
       
       setStatusText('Generating audio...');
-      const speechResult = await generateSpeechAction(responseText)
-      if (speechResult.error) {
-        throw new Error(speechResult.error)
-      }
+      const response = await fetch('/api/speech', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: responseText }),
+      });
 
-      if (audioRef.current && speechResult.audioUrl) {
-        audioRef.current.src = speechResult.audioUrl
-        audioRef.current.onended = () => {
-            setIsLoading(false);
-            setStatusText('Tap to speak');
-        };
-        audioRef.current.play();
-      } else {
-        setIsLoading(false);
-        setStatusText('Tap to speak');
+      if (!response.ok || !response.body) {
+          throw new Error('Failed to get audio stream.');
       }
+      
+      playAudioStream(response.body);
+
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred'
       const errorResponse: Message = { role: 'model', content: 'Sorry, an error occurred.' }
@@ -126,7 +220,7 @@ export default function VoiceChatPage() {
       setIsLoading(false);
       setStatusText('Tap to speak');
     }
-  }, [agentName, messages, toast]);
+  }, [agentName, messages, toast, playAudioStream]);
 
   useEffect(() => {
     if (!isListening && transcript.trim() && !isLoading) {
@@ -220,7 +314,6 @@ export default function VoiceChatPage() {
             </div>
           </CardContent>
         </Card>
-        <audio ref={audioRef} className="hidden" />
       </main>
     </div>
   )

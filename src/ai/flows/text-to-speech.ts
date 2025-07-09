@@ -2,12 +2,14 @@
 /**
  * @fileOverview Converts text to speech.
  * - `generateSpeech`: Converts a string of text into a WAV audio data URI.
+ * - `generateSpeechStream`: Converts a string of text into a stream of WAV audio data chunks.
  */
 
 import {ai} from '@/ai/genkit';
 import {googleAI} from '@genkit-ai/googleai';
 import {z} from 'zod';
 import wav from 'wav';
+import { PassThrough } from 'stream';
 
 async function toWav(
   pcmData: Buffer,
@@ -69,4 +71,60 @@ const textToSpeechFlow = ai.defineFlow(
 
 export async function generateSpeech(text: string): Promise<string> {
     return textToSpeechFlow(text);
+}
+
+
+// New streaming flow
+const textToSpeechStreamFlow = ai.defineFlow(
+  {
+    name: 'textToSpeechStreamFlow',
+    inputSchema: z.string(),
+    outputSchema: z.any(),
+    stream: true,
+  },
+  async (query) => {
+    const { stream } = ai.generateStream({
+      model: googleAI.model('gemini-2.5-flash-preview-tts'),
+      config: {
+        responseModalities: ['AUDIO'],
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: { voiceName: 'Algenib' },
+          },
+        },
+      },
+      prompt: query,
+    });
+
+    const passthrough = new PassThrough();
+
+    (async () => {
+        const writer = new wav.Writer({
+            channels: 1,
+            sampleRate: 24000,
+            bitDepth: 16,
+        });
+
+        writer.pipe(passthrough);
+
+        for await (const chunk of stream) {
+            if (chunk.media) {
+                 const audioBuffer = Buffer.from(
+                    chunk.media.url.substring(chunk.media.url.indexOf(',') + 1),
+                    'base64'
+                );
+                writer.write(audioBuffer);
+            }
+        }
+        writer.end();
+    })();
+    
+    return { stream: passthrough };
+  }
+);
+
+
+export async function generateSpeechStream(text: string) {
+    const { stream } = await textToSpeechStreamFlow(text);
+    return stream;
 }
