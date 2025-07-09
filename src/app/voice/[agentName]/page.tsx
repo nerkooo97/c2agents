@@ -7,7 +7,7 @@ import { runAgent } from '@/lib/actions'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Home, Mic, MicOff, Bot } from 'lucide-react'
+import { Home, Mic, MicOff } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import type { Message } from '@/lib/types'
 import { cn } from '@/lib/utils'
@@ -28,17 +28,16 @@ export default function VoiceChatPage() {
   const recognitionRef = useRef<InstanceType<SpeechRecognition> | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast()
+  
+  const agentDisplayName = agentName?.replace(/-/g, ' ') ?? 'Agent'
 
   useEffect(() => {
     if (agentName) {
-      const agentDisplayName = agentName.replace(/-/g, ' ')
       setMessages([{ role: 'model', content: `Hello! I'm the ${agentDisplayName}. How can I help you today?` }]);
     }
-  }, [agentName]);
+  }, [agentName, agentDisplayName]);
 
   useEffect(() => {
-    // This is to handle autoplay restrictions in browsers.
-    // We create an audio element that can be programmatically played after a user interaction.
     if (!audioRef.current) {
         audioRef.current = new Audio();
     }
@@ -130,13 +129,13 @@ export default function VoiceChatPage() {
         body: JSON.stringify({ text: responseText }),
       });
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(`Failed to get audio stream: ${response.status} ${response.statusText} - ${errorData.error || 'Server error'}`);
+          throw new Error(responseData.error || `Failed to get audio stream: ${response.status}`);
       }
       
-      const { audioDataUri } = await response.json();
-      playAudio(audioDataUri);
+      playAudio(responseData.audioDataUri);
 
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred'
@@ -157,7 +156,7 @@ export default function VoiceChatPage() {
       processRequest(transcript)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isListening]);
+  }, [isListening, transcript, isLoading]);
 
 
   const handleToggleListening = () => {
@@ -172,15 +171,13 @@ export default function VoiceChatPage() {
     }
      setIsListening(prev => !prev);
   }
-
-  const agentDisplayName = agentName?.replace(/-/g, ' ') ?? 'Agent'
   
   const lastUserTranscript = messages.filter(m => m.role === 'user').at(-1)?.content || "..."
   const lastAgentResponse = messages.filter(m => m.role === 'model').at(-1)?.content || "I'm ready to help."
 
   return (
     <div className="min-h-screen w-full bg-background flex flex-col">
-       <header className="flex h-16 items-center justify-between border-b px-6 shrink-0 bg-card">
+       <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-card px-6 shrink-0">
         <div className="flex items-center gap-3">
           <Avatar className="h-8 w-8">
              <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="robot logo" alt={agentDisplayName} />

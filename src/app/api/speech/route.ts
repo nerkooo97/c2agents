@@ -17,7 +17,18 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     console.error('Error in speech API:', error);
-    const errorMessage = error instanceof Error ? error.message : 'An internal server error occurred.';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    let errorMessage = 'An internal server error occurred.';
+    let statusCode = 500;
+
+    if (error instanceof Error) {
+        errorMessage = error.message;
+        // Check for specific rate limit error from Google AI
+        if (errorMessage.includes('429')) {
+             statusCode = 429;
+             errorMessage = "API rate limit exceeded. You may have run out of free daily quota.";
+        }
+    }
+    
+    return NextResponse.json({ error: errorMessage }, { status: statusCode });
   }
 }
