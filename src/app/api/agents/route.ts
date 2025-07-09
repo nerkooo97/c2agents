@@ -11,6 +11,8 @@ export async function GET() {
     description: agent.description,
     model: agent.model,
     systemPrompt: agent.systemPrompt,
+    constraints: agent.constraints,
+    responseFormat: agent.responseFormat,
     tools: agent.tools,
     enableApiAccess: agent.enableApiAccess,
     realtime: agent.realtime,

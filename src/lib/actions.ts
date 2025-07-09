@@ -38,10 +38,10 @@ export async function runAgent(
       content: prompt,
     });
     
-    const systemPrompt = agent.systemPrompt;
-
     const genkitResponse = await runAgentWithConfig({
-      systemPrompt: systemPrompt,
+      systemPrompt: agent.systemPrompt,
+      constraints: agent.constraints,
+      responseFormat: agent.responseFormat,
       userInput: prompt,
       tools: await getToolsForAgent(agent),
       model: getModelReference(agent.model),

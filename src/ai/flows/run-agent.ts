@@ -9,24 +9,38 @@ import type { Message } from '@/lib/types';
 
 interface RunAgentConfig {
     systemPrompt: string;
+    constraints?: string;
+    responseFormat?: 'text' | 'json';
     userInput: string;
     tools: Tool<any, any>[];
     model: string;
     history?: Message[];
 }
 
-export async function runAgentWithConfig({ systemPrompt, userInput, tools, model, history }: RunAgentConfig): Promise<GenerateResponse> {
+export async function runAgentWithConfig({ systemPrompt, constraints, responseFormat, userInput, tools, model, history }: RunAgentConfig): Promise<GenerateResponse> {
   const genkitHistory: MessageData[] | undefined = history?.map((msg) => ({
     role: msg.role,
     content: [{ text: msg.content }],
   }));
 
+  let fullSystemPrompt = systemPrompt;
+  if (constraints) {
+    fullSystemPrompt += `\n\n## CONSTRAINTS\nThe user has provided the following constraints that you MUST follow:\n${constraints}`;
+  }
+
+  if (responseFormat === 'json') {
+      fullSystemPrompt += `\n\n## RESPONSE FORMAT\nYou MUST provide your final response in a valid JSON format. Do not include any explanatory text before or after the JSON object.`;
+  }
+
   const response = await ai.generate({
     model: model as ModelReference<any>,
-    system: systemPrompt,
+    system: fullSystemPrompt,
     prompt: userInput,
     tools: tools,
     history: genkitHistory,
+    config: {
+        responseFormat: responseFormat,
+    }
   });
 
   return response;

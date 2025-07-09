@@ -15,5 +15,56 @@
       ]
     }
   ],
-  "agentExecutionLogs": []
+  "agentExecutionLogs": [
+    {
+      "id": "93a4394e-f3bb-4459-a2f7-fab6cfd8c500",
+      "timestamp": "2025-07-09T17:12:26.730Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "inputTokens": 60,
+      "outputTokens": 12,
+      "totalTokens": 72
+    },
+    {
+      "id": "d170683a-acdb-477a-9530-4c1ed2b38ae3",
+      "timestamp": "2025-07-09T17:12:36.416Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "inputTokens": 65,
+      "outputTokens": 85,
+      "totalTokens": 150
+    },
+    {
+      "id": "e2cf831b-ffd5-4436-8a3e-ba7fe5c3925f",
+      "timestamp": "2025-07-09T17:12:48.925Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "inputTokens": 64,
+      "outputTokens": 16,
+      "totalTokens": 80
+    },
+    {
+      "id": "d4263eeb-80db-478a-ab3d-547abfae3d26",
+      "timestamp": "2025-07-09T17:14:02.367Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "inputTokens": 66,
+      "outputTokens": 18,
+      "totalTokens": 84
+    },
+    {
+      "id": "c9569fd1-2131-410d-8d39-c3396dc0686b",
+      "timestamp": "2025-07-09T17:17:19.510Z",
+      "agentName": "Realtime%20Voice%20Agent",
+      "status": "error",
+      "errorDetails": "Agent 'Realtime%20Voice%20Agent' not found."
+    },
+    {
+      "id": "371bdc89-5049-498d-b786-034371eb0742",
+      "timestamp": "2025-07-09T17:17:44.054Z",
+      "agentName": "Realtime%20Voice%20Agent",
+      "status": "error",
+      "errorDetails": "Agent 'Realtime%20Voice%20Agent' not found."
+    }
+  ]
 }

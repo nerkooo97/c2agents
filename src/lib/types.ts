@@ -27,9 +27,11 @@ export interface AgentDefinition {
   description: string;
   model: string;
   systemPrompt: string;
+  constraints?: string;
   defaultTask?: string;
   tools: string[]; // Array of tool names
   tags?: string[]; // Optional tags for agent capabilities
+  responseFormat: 'text' | 'json';
   enableApiAccess: boolean;
   realtime: boolean;
   enableMemory: boolean;
@@ -39,8 +41,10 @@ export const AgentDefinitionSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters long.'),
   description: z.string().min(1, 'Description is required.'),
   systemPrompt: z.string().min(1, 'System prompt is required.'),
+  constraints: z.string().optional(),
   defaultTask: z.string().optional(),
   model: z.string(),
+  responseFormat: z.enum(['text', 'json']).default('text'),
   tools: z.array(z.string()).default([]),
   tags: z.array(z.string()).optional().default([]),
   enableApiAccess: z.boolean().default(true),

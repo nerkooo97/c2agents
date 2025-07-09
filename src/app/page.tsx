@@ -45,12 +45,20 @@ const AgentForm = ({
 }) => {
   const form = useForm<AgentFormData>({
     resolver: zodResolver(AgentDefinitionSchema),
-    defaultValues: agent ? { ...agent, defaultTask: agent.defaultTask || '', tags: agent.tags || [] } : {
+    defaultValues: agent ? { 
+        ...agent, 
+        defaultTask: agent.defaultTask || '', 
+        tags: agent.tags || [],
+        constraints: agent.constraints || '',
+        responseFormat: agent.responseFormat || 'text',
+    } : {
       name: '',
       description: '',
       systemPrompt: '',
+      constraints: '',
       defaultTask: '',
       model: 'gemini-1.5-pro',
+      responseFormat: 'text',
       tools: [],
       tags: [],
       enableApiAccess: true,
@@ -101,6 +109,18 @@ const AgentForm = ({
         />
         <FormField
           control={form.control}
+          name="constraints"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Constraints</FormLabel>
+              <FormControl><Textarea placeholder="e.g., - Do not use emojis.&#10;- Always reply in French." className="min-h-[80px]" {...field} /></FormControl>
+              <FormDescription>Strict rules the agent must follow. Each constraint on a new line.</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
           name="defaultTask"
           render={({ field }) => (
             <FormItem>
@@ -134,6 +154,24 @@ const AgentForm = ({
                   </SelectGroup>
                 </SelectContent>
               </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="responseFormat"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Response Format</FormLabel>
+               <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl><SelectTrigger><SelectValue placeholder="Select a response format" /></SelectTrigger></FormControl>
+                <SelectContent>
+                  <SelectItem value="text">Text</SelectItem>
+                  <SelectItem value="json">JSON</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormDescription>Instruct the model to respond in a specific format.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -281,6 +319,10 @@ const AgentCard = ({
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Model</span>
               <Badge variant="secondary">{agent.model}</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Response Format</span>
+              <Badge variant="outline" className="capitalize">{agent.responseFormat || 'text'}</Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Tools</span>
