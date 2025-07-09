@@ -104,3 +104,17 @@ export const ToolDefinitionSchema = z.object({
   functionBody: z.string().min(1, 'Tool function body is required. e.g. return `Weather in ${input.city} is sunny.`'),
 });
 export type ToolFormData = z.infer<typeof ToolDefinitionSchema>;
+
+
+// Agent Analytics Types
+export const AgentExecutionLogSchema = z.object({
+  id: z.string().uuid(),
+  agentName: z.string(),
+  timestamp: z.string(),
+  status: z.enum(['success', 'error']),
+  inputTokens: z.number().optional().nullable(),
+  outputTokens: z.number().optional().nullable(),
+  totalTokens: z.number().optional().nullable(),
+  errorDetails: z.string().optional().nullable(),
+});
+export type AgentExecutionLog = z.infer<typeof AgentExecutionLogSchema>;

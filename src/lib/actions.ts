@@ -5,6 +5,7 @@ import { getToolsForAgent } from '@/ai/tools';
 import { runAgentWithConfig } from '@/ai/flows/run-agent';
 import { generateSpeech } from '@/ai/flows/text-to-speech';
 import type { ExecutionStep, Message } from '@/lib/types';
+import db from '@/lib/db';
 
 // Helper to construct the full model reference string
 const getModelReference = (modelName: string): string => {
@@ -47,6 +48,18 @@ export async function runAgent(
       history: agent.enableMemory ? history : undefined,
     });
 
+    // Log successful execution
+    const usage = genkitResponse.usage;
+    await db.agentExecutionLog.create({
+        data: {
+            agentName,
+            status: 'success',
+            inputTokens: usage?.inputTokens,
+            outputTokens: usage?.outputTokens,
+            totalTokens: usage?.totalTokens,
+        },
+    });
+
     if (genkitResponse.history) {
       for (const message of genkitResponse.history) {
         if (message.role === 'model' && message.content.some(p => p.toolRequest)) {
@@ -87,6 +100,16 @@ export async function runAgent(
   } catch (error) {
     console.error('Error running agent:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
+    
+    // Log error execution
+    await db.agentExecutionLog.create({
+        data: {
+            agentName,
+            status: 'error',
+            errorDetails: errorMessage,
+        },
+    });
+
     return {
       error: errorMessage,
     };

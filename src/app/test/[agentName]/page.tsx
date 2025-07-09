@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import type { Message, ExecutionStep } from '@/lib/types'
+import type { Message, ExecutionStep, AgentExecutionLog } from '@/lib/types'
 import { runAgent } from '@/lib/actions'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -12,9 +12,12 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Send, Home } from 'lucide-react'
+import { Send, Home, LineChart } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import AgentExecutionGraph from '@/components/agent-execution-graph'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 export default function AgentTestPage() {
   const params = useParams()
@@ -24,14 +27,40 @@ export default function AgentTestPage() {
   const [executionSteps, setExecutionSteps] = useState<ExecutionStep[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  
+  const [logs, setLogs] = useState<AgentExecutionLog[]>([]);
+  const [isLogsLoading, setIsLogsLoading] = useState(true);
+
   const { toast } = useToast()
   const scrollAreaRef = useRef<HTMLDivElement>(null)
+
+  const fetchLogs = useCallback(async () => {
+    if (!agentName) return;
+    setIsLogsLoading(true);
+    try {
+        const response = await fetch(`/api/agents/${agentName}/logs`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch logs');
+        }
+        const data = await response.json();
+        setLogs(data);
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Failed to load agent logs",
+            description: error instanceof Error ? error.message : "Unknown error",
+        });
+    } finally {
+        setIsLogsLoading(false);
+    }
+  }, [agentName, toast]);
 
   useEffect(() => {
     if (agentName) {
         setMessages([{ role: 'model', content: `Hello! I'm ready to help. How can I assist you today? Send a message to start testing the "${agentName}" agent.` }])
+        fetchLogs();
     }
-  }, [agentName])
+  }, [agentName, fetchLogs])
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -75,6 +104,7 @@ export default function AgentTestPage() {
        setMessages(prev => [...prev, { role: 'model', content: "Sorry, I couldn't connect to the agent. Please check the console and try again." }])
     } finally {
       setIsLoading(false)
+      fetchLogs();
     }
   }
   
@@ -184,22 +214,68 @@ export default function AgentTestPage() {
               <CardDescription>A visual representation of the agent&apos;s process.</CardDescription>
             </CardHeader>
             <CardContent>
-              <AgentExecutionGraph steps={executionSteps} isLoading={isLoading} />
+              <ScrollArea className="h-[250px] pr-4">
+                <AgentExecutionGraph steps={executionSteps} isLoading={isLoading} />
+              </ScrollArea>
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>CLI Tooling</CardTitle>
-              <CardDescription>Bootstrap your agent projects quickly.</CardDescription>
+                <CardTitle>Agent Analytics</CardTitle>
+                <CardDescription>A log of recent agent executions and performance.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="rounded-md bg-muted p-4 font-code text-sm">
-                <pre><code>npx create-myagent-app my-new-agent</code></pre>
-              </div>
-              <Separator className="my-4" />
-              <p className="text-sm text-muted-foreground">
-                Use the CLI to scaffold new projects with your choice of LLM provider, memory backend, and example tools.
-              </p>
+                <ScrollArea className="h-[200px]">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Timestamp</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Tokens</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {isLogsLoading ? (
+                                [...Array(3)].map((_, i) => (
+                                <TableRow key={i}>
+                                    <TableCell colSpan={3}>
+                                        <Skeleton className="h-8 w-full" />
+                                    </TableCell>
+                                </TableRow>
+                                ))
+                            ) : logs.length > 0 ? (
+                                logs.map((log) => (
+                                    <TableRow key={log.id}>
+                                        <TableCell className="text-xs">{new Date(log.timestamp).toLocaleString()}</TableCell>
+                                        <TableCell>
+                                          <TooltipProvider>
+                                            <Tooltip>
+                                              <TooltipTrigger>
+                                                <Badge variant={log.status === 'success' ? 'default' : 'destructive'}>
+                                                    {log.status}
+                                                </Badge>
+                                              </TooltipTrigger>
+                                              {log.status === 'error' && log.errorDetails && (
+                                                  <TooltipContent>
+                                                      <p className="max-w-xs">{log.errorDetails}</p>
+                                                  </TooltipContent>
+                                              )}
+                                            </Tooltip>
+                                          </TooltipProvider>
+                                        </TableCell>
+                                        <TableCell className="text-right text-xs">{log.totalTokens ?? 'N/A'}</TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
+                                        No execution logs found.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </ScrollArea>
             </CardContent>
           </Card>
         </div>

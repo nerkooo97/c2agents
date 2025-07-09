@@ -33,23 +33,29 @@
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
-import type { WorkflowDefinition, WorkflowCreateAPISchema } from '@/lib/types';
+import type { WorkflowDefinition, WorkflowCreateAPISchema, AgentExecutionLog } from '@/lib/types';
 import type { z } from 'zod';
 
 const dbPath = path.join(process.cwd(), 'prisma', 'db.json');
 
 interface DbData {
     workflows: WorkflowDefinition[];
+    agentExecutionLogs: AgentExecutionLog[];
 }
 
 async function readDb(): Promise<DbData> {
     try {
         await fs.access(dbPath);
         const fileContent = await fs.readFile(dbPath, 'utf-8');
-        if (!fileContent) return { workflows: [] };
-        return JSON.parse(fileContent);
+        if (!fileContent) return { workflows: [], agentExecutionLogs: [] };
+        const data = JSON.parse(fileContent);
+        // Ensure all expected keys exist
+        return {
+            workflows: data.workflows || [],
+            agentExecutionLogs: data.agentExecutionLogs || [],
+        };
     } catch (error) {
-        return { workflows: [] };
+        return { workflows: [], agentExecutionLogs: [] };
     }
 }
 
@@ -64,6 +70,7 @@ async function writeDb(data: DbData): Promise<void> {
 }
 
 type WorkflowCreateData = z.infer<typeof WorkflowCreateAPISchema>;
+type AgentExecutionLogCreateData = Omit<AgentExecutionLog, 'id' | 'timestamp'>;
 
 const db = {
     workflow: {
@@ -125,6 +132,32 @@ const db = {
             const [deletedWorkflow] = data.workflows.splice(index, 1);
             await writeDb(data);
             return deletedWorkflow;
+        }
+    },
+    agentExecutionLog: {
+        async findMany(args?: { where?: { agentName?: string }; orderBy?: { timestamp?: 'asc' | 'desc' } }): Promise<AgentExecutionLog[]> {
+            const data = await readDb();
+            let logs = data.agentExecutionLogs;
+            if (args?.where?.agentName) {
+                logs = logs.filter(log => log.agentName === args.where.agentName);
+            }
+            if (args?.orderBy?.timestamp === 'desc') {
+                logs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+            } else if (args?.orderBy?.timestamp === 'asc') {
+                 logs.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+            }
+            return logs;
+        },
+        async create(args: { data: AgentExecutionLogCreateData }): Promise<AgentExecutionLog> {
+            const data = await readDb();
+            const newLog: AgentExecutionLog = {
+                id: crypto.randomUUID(),
+                timestamp: new Date().toISOString(),
+                ...args.data,
+            };
+            data.agentExecutionLogs.push(newLog);
+            await writeDb(data);
+            return newLog;
         }
     }
 };
