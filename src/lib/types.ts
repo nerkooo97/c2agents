@@ -51,32 +51,45 @@ export interface McpServerConfig {
   args: string[];
 }
 
+// Workflow Types
+
+// This represents the shape of a PlanStep on the client-side.
+// The `id` is used for React keys.
 export interface PlanStep {
   id: string;
   agentName: string;
   task: string;
 }
 
+// This represents a full workflow object on the client-side.
+// The `id` will be a CUID from the database.
+export interface WorkflowDefinition {
+  id: string;
+  name: string;
+  description: string;
+  goal: string;
+  planSteps: PlanStep[];
+}
 
-// Workflow Types
+// Zod schema for validating a plan step from the client.
+// The client-side `id` is expected but not used in backend logic.
 export const PlanStepSchema = z.object({
   id: z.string(),
   agentName: z.string().min(1, "Agent must be selected for each step."),
   task: z.string().min(1, "Task description is required for each step."),
 });
 
-export const WorkflowDefinitionSchema = z.object({
-  id: z.string().min(1, 'ID is required.'),
+// Zod schema for validating the data needed to create a new workflow.
+export const WorkflowCreateAPISchema = z.object({
   name: z.string().min(3, 'Workflow name must be at least 3 characters long.'),
   description: z.string().min(1, 'Description is required.'),
   goal: z.string().min(1, 'Workflow goal is required.'),
   planSteps: z.array(PlanStepSchema).min(1, "At least one step is required."),
 });
 
-export type WorkflowDefinition = z.infer<typeof WorkflowDefinitionSchema>;
-
-export const WorkflowMetadataSchema = WorkflowDefinitionSchema.pick({
-  name: true,
-  description: true,
+// Zod schema for the save/update form in the composer.
+export const WorkflowMetadataSchema = z.object({
+  name: z.string().min(3, 'Workflow name must be at least 3 characters long.'),
+  description: z.string().min(1, 'Description is required.'),
 });
 export type WorkflowFormData = z.infer<typeof WorkflowMetadataSchema>;

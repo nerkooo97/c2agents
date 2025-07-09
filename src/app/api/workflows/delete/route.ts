@@ -1,34 +1,38 @@
 'use server';
 
 import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
-
-const workflowsDir = path.join(process.cwd(), 'src', 'workflows');
+import prisma from '@/lib/db';
+import { z } from 'zod';
 
 export async function POST(request: Request) {
     try {
-        const { id } = await request.json() as { id: string };
+        const body = await request.json();
+        
+        const DeleteSchema = z.object({
+            id: z.string().cuid('Invalid Workflow ID provided.'),
+        });
+        
+        const parseResult = DeleteSchema.safeParse(body);
 
-        if (!id) {
-            return NextResponse.json({ error: 'Workflow ID is required.' }, { status: 400 });
+        if (!parseResult.success) {
+             return NextResponse.json({ error: 'Workflow ID is required.' }, { status: 400 });
         }
         
-        const filePath = path.join(workflowsDir, `${id}.json`);
+        const { id } = parseResult.data;
 
-        try {
-            await fs.access(filePath);
-        } catch (error) {
-            return NextResponse.json({ message: `Workflow '${id}' not found, nothing to delete.` }, { status: 200 });
-        }
+        await prisma.workflow.delete({
+            where: { id },
+        });
         
-        await fs.rm(filePath);
-        
-        return NextResponse.json({ message: `Workflow '${id}' deleted successfully.` });
+        return NextResponse.json({ message: `Workflow deleted successfully.` });
 
     } catch (e) {
         console.error('Error deleting workflow:', e);
         const errorMessage = e instanceof Error ? e.message : 'An internal server error occurred.';
+        // Handle cases where the record to delete is not found
+        if ((e as any).code === 'P2025') {
+             return NextResponse.json({ message: `Workflow not found, nothing to delete.` }, { status: 404 });
+        }
         return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }

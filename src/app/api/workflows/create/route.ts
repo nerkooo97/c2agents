@@ -1,32 +1,15 @@
 'use server';
 
 import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
+import prisma from '@/lib/db';
+import { WorkflowCreateAPISchema } from '@/lib/types';
 import type { WorkflowDefinition } from '@/lib/types';
-import { WorkflowDefinitionSchema } from '@/lib/types';
-
-const sanitizeWorkflowId = (name: string): string => {
-    return name.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-};
-
-const workflowsDir = path.join(process.cwd(), 'src', 'workflows');
 
 export async function POST(request: Request) {
     try {
         const body = await request.json();
         
-        const workflowId = sanitizeWorkflowId(body.name);
-        if (!workflowId) {
-            return NextResponse.json({ error: 'Invalid workflow name. It must contain alphanumeric characters.' }, { status: 400 });
-        }
-        
-        const fullWorkflowData: WorkflowDefinition = {
-            ...body,
-            id: workflowId,
-        };
-        
-        const parseResult = WorkflowDefinitionSchema.safeParse(fullWorkflowData);
+        const parseResult = WorkflowCreateAPISchema.safeParse(body);
 
         if (!parseResult.success) {
             return NextResponse.json({ error: 'Invalid workflow data', details: parseResult.error.flatten() }, { status: 400 });
@@ -34,19 +17,44 @@ export async function POST(request: Request) {
 
         const workflowData = parseResult.data;
 
-        const filePath = path.join(workflowsDir, `${workflowId}.json`);
+        // Check for existing workflow with the same name
+        const existingWorkflow = await prisma.workflow.findUnique({
+            where: { name: workflowData.name },
+        });
 
-        try {
-            await fs.access(filePath);
-            return NextResponse.json({ error: `A workflow with a similar name ('${workflowId}') already exists.` }, { status: 409 });
-        } catch (error) {
-            // File doesn't exist, which is what we want.
+        if (existingWorkflow) {
+            return NextResponse.json({ error: `A workflow with the name '${workflowData.name}' already exists.` }, { status: 409 });
         }
 
-        await fs.mkdir(workflowsDir, { recursive: true });
-        await fs.writeFile(filePath, JSON.stringify(workflowData, null, 2), 'utf-8');
+        const newWorkflow = await prisma.workflow.create({
+            data: {
+                name: workflowData.name,
+                description: workflowData.description,
+                goal: workflowData.goal,
+                planSteps: {
+                    create: workflowData.planSteps.map((step, index) => ({
+                        agentName: step.agentName,
+                        task: step.task,
+                        stepNumber: index + 1,
+                    })),
+                },
+            },
+            include: { 
+                planSteps: {
+                    orderBy: {
+                        stepNumber: 'asc'
+                    }
+                } 
+            },
+        });
+
+        // Map to client-side type
+        const responseWorkflow: WorkflowDefinition = {
+            ...newWorkflow,
+            planSteps: newWorkflow.planSteps.map(s => ({ id: s.id, agentName: s.agentName, task: s.task })),
+        };
         
-        return NextResponse.json({ message: 'Workflow created successfully', workflow: workflowData }, { status: 201 });
+        return NextResponse.json({ message: 'Workflow created successfully', workflow: responseWorkflow }, { status: 201 });
 
     } catch (e) {
         console.error('Error creating workflow:', e);

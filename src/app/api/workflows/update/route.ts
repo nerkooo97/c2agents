@@ -1,56 +1,66 @@
 'use server';
 
 import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
+import prisma from '@/lib/db';
+import { WorkflowCreateAPISchema } from '@/lib/types';
 import type { WorkflowDefinition } from '@/lib/types';
-import { WorkflowDefinitionSchema } from '@/lib/types';
-
-const sanitizeWorkflowId = (name: string): string => {
-    return name.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-};
-
-const workflowsDir = path.join(process.cwd(), 'src', 'workflows');
+import { z } from 'zod';
 
 export async function POST(request: Request) {
     try {
-        const { originalId, workflowData: body } = await request.json() as { originalId: string, workflowData: Omit<WorkflowDefinition, 'id'> };
+        const body = await request.json();
         
-        const newId = sanitizeWorkflowId(body.name);
-         if (!newId) {
-            return NextResponse.json({ error: 'Invalid workflow name. It must contain alphanumeric characters.' }, { status: 400 });
-        }
-
-        const fullWorkflowData: WorkflowDefinition = { ...body, id: newId };
+        const UpdateSchema = z.object({
+            originalId: z.string().cuid('Invalid workflow ID.'),
+            workflowData: WorkflowCreateAPISchema,
+        });
         
-        const parseResult = WorkflowDefinitionSchema.safeParse(fullWorkflowData);
+        const parseResult = UpdateSchema.safeParse(body);
         if (!parseResult.success) {
             return NextResponse.json({ error: 'Invalid workflow data', details: parseResult.error.flatten() }, { status: 400 });
         }
 
-        const workflowData = parseResult.data;
-        const originalFilePath = path.join(workflowsDir, `${originalId}.json`);
-        const newFilePath = path.join(workflowsDir, `${newId}.json`);
+        const { originalId, workflowData } = parseResult.data;
 
-        try {
-            await fs.access(originalFilePath);
-        } catch (error) {
-            return NextResponse.json({ error: `Workflow with original id '${originalId}' not found.` }, { status: 404 });
+        // Check if the new name is already taken by another workflow
+        const conflictingWorkflow = await prisma.workflow.findUnique({
+            where: { name: workflowData.name },
+        });
+
+        if (conflictingWorkflow && conflictingWorkflow.id !== originalId) {
+            return NextResponse.json({ error: `A workflow with the name '${workflowData.name}' already exists.` }, { status: 409 });
         }
 
-        if (originalId !== newId) {
-            try {
-                await fs.access(newFilePath);
-                return NextResponse.json({ error: `A workflow with the new name '${body.name}' already exists.` }, { status: 409 });
-            } catch (error) {
-                // New name is available, so we can proceed.
-                await fs.rm(originalFilePath);
-            }
-        }
+        const updatedWorkflow = await prisma.workflow.update({
+            where: { id: originalId },
+            data: {
+                name: workflowData.name,
+                description: workflowData.description,
+                goal: workflowData.goal,
+                planSteps: {
+                    deleteMany: {}, // Delete all existing steps
+                    create: workflowData.planSteps.map((step, index) => ({ // Create new ones
+                        agentName: step.agentName,
+                        task: step.task,
+                        stepNumber: index + 1,
+                    })),
+                },
+            },
+            include: { 
+                planSteps: {
+                    orderBy: {
+                        stepNumber: 'asc'
+                    }
+                } 
+            },
+        });
         
-        await fs.writeFile(newFilePath, JSON.stringify(workflowData, null, 2), 'utf-8');
+        const responseWorkflow: WorkflowDefinition = {
+            ...updatedWorkflow,
+            planSteps: updatedWorkflow.planSteps.map(s => ({ id: s.id, agentName: s.agentName, task: s.task })),
+        };
         
-        return NextResponse.json({ message: 'Workflow updated successfully', workflow: workflowData });
+        return NextResponse.json({ message: 'Workflow updated successfully', workflow: responseWorkflow });
 
     } catch (e) {
         console.error('Error updating workflow:', e);
