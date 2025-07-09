@@ -27,6 +27,7 @@ export interface AgentDefinition {
   description: string;
   model: string;
   systemPrompt: string;
+  defaultTask?: string;
   tools: string[]; // Array of tool names
   tags?: string[]; // Optional tags for agent capabilities
   enableApiAccess: boolean;
@@ -38,6 +39,7 @@ export const AgentDefinitionSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters long.'),
   description: z.string().min(1, 'Description is required.'),
   systemPrompt: z.string().min(1, 'System prompt is required.'),
+  defaultTask: z.string().optional(),
   model: z.string(),
   tools: z.array(z.string()).default([]),
   tags: z.array(z.string()).optional().default([]),
@@ -79,7 +81,7 @@ export interface WorkflowDefinition {
 export const PlanStepSchema = z.object({
   id: z.string(),
   agentName: z.string().min(1, "Agent must be selected for each step."),
-  task: z.string().min(1, "Task description is required for each step."),
+  task: z.string(), // Task will be populated from defaultTask before saving/running
 });
 
 // Zod schema for validating the data needed to create a new workflow.

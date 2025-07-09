@@ -45,10 +45,11 @@ const AgentForm = ({
 }) => {
   const form = useForm<AgentFormData>({
     resolver: zodResolver(AgentDefinitionSchema),
-    defaultValues: agent ? { ...agent, tags: agent.tags || [] } : {
+    defaultValues: agent ? { ...agent, defaultTask: agent.defaultTask || '', tags: agent.tags || [] } : {
       name: '',
       description: '',
       systemPrompt: '',
+      defaultTask: '',
       model: 'gemini-1.5-pro',
       tools: [],
       tags: [],
@@ -94,6 +95,20 @@ const AgentForm = ({
             <FormItem>
               <FormLabel>System Prompt / Instructions</FormLabel>
               <FormControl><Textarea placeholder="You are a helpful assistant..." className="min-h-[120px]" {...field} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="defaultTask"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Agent's Core Task</FormLabel>
+              <FormControl><Textarea placeholder="The single, specific task this agent is designed to perform (e.g., 'Summarize the given text.'). This will be used in workflows." className="min-h-[80px]" {...field} /></FormControl>
+               <FormDescription>
+                    The default task this agent will perform when used in a workflow.
+                </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -551,7 +566,7 @@ export default function AgentsDashboardPage() {
 
         {isLoading ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {[...Array(4)].map((_, i) => (
+            {[...Array(3)].map((_, i) => (
               <Card key={i}><CardHeader><Skeleton className="h-6 w-1/2" /><Skeleton className="h-4 w-3/4" /></CardHeader><CardContent className="space-y-4"><Skeleton className="h-8 w-full" /><Skeleton className="h-8 w-full" /><Skeleton className="h-8 w-full" /></CardContent><CardFooter><Skeleton className="h-10 w-full" /></CardFooter></Card>
             ))}
           </div>

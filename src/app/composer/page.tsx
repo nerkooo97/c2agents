@@ -130,7 +130,6 @@ export default function ComposerPage() {
           position: { x: 250, y: 150 * index },
           data: { 
               agentName: step.agentName, 
-              task: step.task,
               availableAgents: agents,
               onChange: handleNodeDataChange,
           },
@@ -145,8 +144,8 @@ export default function ComposerPage() {
       setEdges(newEdges);
   };
   
-  const flowToPlanSteps = (): PlanStep[] => {
-    const plan: PlanStep[] = [];
+  const flowToPlanSteps = (): Omit<PlanStep, 'task'>[] => {
+    const plan: Omit<PlanStep, 'task'>[] = [];
     if (nodes.length === 0) return plan;
     
     // Find the starting node (a node with no incoming edges)
@@ -154,7 +153,7 @@ export default function ComposerPage() {
     
     if (!startNode) {
         // Fallback for cyclic or invalid graphs: just use node order
-        return nodes.map(n => ({ id: n.id, agentName: n.data.agentName, task: n.data.task }));
+        return nodes.map(n => ({ id: n.id, agentName: n.data.agentName }));
     }
 
     let currentNode: Node | undefined = startNode;
@@ -165,7 +164,6 @@ export default function ComposerPage() {
         plan.push({
             id: currentNode.id,
             agentName: currentNode.data.agentName,
-            task: currentNode.data.task,
         });
 
         const nextEdge = edges.find(edge => edge.source === currentNode?.id);
@@ -241,7 +239,6 @@ export default function ComposerPage() {
       position: { x: 250, y: nodes.length * 150 },
       data: {
         agentName: '',
-        task: '',
         availableAgents: agents,
         onChange: handleNodeDataChange,
       },
@@ -249,7 +246,7 @@ export default function ComposerPage() {
     setNodes((nds) => nds.concat(newNode));
   };
   
-  const handleNodeDataChange = (id: string, field: 'agentName' | 'task', value: string) => {
+  const handleNodeDataChange = (id: string, field: 'agentName', value: string) => {
     setNodes((nds) =>
       nds.map((node) => {
         if (node.id === id) {
@@ -261,13 +258,14 @@ export default function ComposerPage() {
   };
   
   const handleRunWorkflow = async () => {
-    const planSteps = flowToPlanSteps();
+    let planSteps = flowToPlanSteps();
+
     if (!goal.trim()) {
         toast({ variant: 'destructive', title: 'Please define a goal for the workflow.'});
         return;
     }
-    if (planSteps.length === 0 || planSteps.some(step => !step.agentName || !step.task.trim())) {
-        toast({ variant: 'destructive', title: 'Please complete all plan steps.'});
+    if (planSteps.length === 0 || planSteps.some(step => !step.agentName)) {
+        toast({ variant: 'destructive', title: 'Please select an agent for all plan steps.'});
         return;
     }
 
@@ -279,8 +277,21 @@ export default function ComposerPage() {
     const allSteps: ExecutionStep[] = [];
 
     try {
-        for (let i = 0; i < planSteps.length; i++) {
-            const step = planSteps[i];
+        // Populate tasks from agent definitions
+        const populatedPlanSteps: PlanStep[] = planSteps.map(step => {
+            const agent = agents.find(a => a.name === step.agentName);
+            if (!agent) throw new Error(`Agent definition for '${step.agentName}' not found.`);
+            return { ...step, task: agent.defaultTask || '' };
+        });
+
+        if (populatedPlanSteps.some(step => !step.task.trim())) {
+             toast({ variant: 'destructive', title: 'Missing Task', description: 'One or more agents in your plan are missing a "Core Task". Please edit the agent and define its task.'});
+             setIsLoading(false);
+             return;
+        }
+
+        for (let i = 0; i < populatedPlanSteps.length; i++) {
+            const step = populatedPlanSteps[i];
             
             const currentPrompt = `Based on the overall goal and the previous step's result, perform your task.
 \nOverall Goal: "${goal}"
@@ -335,6 +346,7 @@ export default function ComposerPage() {
   const handleLoadWorkflow = (workflow: WorkflowDefinition) => {
     setCurrentWorkflow(workflow);
     setGoal(workflow.goal);
+    // When loading, the task is already in the plan step from the DB
     planStepsToFlow(workflow.planSteps);
     toast({ title: `Workflow "${workflow.name}" loaded.`});
   };
@@ -379,13 +391,22 @@ export default function ComposerPage() {
     const isUpdating = !!currentWorkflow;
     const apiEndpoint = isUpdating ? '/api/workflows/update' : '/api/workflows/create';
     const planSteps = flowToPlanSteps();
+
+    // Populate tasks from agent definitions before saving
+    const populatedPlanSteps: PlanStep[] = planSteps.map(step => {
+        const agent = agents.find(a => a.name === step.agentName);
+        return {
+            ...step,
+            task: agent?.defaultTask || '', // Populate task from agent definition
+        };
+    });
     
     const workflowDataPayload = {
         name: formData.name,
         description: formData.description,
         enableApiAccess: formData.enableApiAccess,
         goal,
-        planSteps,
+        planSteps: populatedPlanSteps,
     };
 
     const body = isUpdating
@@ -466,7 +487,7 @@ export default function ComposerPage() {
           <Card>
             <CardHeader>
               <CardTitle>Workflow Goal</CardTitle>
-              <CardDescription>Define the overall objective for your multi-agent workflow.</CardDescription>
+              <CardDescription>Define the overall objective. This serves as the starting point for your workflow.</CardDescription>
             </CardHeader>
             <CardContent>
               <Textarea
