@@ -99,24 +99,17 @@ const textToSpeechStreamFlow = ai.defineFlow(
     const passthrough = new PassThrough();
 
     (async () => {
-        const writer = new wav.Writer({
-            channels: 1,
-            sampleRate: 24000,
-            bitDepth: 16,
-        });
-
-        writer.pipe(passthrough);
-
+        // We don't use the wav writer here, just pass the raw PCM chunks
         for await (const chunk of stream) {
             if (chunk.media) {
                  const audioBuffer = Buffer.from(
                     chunk.media.url.substring(chunk.media.url.indexOf(',') + 1),
                     'base64'
                 );
-                writer.write(audioBuffer);
+                passthrough.write(audioBuffer);
             }
         }
-        writer.end();
+        passthrough.end();
     })();
     
     return { stream: passthrough };

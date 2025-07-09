@@ -105,7 +105,7 @@ export default function VoiceChatPage() {
   }, [toast])
 
 
-  const playAudioStream = useCallback(async (stream: ReadableStream<Uint8Array>) => {
+ const playAudioStream = useCallback(async (stream: ReadableStream<Uint8Array>) => {
     if (!audioContextRef.current) {
         toast({ variant: "destructive", title: "Audio Error", description: "Audio context not initialized. Please interact with the page first." });
         return;
@@ -115,64 +115,46 @@ export default function VoiceChatPage() {
         await audioContext.resume();
     }
 
-    let audioBufferSource: AudioBufferSourceNode | null = null;
     let nextStartTime = audioContext.currentTime;
+    let combinedPcmData: Float32Array = new Float32Array(0);
 
-    const processChunk = async (wavChunk: ArrayBuffer) => {
+    const processChunk = async (pcmChunk: ArrayBuffer) => {
         try {
-            const audioBuffer = await audioContext.decodeAudioData(wavChunk);
-            audioBufferSource = audioContext.createBufferSource();
-            audioBufferSource.buffer = audioBuffer;
-            audioBufferSource.connect(audioContext.destination);
-            
-            const scheduleTime = nextStartTime;
-            audioBufferSource.start(scheduleTime);
-            nextStartTime += audioBuffer.duration;
+            // Raw PCM data is 16-bit signed integers (Int16Array). Convert to Float32Array for Web Audio API.
+            const pcmData16 = new Int16Array(pcmChunk);
+            const pcmData32 = new Float32Array(pcmData16.length);
+            for (let i = 0; i < pcmData16.length; i++) {
+                pcmData32[i] = pcmData16[i] / 32768; // Normalize to [-1.0, 1.0]
+            }
 
+            // Create a buffer and source for this chunk
+            const audioBuffer = audioContext.createBuffer(1, pcmData32.length, 24000);
+            audioBuffer.copyToChannel(pcmData32, 0);
+            
+            const source = audioContext.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(audioContext.destination);
+
+            const scheduleTime = nextStartTime;
+            source.start(scheduleTime);
+            nextStartTime += audioBuffer.duration;
+            
         } catch (error) {
             console.error("Error decoding or playing audio chunk:", error);
-            // Ignore small chunk decoding errors
         }
     };
-
+    
     let audioQueue = Promise.resolve();
     for await (const chunk of streamToChunks(stream)) {
-        // Create a proper WAV header for each chunk to make it playable
-        const wavChunk = new ArrayBuffer(44 + chunk.length);
-        const view = new DataView(wavChunk);
-        
-        // RIFF chunk descriptor
-        writeString(view, 0, 'RIFF');
-        view.setUint32(4, 36 + chunk.length, true);
-        writeString(view, 8, 'WAVE');
-        // "fmt " sub-chunk
-        writeString(view, 12, 'fmt ');
-        view.setUint32(16, 16, true); // Subchunk1Size
-        view.setUint16(20, 1, true); // AudioFormat
-        view.setUint16(22, 1, true); // NumChannels
-        view.setUint32(24, 24000, true); // SampleRate
-        view.setUint32(28, 24000 * 2, true); // ByteRate
-        view.setUint16(32, 2, true); // BlockAlign
-        view.setUint16(34, 16, true); // BitsPerSample
-        // "data" sub-chunk
-        writeString(view, 36, 'data');
-        view.setUint32(40, chunk.length, true);
-        new Uint8Array(wavChunk).set(chunk, 44);
-
-        audioQueue = audioQueue.then(() => processChunk(wavChunk));
+        audioQueue = audioQueue.then(() => processChunk(chunk.buffer));
     }
+
     await audioQueue;
     
     setIsLoading(false);
     setStatusText('Tap to speak');
 
   }, [toast]);
-
-  function writeString(view: DataView, offset: number, str: string) {
-    for (let i = 0; i < str.length; i++) {
-        view.setUint8(offset + i, str.charCodeAt(i));
-    }
-  }
 
   const processRequest = useCallback(async (text: string) => {
     if (!agentName) return

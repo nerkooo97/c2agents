@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
           controller.close();
         });
         audioStream.on('error', (err) => {
+          console.error('Stream error from TTS flow:', err);
           controller.error(err);
         });
       },
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
 
     return new Response(readableStream, {
       headers: {
-        'Content-Type': 'audio/wav',
+        'Content-Type': 'application/octet-stream', // Sending raw PCM data
       },
     });
 

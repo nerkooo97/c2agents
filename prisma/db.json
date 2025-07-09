@@ -264,6 +264,15 @@
       "inputTokens": 79,
       "outputTokens": 40,
       "totalTokens": 119
+    },
+    {
+      "id": "8feff202-2427-42b0-a0e2-bd87d7b7abd7",
+      "timestamp": "2025-07-09T18:39:25.466Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "inputTokens": 82,
+      "outputTokens": 30,
+      "totalTokens": 112
     }
   ]
 }
