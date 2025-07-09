@@ -12,7 +12,7 @@ const delegateTask = ai.defineTool({
 }, async ({ agentName, task }) => {
     // This tool is temporarily disabled to resolve a circular dependency issue
     // that was causing instability in the dashboard.
-    return "Error: The 'delegateTask' tool is currently under maintenance. Please try again later.";
+    return "Error: The 'delegateTask' tool is currently disabled for maintenance. Please try again later.";
 });
 
 export default delegateTask;
