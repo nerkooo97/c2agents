@@ -24,7 +24,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Separator } from '@/components/ui/separator';
-import { Bot, BrainCircuit, Code, Mic, MoreVertical, Pencil, PlusCircle, TestTube2, Trash2, Workflow } from 'lucide-react';
+import { Bot, BrainCircuit, Code, Mic, MoreVertical, Pencil, PlusCircle, TestTube2, Trash2, Workflow, Wrench } from 'lucide-react';
 
 type ToolMetadata = {
   name: string;
@@ -543,6 +543,11 @@ export default function AgentsDashboardPage() {
           <Link href="/composer" passHref>
             <Button variant="outline">
               <Workflow className="mr-2 h-4 w-4" /> Composer
+            </Button>
+          </Link>
+           <Link href="/tools" passHref>
+            <Button variant="outline">
+              <Wrench className="mr-2 h-4 w-4" /> Build Tools
             </Button>
           </Link>
           <Button onClick={handleCreateNew}>

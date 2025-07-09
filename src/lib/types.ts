@@ -100,3 +100,13 @@ export const WorkflowMetadataSchema = z.object({
   enableApiAccess: z.boolean().optional().default(false),
 });
 export type WorkflowFormData = z.infer<typeof WorkflowMetadataSchema>;
+
+
+// Tool Builder Types
+export const ToolDefinitionSchema = z.object({
+  name: z.string().min(3, 'Tool name must be at least 3 characters.'),
+  description: z.string().min(1, 'Description is required.'),
+  inputSchema: z.string().min(1, 'Input schema (Zod) is required. e.g. z.object({ city: z.string() })'),
+  functionBody: z.string().min(1, 'Tool function body is required. e.g. return `Weather in ${input.city} is sunny.`'),
+});
+export type ToolFormData = z.infer<typeof ToolDefinitionSchema>;

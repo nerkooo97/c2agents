@@ -4,9 +4,9 @@ import type { AgentDefinition } from '@/lib/types';
 const agent: AgentDefinition = {
   name: 'non-api-agent',
   description: 'An example of an agent not exposed via the API.',
-  model: 'gemini-1.5-pro',
+  model: 'gpt-4o',
   systemPrompt: `You are a document summarizer.`,
-  defaultTask: 'Summarize the provided document or text.',
+  defaultTask: ``,
   tools: [],
   enableApiAccess: false,
   realtime: false,
