@@ -43,7 +43,7 @@ export async function runAgent(
       constraints: agent.constraints,
       responseFormat: agent.responseFormat,
       userInput: prompt,
-      tools: getToolsForAgent(agent),
+      tools: await getToolsForAgent(agent),
       model: getModelReference(agent.model),
       history: agent.enableMemory ? history : undefined,
     });

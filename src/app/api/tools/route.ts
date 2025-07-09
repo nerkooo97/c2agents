@@ -2,11 +2,16 @@ import { NextResponse } from 'next/server';
 import { getAllTools } from '@/ai/tools';
 
 export async function GET() {
-  const allTools = getAllTools();
-  // Correctly access the 'name' and 'description' properties from the .info object.
-  const toolInfo = allTools.map(tool => ({
-    name: tool.info?.name || 'Unknown Tool',
-    description: tool.info?.description ?? '',
-  }));
-  return NextResponse.json(toolInfo);
+  try {
+    const allTools = await getAllTools();
+    const toolInfo = allTools.map(tool => ({
+      name: tool.info?.name || 'Unknown Tool',
+      description: tool.info?.description ?? 'No description available.',
+    }));
+    return NextResponse.json(toolInfo);
+  } catch (error) {
+      console.error("Error fetching tools:", error);
+      const errorMessage = error instanceof Error ? error.message : "An internal server error occurred."
+      return NextResponse.json({ error: errorMessage }, { status: 500 });
+  }
 }

@@ -9,8 +9,9 @@ const webSearch = ai.defineTool({
   }),
   outputSchema: z.string(),
 }, async (input) => {
-  // In a real app, you would implement a call to a search API here.
-  return `Web search results for "${input.query}": Fictional placeholder search results.`;
+  // In a real app, you would implement a call to a search API here (e.g., Google Search API).
+  console.log(`Performing web search for: "${input.query}"`);
+  return `Web search results for "${input.query}": Fictional placeholder search results. In a real app, this would contain actual search data.`;
 });
 
 export default webSearch;

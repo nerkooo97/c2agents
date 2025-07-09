@@ -1,51 +1,67 @@
 
 import type { AgentDefinition } from '@/lib/types';
 import type { Tool } from 'genkit/tool';
+import fs from 'fs';
+import path from 'path';
 
-// Explicitly import all available tools
-import calculator from './calculator';
-import delegateTask from './delegate-task';
-import webSearch from './web-search';
-// The playwright tool is disabled, so we handle its undefined export
-import playwright from './playwright';
+// This function dynamically loads all tools from the current directory.
+async function loadTools(): Promise<Tool<any, any>[]> {
+    const tools: Tool<any, any>[] = [];
+    const toolsDir = __dirname;
+    
+    try {
+        const toolFolders = fs.readdirSync(toolsDir, { withFileTypes: true })
+            .filter(dirent => dirent.isDirectory())
+            .map(dirent => dirent.name);
 
-// Create a static array of all tools, filtering out any that are disabled (undefined)
-const allTools: Tool<any, any>[] = [
-    calculator,
-    delegateTask,
-    webSearch,
-    playwright,
-].filter((t): t is Tool<any, any> => t !== undefined);
+        for (const folderName of toolFolders) {
+            const indexPath = path.join(toolsDir, folderName, 'index.ts');
+            if (fs.existsSync(indexPath)) {
+                try {
+                    // Dynamically import the tool module
+                    const toolModule = await import(`./${folderName}`);
+                    const tool = toolModule.default;
 
-
-// Create a map of tools by their name for quick lookups
-const toolMap: Record<string, Tool<any, any>> = {};
-allTools.forEach(tool => {
-    if (tool.info?.name) {
-        toolMap[tool.info.name] = tool;
+                    // A simple check to see if it's a valid tool object
+                    if (tool && typeof tool === 'function' && tool.name === 'actionFn') {
+                         tools.push(tool);
+                    }
+                } catch (e) {
+                    console.error(`[Tool Loader] Failed to load tool from ${folderName}:`, e);
+                }
+            }
+        }
+    } catch (error) {
+        console.error(`[Tool Loader] Could not read tools directory:`, error);
     }
-});
-
-// Returns the static list of all tools
-export function getAllTools(): Tool<any, any>[] {
-    return allTools;
+    
+    return tools;
 }
 
-// Returns the static map of all tools
-export function getToolMap(): Record<string, Tool<any, any>> {
+
+// We store the promise so that the loading process is only initiated once.
+const toolsPromise = loadTools();
+
+export async function getAllTools(): Promise<Tool<any, any>[]> {
+    return toolsPromise;
+}
+
+export async function getToolMap(): Promise<Record<string, Tool<any, any>>> {
+    const allTools = await getAllTools();
+    const toolMap: Record<string, Tool<any, any>> = {};
+    allTools.forEach(tool => {
+        if (tool.info?.name) {
+            toolMap[tool.info.name] = tool;
+        }
+    });
     return toolMap;
 }
 
-// Gets the specific tools required for a given agent definition
-export function getToolsForAgent(agent: AgentDefinition): Tool<any, any>[] {
-  if (!agent.tools) return [];
-  const agentTools: Tool<any, any>[] = [];
-  const availableTools = getToolMap();
+export async function getToolsForAgent(agent: AgentDefinition): Promise<Tool<any, any>[]> {
+  if (!agent.tools || agent.tools.length === 0) return [];
+  const availableTools = await getToolMap();
   
-  for (const toolName of agent.tools) {
-    if (availableTools[toolName]) {
-      agentTools.push(availableTools[toolName]);
-    }
-  }
-  return agentTools;
+  return agent.tools
+    .map(toolName => availableTools[toolName])
+    .filter((t): t is Tool<any, any> => t !== undefined);
 };
