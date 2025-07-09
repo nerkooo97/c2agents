@@ -19,7 +19,8 @@ async function loadTools(): Promise<Tool<any, any>[]> {
             if (fs.existsSync(indexPath)) {
                 try {
                     const { default: tool } = await import(`@/ai/tools/${folderName}`);
-                    if (tool && tool.info?.name) { // Check tool.info.name
+                    // A Genkit tool has an 'info' property with its metadata.
+                    if (tool && typeof tool === 'function' && tool.info?.name) {
                         tools.push(tool);
                     }
                 } catch (e) {
@@ -56,4 +57,3 @@ export async function getToolsForAgent(agent: AgentDefinition): Promise<Tool<any
   const toolMap = await getToolMap();
   return agent.tools.map(toolName => toolMap[toolName]).filter(Boolean);
 };
-
