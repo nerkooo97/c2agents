@@ -1,11 +1,9 @@
 import {genkit, type GenkitPlugin} from 'genkit';
 import {googleAI} from '@genkit-ai/googleai';
 
-// Use require for the next plugin to avoid ESM/CJS issues in Next.js
-const nextPlugin = require('@genkit-ai/next');
-const next = nextPlugin.next;
-
-const plugins: GenkitPlugin[] = [next(), googleAI()];
+// The @genkit-ai/next plugin seems to be causing runtime issues with server actions.
+// Removing it for now to ensure core agent functionality works.
+const plugins: GenkitPlugin[] = [googleAI()];
 
 export const ai = genkit({
   plugins,
