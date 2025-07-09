@@ -25,7 +25,8 @@ import { Separator } from '@/components/ui/separator';
 import AgentExecutionGraph from '@/components/agent-execution-graph';
 import WorkflowGraphEditor from '@/components/workflow-graph-editor';
 import CustomAgentNode from '@/components/custom-agent-node';
-import { Bot, Home, PlusCircle, Trash2, Workflow, Save, FilePlus2, ChevronsUpDown, Code } from 'lucide-react';
+import GoalNode from '@/components/goal-node';
+import { Bot, Home, PlusCircle, Trash2, Workflow, Save, FilePlus2, ChevronsUpDown, Code, Target } from 'lucide-react';
 import { useNodesState, useEdgesState, addEdge, type Node, type Edge } from 'reactflow';
 
 const WorkflowSaveForm = ({
@@ -113,61 +114,94 @@ export default function ComposerPage() {
   const [workflows, setWorkflows] = useState<WorkflowDefinition[]>([]);
   const [currentWorkflow, setCurrentWorkflow] = useState<WorkflowDefinition | null>(null);
   const [isSaveSheetOpen, setIsSaveSheetOpen] = useState(false);
+  
+  const initialNodes: Node[] = useMemo(() => [
+      {
+        id: 'goal_node',
+        type: 'goalNode',
+        position: { x: 50, y: 150 },
+        data: {},
+        deletable: false,
+        draggable: false,
+      },
+  ], []);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   
-  const nodeTypes = useMemo(() => ({ customAgentNode: CustomAgentNode }), []);
+  const nodeTypes = useMemo(() => ({ customAgentNode: CustomAgentNode, goalNode: GoalNode }), []);
 
   const { toast } = useToast();
 
   const onConnect: OnConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
-  const planStepsToFlow = (planSteps: PlanStep[]) => {
-      const newNodes: Node[] = planSteps.map((step, index) => ({
+  const planStepsToFlow = useCallback((planSteps: PlanStep[]) => {
+      const goalNode: Node = {
+        id: 'goal_node',
+        type: 'goalNode',
+        position: { x: 50, y: 150 },
+        data: {},
+        deletable: false,
+        draggable: false,
+      };
+
+      const agentNodes: Node[] = planSteps.map((step, index) => ({
           id: step.id,
           type: 'customAgentNode',
-          position: { x: 250, y: 150 * index },
+          position: { x: 450, y: 50 + 170 * index },
           data: { 
               agentName: step.agentName, 
               availableAgents: agents,
               onChange: handleNodeDataChange,
           },
       }));
-      const newEdges: Edge[] = planSteps.slice(0, -1).map((step, index) => ({
+
+      const newNodes: Node[] = [goalNode, ...agentNodes];
+
+      const firstEdge: Edge[] = planSteps.length > 0 ? [{
+          id: `e-goal_node-${planSteps[0].id}`,
+          source: 'goal_node',
+          target: planSteps[0].id,
+          animated: true,
+      }] : [];
+      
+      const restEdges: Edge[] = planSteps.slice(0, -1).map((step, index) => ({
           id: `e${step.id}-${planSteps[index+1].id}`,
           source: step.id,
           target: planSteps[index+1].id,
           animated: true,
       }));
+
+      const newEdges: Edge[] = [...firstEdge, ...restEdges];
+      
       setNodes(newNodes);
       setEdges(newEdges);
-  };
+  }, [agents, setNodes, setEdges]);
   
   const flowToPlanSteps = (): Omit<PlanStep, 'task'>[] => {
     const plan: Omit<PlanStep, 'task'>[] = [];
-    if (nodes.length === 0) return plan;
     
-    // Find the starting node (a node with no incoming edges)
-    const startNode = nodes.find(node => !edges.some(edge => edge.target === node.id));
-    
-    if (!startNode) {
-        // Fallback for cyclic or invalid graphs: just use node order
-        return nodes.map(n => ({ id: n.id, agentName: n.data.agentName }));
-    }
+    const startEdge = edges.find(edge => edge.source === 'goal_node');
+    let currentNodeId = startEdge?.target;
 
-    let currentNode: Node | undefined = startNode;
+    if (!currentNodeId) {
+        return [];
+    }
+    
     const visited = new Set<string>();
 
-    while (currentNode && !visited.has(currentNode.id)) {
-        visited.add(currentNode.id);
+    while (currentNodeId && !visited.has(currentNodeId)) {
+        visited.add(currentNodeId);
+        const currentNode = nodes.find(node => node.id === currentNodeId);
+        if (!currentNode || currentNode.type !== 'customAgentNode') break;
+
         plan.push({
             id: currentNode.id,
             agentName: currentNode.data.agentName,
         });
 
-        const nextEdge = edges.find(edge => edge.source === currentNode?.id);
-        currentNode = nodes.find(node => node.id === nextEdge?.target);
+        const nextEdge = edges.find(edge => edge.source === currentNodeId);
+        currentNodeId = nextEdge?.target;
     }
     return plan;
   };
@@ -233,10 +267,11 @@ export default function ComposerPage() {
 
   const handleAddStep = () => {
     const newNodeId = `node_${Date.now()}`;
+    const agentNodes = nodes.filter(n => n.type === 'customAgentNode');
     const newNode: Node = {
       id: newNodeId,
       type: 'customAgentNode',
-      position: { x: 250, y: nodes.length * 150 },
+      position: { x: 450, y: 50 + agentNodes.length * 170 },
       data: {
         agentName: '',
         availableAgents: agents,
@@ -265,7 +300,7 @@ export default function ComposerPage() {
         return;
     }
     if (planSteps.length === 0 || planSteps.some(step => !step.agentName)) {
-        toast({ variant: 'destructive', title: 'Please select an agent for all plan steps.'});
+        toast({ variant: 'destructive', title: 'Please connect at least one agent to the start node and select an agent for each step.'});
         return;
     }
 
@@ -277,7 +312,6 @@ export default function ComposerPage() {
     const allSteps: ExecutionStep[] = [];
 
     try {
-        // Populate tasks from agent definitions
         const populatedPlanSteps: PlanStep[] = planSteps.map(step => {
             const agent = agents.find(a => a.name === step.agentName);
             if (!agent) throw new Error(`Agent definition for '${step.agentName}' not found.`);
@@ -335,21 +369,20 @@ export default function ComposerPage() {
     }
   };
 
-  const handleNewWorkflow = () => {
+  const handleNewWorkflow = useCallback(() => {
     setCurrentWorkflow(null);
     setGoal('');
-    setNodes([]);
+    setNodes(initialNodes);
     setEdges([]);
     toast({ title: 'New workflow started', description: 'The composer has been cleared.' });
-  };
+  }, [initialNodes, setNodes, setEdges, toast]);
 
-  const handleLoadWorkflow = (workflow: WorkflowDefinition) => {
+  const handleLoadWorkflow = useCallback((workflow: WorkflowDefinition) => {
     setCurrentWorkflow(workflow);
     setGoal(workflow.goal);
-    // When loading, the task is already in the plan step from the DB
     planStepsToFlow(workflow.planSteps);
     toast({ title: `Workflow "${workflow.name}" loaded.`});
-  };
+  }, [planStepsToFlow, toast]);
 
   const handleDeleteWorkflow = async (workflowId: string) => {
     if (!confirm(`Are you sure you want to delete this workflow?`)) return;
@@ -365,7 +398,7 @@ export default function ComposerPage() {
         throw new Error(errorData.error || 'Failed to delete workflow');
       }
       toast({ title: "Workflow Deleted", description: `The workflow has been deleted.` });
-      await fetchWorkflows(); // Refresh list
+      await fetchWorkflows(); 
       if (currentWorkflow?.id === workflowId) {
         handleNewWorkflow();
       }
@@ -381,7 +414,7 @@ export default function ComposerPage() {
   const handleOpenSaveSheet = () => {
     const planSteps = flowToPlanSteps();
     if (!goal.trim() || planSteps.length === 0) {
-        toast({ variant: 'destructive', title: 'Cannot Save', description: 'A workflow must have a goal and at least one step.' });
+        toast({ variant: 'destructive', title: 'Cannot Save', description: 'A workflow must have a goal and at least one connected step.' });
         return;
     }
     setIsSaveSheetOpen(true);
@@ -392,12 +425,11 @@ export default function ComposerPage() {
     const apiEndpoint = isUpdating ? '/api/workflows/update' : '/api/workflows/create';
     const planSteps = flowToPlanSteps();
 
-    // Populate tasks from agent definitions before saving
     const populatedPlanSteps: PlanStep[] = planSteps.map(step => {
         const agent = agents.find(a => a.name === step.agentName);
         return {
             ...step,
-            task: agent?.defaultTask || '', // Populate task from agent definition
+            task: agent?.defaultTask || '', 
         };
     });
     
@@ -426,7 +458,7 @@ export default function ComposerPage() {
       toast({ title: `Workflow ${isUpdating ? 'Updated' : 'Saved'}`, description: `"${savedWorkflow.name}" has been saved.`});
       
       setCurrentWorkflow(savedWorkflow);
-      await fetchWorkflows(); // Refresh list
+      await fetchWorkflows();
 
     } catch (e) {
        toast({
@@ -487,7 +519,7 @@ export default function ComposerPage() {
           <Card>
             <CardHeader>
               <CardTitle>Workflow Goal</CardTitle>
-              <CardDescription>Define the overall objective. This serves as the starting point for your workflow.</CardDescription>
+              <CardDescription>Define the overall objective. This goal is the input for the first agent in the execution plan.</CardDescription>
             </CardHeader>
             <CardContent>
               <Textarea
@@ -524,11 +556,11 @@ export default function ComposerPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Execution Plan</CardTitle>
-                <CardDescription>Visually construct your workflow by adding and connecting agent tasks.</CardDescription>
+                <CardDescription>Connect the 'Start' node to agent steps to build your workflow.</CardDescription>
               </div>
               <Button variant="outline" size="sm" onClick={handleAddStep} disabled={isDataLoading}>
                 <PlusCircle className="mr-2" />
-                Add Step
+                Add Agent Step
               </Button>
             </CardHeader>
             <CardContent className="flex-1 p-0">
