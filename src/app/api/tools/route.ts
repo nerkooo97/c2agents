@@ -3,7 +3,7 @@ import { getAllTools } from '@/ai/tools';
 
 export async function GET() {
   try {
-    const allTools = await getAllTools();
+    const allTools = getAllTools(); // Use the new synchronous function
     const toolInfo = allTools.map(tool => ({
       name: tool.info?.name || 'Unknown Tool',
       description: tool.info?.description ?? 'No description available.',
