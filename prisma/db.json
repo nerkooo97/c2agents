@@ -390,6 +390,64 @@
       "inputTokens": 81,
       "outputTokens": 38,
       "totalTokens": 119
+    },
+    {
+      "id": "7ffad9da-d044-485c-a99f-b872bb14e621",
+      "timestamp": "2025-07-09T22:28:49.013Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "inputTokens": 66,
+      "outputTokens": 129,
+      "totalTokens": 195
+    },
+    {
+      "id": "63a6e435-3248-4b8e-aa65-22b15b4e8983",
+      "timestamp": "2025-07-09T22:28:58.754Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "inputTokens": 66,
+      "outputTokens": 18,
+      "totalTokens": 84
+    },
+    {
+      "id": "8c1f8e96-fed2-4ca7-8ff9-eaf0907bb358",
+      "timestamp": "2025-07-09T22:29:15.736Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "inputTokens": 74,
+      "outputTokens": 98,
+      "totalTokens": 172
+    }
+  ],
+  "conversations": [
+    {
+      "sessionId": "5e5e3aab-53c4-4933-9ade-4676e417dcb5",
+      "messages": [
+        {
+          "role": "user",
+          "content": "koja je tvoja uloga"
+        },
+        {
+          "role": "model",
+          "content": "Moja uloga kao AI pomoćnik je da vam pomognem u dobijanju informacija, odgovoranju na pitanja, rešavanju problema, i izvršavanju različitih zadataka. Mogu da vam ponudim pomoć u mnogim oblastima, kao što su obrazovanje, tehnologija, planiranje putovanja, ili čak kućni poslovi. Šta god vam trebalo, slobodno pitajte, tu sam da pomognem!"
+        },
+        {
+          "role": "user",
+          "content": "koliko je 8 - 1"
+        },
+        {
+          "role": "model",
+          "content": "Rezultat oduzimanja 8 - 1 je 7."
+        },
+        {
+          "role": "user",
+          "content": "mozes li mi uraditi summary ovog naseg razgovora"
+        },
+        {
+          "role": "model",
+          "content": "Trenutno smo započeli naš razgovor upitom o tome da li vam mogu sažeti sadržaj našeg razgovora. Još uvijek nismo pokrili specifične teme ili detalje. Ako imate neki specifičan zadatak ili pitanje, slobodno mi recite kako bih mogao bolje da vam asistiram!"
+        }
+      ]
     }
   ]
 }

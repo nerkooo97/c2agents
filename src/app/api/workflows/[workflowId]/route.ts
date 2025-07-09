@@ -43,6 +43,7 @@ export async function POST(
 \nPrevious Step Result: "${previousStepOutput}"
 \nYour Task: "${step.task}"`;
         
+        // The runAgent function now correctly lives in a server-only module.
         const result = await runAgent(step.agentName, currentPrompt);
         
         if (result.error) {

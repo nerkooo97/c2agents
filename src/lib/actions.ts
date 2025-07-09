@@ -1,10 +1,51 @@
 'use server';
 
-import { getAgent } from '@/lib/agent-registry';
 import { getToolsForAgent } from '@/ai/tools';
 import { runAgentWithConfig } from '@/ai/flows/run-agent';
-import type { ExecutionStep, Message } from '@/lib/types';
+import type { AgentDefinition, ExecutionStep, Message } from '@/lib/types';
 import db from '@/lib/db';
+import fs from 'fs';
+import path from 'path';
+
+// Agent loading logic must be here because this is a server-only module.
+async function getAgent(name: string): Promise<AgentDefinition | undefined> {
+    const agentFolderName = name.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    const agentPath = path.join(process.cwd(), 'src', 'agents', agentFolderName, 'index.ts');
+
+    try {
+        if (fs.existsSync(agentPath)) {
+            const { default: agent } = await import(`@/agents/${agentFolderName}`);
+            if (agent && agent.name === name) {
+                return agent;
+            }
+        }
+    } catch (e) {
+        console.error(`[getAgent] Failed to load agent '${name}':`, e);
+    }
+
+    // Fallback to searching all agents if direct load fails (e.g., folder name mismatch)
+    const agentsDir = path.join(process.cwd(), 'src', 'agents');
+    const agentFolders = fs.readdirSync(agentsDir, { withFileTypes: true })
+        .filter(dirent => dirent.isDirectory())
+        .map(dirent => dirent.name);
+
+    for (const folderName of agentFolders) {
+        const indexPath = path.join(agentsDir, folderName, 'index.ts');
+        if (fs.existsSync(indexPath)) {
+            try {
+                const { default: agent } = await import(`@/agents/${folderName}`);
+                if (agent && agent.name === name) {
+                    return agent;
+                }
+            } catch (e) {
+                // Ignore errors for individual agent loads in this loop
+            }
+        }
+    }
+    
+    return undefined;
+}
+
 
 // Helper to construct the full model reference string
 const getModelReference = (modelName: string): string => {
@@ -53,7 +94,7 @@ export async function runAgent(
       constraints: agent.constraints,
       responseFormat: agent.responseFormat,
       userInput: prompt,
-      tools: await getToolsForAgent(agent),
+      tools: getToolsForAgent(agent),
       model: getModelReference(agent.model),
       history: conversationHistory.length > 0 ? conversationHistory : undefined,
     });
