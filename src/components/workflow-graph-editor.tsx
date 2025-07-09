@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import ReactFlow, {
     Controls,
     Background,
@@ -10,6 +10,7 @@ import ReactFlow, {
     type OnEdgesChange,
     type OnConnect,
     type NodeTypes,
+    type DefaultEdgeOptions,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
@@ -20,6 +21,7 @@ interface WorkflowGraphEditorProps {
     onEdgesChange: OnEdgesChange;
     onConnect: OnConnect;
     nodeTypes: NodeTypes;
+    defaultEdgeOptions?: DefaultEdgeOptions;
 }
 
 const WorkflowGraphEditor: React.FC<WorkflowGraphEditorProps> = ({
@@ -29,6 +31,7 @@ const WorkflowGraphEditor: React.FC<WorkflowGraphEditorProps> = ({
     onEdgesChange,
     onConnect,
     nodeTypes,
+    defaultEdgeOptions,
 }) => {
     return (
         <div style={{ height: '100%', width: '100%' }}>
@@ -39,11 +42,12 @@ const WorkflowGraphEditor: React.FC<WorkflowGraphEditorProps> = ({
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
                 nodeTypes={nodeTypes}
+                defaultEdgeOptions={defaultEdgeOptions}
                 fitView
-                className="bg-muted/30"
+                className="bg-muted"
             >
                 <Controls />
-                <Background gap={12} size={1} />
+                <Background variant="lines" gap={24} size={1} color="hsl(var(--border))" />
             </ReactFlow>
         </div>
     );

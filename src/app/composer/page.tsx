@@ -8,7 +8,7 @@ import { runAgent } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { OnConnect } from 'reactflow';
+import type { OnConnect, DefaultEdgeOptions } from 'reactflow';
 import 'reactflow/dist/style.css';
 
 import { Button } from '@/components/ui/button';
@@ -134,6 +134,14 @@ export default function ComposerPage() {
   const { toast } = useToast();
 
   const onConnect: OnConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
+  
+  const defaultEdgeOptions: DefaultEdgeOptions = {
+    animated: true,
+    style: {
+      strokeWidth: 2,
+      stroke: 'hsl(var(--primary))',
+    },
+  };
 
   const planStepsToFlow = useCallback((planSteps: PlanStep[]) => {
       const goalNode: Node = {
@@ -162,14 +170,12 @@ export default function ComposerPage() {
           id: `e-goal_node-${planSteps[0].id}`,
           source: 'goal_node',
           target: planSteps[0].id,
-          animated: true,
       }] : [];
       
       const restEdges: Edge[] = planSteps.slice(0, -1).map((step, index) => ({
           id: `e${step.id}-${planSteps[index+1].id}`,
           source: step.id,
           target: planSteps[index+1].id,
-          animated: true,
       }));
 
       const newEdges: Edge[] = [...firstEdge, ...restEdges];
@@ -571,6 +577,7 @@ export default function ComposerPage() {
                     onEdgesChange={onEdgesChange}
                     onConnect={onConnect}
                     nodeTypes={nodeTypes}
+                    defaultEdgeOptions={defaultEdgeOptions}
                 />
             </CardContent>
           </Card>
