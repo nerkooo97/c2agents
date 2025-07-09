@@ -1,7 +1,7 @@
 'use server';
 
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/db';
+import db from '@/lib/db';
 import { runAgent } from '@/lib/actions';
 import type { ExecutionStep } from '@/lib/types';
 
@@ -16,9 +16,8 @@ export async function POST(
     const body = await request.json();
     const { input } = body;
 
-    const workflow = await prisma.workflow.findUnique({
+    const workflow = await db.workflow.findUnique({
       where: { id: workflowId },
-      include: { planSteps: { orderBy: { stepNumber: 'asc' } } },
     });
 
     if (!workflow) {

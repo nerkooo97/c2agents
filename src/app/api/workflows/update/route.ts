@@ -1,7 +1,7 @@
 'use server';
 
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/db';
+import db from '@/lib/db';
 import { WorkflowCreateAPISchema } from '@/lib/types';
 import type { WorkflowDefinition } from '@/lib/types';
 import { z } from 'zod';
@@ -11,7 +11,7 @@ export async function POST(request: Request) {
         const body = await request.json();
         
         const UpdateSchema = z.object({
-            originalId: z.string().cuid('Invalid workflow ID.'),
+            originalId: z.string().uuid('Invalid workflow ID.'),
             workflowData: WorkflowCreateAPISchema,
         });
         
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
         const { originalId, workflowData } = parseResult.data;
 
         // Check if the new name is already taken by another workflow
-        const conflictingWorkflow = await prisma.workflow.findUnique({
+        const conflictingWorkflow = await db.workflow.findUnique({
             where: { name: workflowData.name },
         });
 
@@ -31,37 +31,12 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: `A workflow with the name '${workflowData.name}' already exists.` }, { status: 409 });
         }
 
-        const updatedWorkflow = await prisma.workflow.update({
+        const updatedWorkflow = await db.workflow.update({
             where: { id: originalId },
-            data: {
-                name: workflowData.name,
-                description: workflowData.description,
-                goal: workflowData.goal,
-                enableApiAccess: workflowData.enableApiAccess,
-                planSteps: {
-                    deleteMany: {}, // Delete all existing steps
-                    create: workflowData.planSteps.map((step, index) => ({ // Create new ones
-                        agentName: step.agentName,
-                        task: step.task,
-                        stepNumber: index + 1,
-                    })),
-                },
-            },
-            include: { 
-                planSteps: {
-                    orderBy: {
-                        stepNumber: 'asc'
-                    }
-                } 
-            },
+            data: workflowData,
         });
         
-        const responseWorkflow: WorkflowDefinition = {
-            ...updatedWorkflow,
-            planSteps: updatedWorkflow.planSteps.map(s => ({ id: s.id, agentName: s.agentName, task: s.task })),
-        };
-        
-        return NextResponse.json({ message: 'Workflow updated successfully', workflow: responseWorkflow });
+        return NextResponse.json({ message: 'Workflow updated successfully', workflow: updatedWorkflow });
 
     } catch (e) {
         console.error('Error updating workflow:', e);

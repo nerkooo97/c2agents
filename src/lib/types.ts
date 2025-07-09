@@ -53,17 +53,17 @@ export type AgentFormData = z.infer<typeof AgentDefinitionSchema>;
 // Workflow Types
 
 // This represents the shape of a PlanStep on the client-side.
-// The `id` is used for React keys.
+// The `id` is used for React keys and is a UUID.
 export interface PlanStep {
-  id: string;
+  id: string; // Changed from number to string (UUID)
   agentName: string;
   task: string;
 }
 
-// This represents a full workflow object on the client-side.
+// This represents a full workflow object, stored in the file-based DB.
 // The `id` will be a CUID from the database.
 export interface WorkflowDefinition {
-  id: string;
+  id: string; // Changed from number to string (UUID)
   name: string;
   description: string;
   goal: string;
@@ -72,9 +72,8 @@ export interface WorkflowDefinition {
 }
 
 // Zod schema for validating a plan step from the client.
-// The client-side `id` is expected but not used in backend logic.
 export const PlanStepSchema = z.object({
-  id: z.string(),
+  id: z.string(), // ID can be a placeholder string from the client
   agentName: z.string().min(1, "Agent must be selected for each step."),
   task: z.string(), // Task will be populated from defaultTask before saving/running
 });

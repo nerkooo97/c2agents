@@ -1,7 +1,7 @@
 'use server';
 
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/db';
+import db from '@/lib/db';
 import { WorkflowCreateAPISchema } from '@/lib/types';
 import type { WorkflowDefinition } from '@/lib/types';
 
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
         const workflowData = parseResult.data;
 
         // Check for existing workflow with the same name
-        const existingWorkflow = await prisma.workflow.findUnique({
+        const existingWorkflow = await db.workflow.findUnique({
             where: { name: workflowData.name },
         });
 
@@ -26,36 +26,11 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: `A workflow with the name '${workflowData.name}' already exists.` }, { status: 409 });
         }
 
-        const newWorkflow = await prisma.workflow.create({
-            data: {
-                name: workflowData.name,
-                description: workflowData.description,
-                goal: workflowData.goal,
-                enableApiAccess: workflowData.enableApiAccess,
-                planSteps: {
-                    create: workflowData.planSteps.map((step, index) => ({
-                        agentName: step.agentName,
-                        task: step.task,
-                        stepNumber: index + 1,
-                    })),
-                },
-            },
-            include: { 
-                planSteps: {
-                    orderBy: {
-                        stepNumber: 'asc'
-                    }
-                } 
-            },
+        const newWorkflow = await db.workflow.create({
+            data: workflowData,
         });
-
-        // Map to client-side type
-        const responseWorkflow: WorkflowDefinition = {
-            ...newWorkflow,
-            planSteps: newWorkflow.planSteps.map(s => ({ id: s.id, agentName: s.agentName, task: s.task })),
-        };
         
-        return NextResponse.json({ message: 'Workflow created successfully', workflow: responseWorkflow }, { status: 201 });
+        return NextResponse.json({ message: 'Workflow created successfully', workflow: newWorkflow }, { status: 201 });
 
     } catch (e) {
         console.error('Error creating workflow:', e);
