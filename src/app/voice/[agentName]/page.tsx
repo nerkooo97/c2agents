@@ -17,6 +17,41 @@ import { Label } from '@/components/ui/label'
 
 type SpeechRecognition = typeof window.SpeechRecognition
 
+// Helper function to convert a raw PCM buffer to a WAV buffer
+const toWavBuffer = (pcmData: Buffer): Buffer => {
+    const header = Buffer.alloc(44);
+    
+    // RIFF identifier
+    header.write('RIFF', 0);
+    // file length placeholder
+    header.writeUInt32LE(36 + pcmData.length, 4);
+    // RIFF type
+    header.write('WAVE', 8);
+    // format chunk identifier
+    header.write('fmt ', 12);
+    // format chunk length
+    header.writeUInt32LE(16, 16);
+    // sample format (raw)
+    header.writeUInt16LE(1, 20);
+    // channel count
+    header.writeUInt16LE(1, 22);
+    // sample rate
+    header.writeUInt32LE(24000, 24);
+    // byte rate (sample rate * block align)
+    header.writeUInt32LE(24000 * 2, 28);
+    // block align (channel count * bytes per sample)
+    header.writeUInt16LE(2, 32);
+    // bits per sample
+    header.writeUInt16LE(16, 34);
+    // data chunk identifier
+    header.write('data', 36);
+    // data chunk length
+    header.writeUInt32LE(pcmData.length, 40);
+
+    return Buffer.concat([header, pcmData]);
+};
+
+
 export default function VoiceChatPage() {
   const params = useParams()
   const agentName = decodeURIComponent(Array.isArray(params.agentName) ? params.agentName[0] : (params.agentName as string) || '')
@@ -24,14 +59,16 @@ export default function VoiceChatPage() {
   const [isListening, setIsListening] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [transcript, setTranscript] = useState('')
-  const [statusText, setStatusText] = useState('Tap to speak')
   const [isSupported, setIsSupported] = useState(true)
   const [messages, setMessages] = useState<Message[]>([])
-  const [ttsModel, setTtsModel] = useState('gemini-2.5-flash-preview-tts');
+  const [ttsModel, setTtsModel] = useState('gpt-4o-mini-tts');
   const [subtitle, setSubtitle] = useState("I'm ready to help.");
 
   const recognitionRef = useRef<InstanceType<SpeechRecognition> | null>(null)
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioQueueRef = useRef<AudioBufferSourceNode[]>([]);
+  const isPlayingRef = useRef(false);
+  
   const { toast } = useToast()
   
   const agentDisplayName = agentName?.replace(/-/g, ' ') ?? 'Agent'
@@ -42,11 +79,18 @@ export default function VoiceChatPage() {
       setSubtitle(`Hello! I'm the ${agentDisplayName}. How can I help you today?`);
     }
   }, [agentName, agentDisplayName]);
+  
 
   useEffect(() => {
-    if (!audioRef.current) {
-        audioRef.current = new Audio();
-    }
+    // Initialize AudioContext on user interaction
+    const initAudio = () => {
+        if (!audioContextRef.current) {
+            audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        document.removeEventListener('click', initAudio);
+    };
+    document.addEventListener('click', initAudio);
+
 
     const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SpeechRecognitionAPI) {
@@ -86,26 +130,62 @@ export default function VoiceChatPage() {
     }
 
     recognitionRef.current = recognition
+    
+    return () => {
+      document.removeEventListener('click', initAudio);
+    }
   }, [toast])
 
 
-  const playAudio = useCallback((audioDataUri: string) => {
-    if (audioRef.current) {
-        audioRef.current.src = audioDataUri;
-        audioRef.current.play().catch(e => {
-            console.error("Error playing audio:", e);
-            toast({
-              variant: "destructive",
-              title: "Audio Playback Error",
-              description: "Could not play the audio response.",
-            });
-        });
-        audioRef.current.onended = () => {
-            setIsLoading(false);
-            setStatusText('Tap to speak');
-        };
+  const playAudioQueue = useCallback(async () => {
+    if (isPlayingRef.current || audioQueueRef.current.length === 0) {
+      return;
     }
-  }, [toast]);
+    isPlayingRef.current = true;
+
+    const source = audioQueueRef.current.shift();
+    if (source) {
+      source.onended = () => {
+        isPlayingRef.current = false;
+        playAudioQueue();
+      };
+      source.start();
+    } else {
+      isPlayingRef.current = false;
+    }
+  }, []);
+
+ const playAudioStream = useCallback(async (response: Response) => {
+    if (!response.body) return;
+    const reader = response.body.getReader();
+
+    const processStream = async () => {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          setIsLoading(false);
+          break;
+        }
+        if (value && audioContextRef.current) {
+          const pcmBuffer = Buffer.from(value.buffer);
+          const wavBuffer = toWavBuffer(pcmBuffer);
+          
+          try {
+            const audioBuffer = await audioContextRef.current.decodeAudioData(wavBuffer.buffer.slice(wavBuffer.byteOffset, wavBuffer.byteOffset + wavBuffer.byteLength));
+            const source = audioContextRef.current.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(audioContextRef.current.destination);
+            audioQueueRef.current.push(source);
+            playAudioQueue();
+          } catch (e) {
+            console.error("Error decoding audio data:", e);
+            toast({ variant: 'destructive', title: 'Audio Playback Error', description: 'Could not decode audio chunk.' });
+          }
+        }
+      }
+    };
+    processStream();
+  }, [playAudioQueue, toast]);
 
 
   const processRequest = useCallback(async (text: string) => {
@@ -118,7 +198,7 @@ export default function VoiceChatPage() {
     setTranscript('')
 
     try {
-      setStatusText('Agent is thinking...');
+      setSubtitle('Agent is thinking...');
       const agentResult = await runAgent(agentName, text, newMessages)
 
       if (agentResult.error) {
@@ -130,23 +210,22 @@ export default function VoiceChatPage() {
       setMessages(prev => [...prev, modelMessage]);
       setSubtitle(responseText);
       
-      setStatusText('Generating audio...');
+      setSubtitle('Receiving audio...');
       const response = await fetch('/api/speech', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: responseText, model: ttsModel }),
       });
 
-      const responseData = await response.json();
-
       if (!response.ok) {
+          const errorData = await response.json().catch(() => ({error: `Failed to get audio stream: ${response.status}`}));
           if (response.status === 429) {
             throw new Error("Audio generation failed: You may have exceeded the daily quota for this model.");
           }
-          throw new Error(responseData.error || `Failed to get audio stream: ${response.status}`);
+          throw new Error(errorData.error);
       }
       
-      playAudio(responseData.audioDataUri);
+      await playAudioStream(response);
 
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred'
@@ -159,9 +238,8 @@ export default function VoiceChatPage() {
         description: errorMessage,
       })
       setIsLoading(false);
-      setStatusText('Tap to speak');
     }
-  }, [agentName, messages, toast, playAudio, ttsModel]);
+  }, [agentName, messages, toast, playAudioStream, ttsModel]);
 
   useEffect(() => {
     if (!isListening && transcript.trim() && !isLoading) {
@@ -172,13 +250,17 @@ export default function VoiceChatPage() {
 
 
   const handleToggleListening = () => {
-    if (isLoading) return
+    if (isLoading) return;
+
+    // Ensure AudioContext is running
+    if (audioContextRef.current?.state === 'suspended') {
+      audioContextRef.current.resume();
+    }
 
     if (isListening) {
       recognitionRef.current?.stop()
     } else {
       setTranscript('')
-      setStatusText('Listening...');
       setSubtitle('Listening...');
       recognitionRef.current?.start()
     }
@@ -215,7 +297,6 @@ export default function VoiceChatPage() {
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center space-y-8 p-10">
             <div className="flex w-full items-start justify-around">
-                {/* User Section */}
                 <div className="flex flex-col items-center gap-3 text-center">
                     <Avatar className={cn('h-28 w-28 border-4', isListening ? 'border-primary shadow-lg shadow-primary/50 animate-pulse' : 'border-muted')}>
                         <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="person portrait" />
@@ -223,8 +304,6 @@ export default function VoiceChatPage() {
                     </Avatar>
                     <p className="font-bold text-lg">You</p>
                 </div>
-
-                {/* Agent Section */}
                 <div className="flex flex-col items-center gap-3 text-center">
                     <Avatar className={cn('h-28 w-28 border-4', isLoading ? 'border-primary shadow-lg shadow-primary/50 animate-pulse' : 'border-muted')}>
                         <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="futuristic robot" />
@@ -253,9 +332,9 @@ export default function VoiceChatPage() {
                             <SelectValue placeholder="Select a TTS model" />
                         </SelectTrigger>
                         <SelectContent>
+                            <SelectItem value="gpt-4o-mini-tts">OpenAI - gpt-4o-mini-tts (Realtime)</SelectItem>
+                            <SelectItem value="tts-1-hd">OpenAI - TTS-1-HD (Quality)</SelectItem>
                             <SelectItem value="gemini-2.5-flash-preview-tts">Google - Gemini TTS</SelectItem>
-                            <SelectItem value="tts-1">OpenAI - TTS-1</SelectItem>
-                            <SelectItem value="tts-1-hd">OpenAI - TTS-1-HD</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -263,7 +342,7 @@ export default function VoiceChatPage() {
                     {isListening ? <MicOff className="h-10 w-10"/> : <Mic className="h-10 w-10"/>}
                 </Button>
                 <p className="text-muted-foreground text-sm h-5 font-medium">
-                    {isListening ? statusText : (isLoading ? statusText : 'Tap to speak')}
+                  {isListening ? 'Listening...' : (isLoading ? subtitle : 'Tap to speak')}
                 </p>
             </div>
           </CardContent>

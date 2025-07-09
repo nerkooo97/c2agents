@@ -1,6 +1,6 @@
 'use server';
 
-import { generateSpeech } from '@/ai/flows/text-to-speech';
+import { streamSpeech } from '@/ai/flows/text-to-speech';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
@@ -14,9 +14,15 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Model is required' }, { status: 400 });
     }
 
-    const audioDataUri = await generateSpeech(text, model);
+    // Use the new streaming function
+    const audioStream = await streamSpeech(text, model);
 
-    return NextResponse.json({ audioDataUri });
+    // Return the stream directly to the client
+    return new NextResponse(audioStream, {
+        headers: {
+            'Content-Type': 'audio/pcm',
+        },
+    });
 
   } catch (error) {
     console.error('Error in speech API:', error);
@@ -25,7 +31,6 @@ export async function POST(req: NextRequest) {
 
     if (error instanceof Error) {
         errorMessage = error.message;
-        // Check for specific rate limit error from Google AI
         if (errorMessage.includes('429')) {
              statusCode = 429;
              errorMessage = "API rate limit exceeded. You may have run out of free daily quota.";
