@@ -21,18 +21,15 @@ const allTools: (Tool<any, any> | undefined)[] = [
   playwright,
 ];
 
-
-// We store the promise so that the loading process is only initiated once.
-const allToolsPromise = Promise.resolve(allTools.filter(Boolean) as Tool<any, any>[]);
-
-export async function getAllTools(): Promise<Tool<any, any>[]> {
-    return allToolsPromise;
+// This synchronous function returns the fully loaded tools.
+export function getAllTools(): Tool<any, any>[] {
+    return allTools.filter(Boolean) as Tool<any, any>[];
 }
 
-export async function getToolMap(): Promise<Record<string, Tool<any, any>>> {
-    const allTools = await getAllTools();
+export function getToolMap(): Record<string, Tool<any, any>> {
+    const tools = getAllTools();
     const toolMap: Record<string, Tool<any, any>> = {};
-    allTools.forEach(tool => {
+    tools.forEach(tool => {
         // A Genkit tool has an 'info' property with its metadata.
         if (tool && tool.info?.name) {
             toolMap[tool.info.name] = tool;
@@ -41,8 +38,8 @@ export async function getToolMap(): Promise<Record<string, Tool<any, any>>> {
     return toolMap;
 }
 
-export async function getToolsForAgent(agent: AgentDefinition): Promise<Tool<any, any>[]> {
+export function getToolsForAgent(agent: AgentDefinition): Tool<any, any>[] {
   if (!agent.tools) return [];
-  const toolMap = await getToolMap();
+  const toolMap = getToolMap();
   return agent.tools.map(toolName => toolMap[toolName]).filter(Boolean);
 };

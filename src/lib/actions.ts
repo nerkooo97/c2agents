@@ -43,7 +43,7 @@ export async function runAgent(
       constraints: agent.constraints,
       responseFormat: agent.responseFormat,
       userInput: prompt,
-      tools: await getToolsForAgent(agent),
+      tools: getToolsForAgent(agent),
       model: getModelReference(agent.model),
       history: agent.enableMemory ? history : undefined,
     });
@@ -114,15 +114,4 @@ export async function runAgent(
       error: errorMessage,
     };
   }
-}
-
-export async function generateSpeechAction(text: string): Promise<{ audioUrl?: string; error?: string; }> {
-    try {
-        const audioUrl = await generateSpeech(text);
-        return { audioUrl };
-    } catch (error) {
-        console.error('Error generating speech:', error);
-        const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
-        return { error: errorMessage };
-    }
 }

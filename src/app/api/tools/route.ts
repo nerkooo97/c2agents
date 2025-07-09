@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAllTools } from '@/ai/tools';
 
 export async function GET() {
-  const allTools = await getAllTools();
+  const allTools = getAllTools();
   // Correctly access the 'info' property for name and description.
   const toolInfo = allTools.map(tool => ({
     name: tool.info.name,
