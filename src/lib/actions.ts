@@ -1,9 +1,8 @@
 'use server';
 
-import { getAgent, getAgents } from '@/lib/agent-registry';
+import { getAgent } from '@/lib/agent-registry';
 import { getToolsForAgent } from '@/ai/tools';
 import { runAgentWithConfig } from '@/ai/flows/run-agent';
-import { generateSpeech } from '@/ai/flows/text-to-speech';
 import type { ExecutionStep, Message } from '@/lib/types';
 import db from '@/lib/db';
 
@@ -22,7 +21,8 @@ const getModelReference = (modelName: string): string => {
 export async function runAgent(
   agentName: string,
   prompt: string,
-  history: Message[] = []
+  sessionId?: string,
+  historyOverride?: Message[],
 ): Promise<{ response?: string; steps?: ExecutionStep[]; error?: string }> {
   try {
     const agent = await getAgent(agentName);
@@ -30,6 +30,16 @@ export async function runAgent(
       throw new Error(`Agent '${agentName}' not found.`);
     }
 
+    let conversationHistory: Message[] = [];
+    if (historyOverride) {
+        conversationHistory = historyOverride;
+    } else if (agent.enableMemory && sessionId) {
+        const conversation = await db.conversation.findUnique({ where: { sessionId } });
+        if (conversation) {
+            conversationHistory = conversation.messages;
+        }
+    }
+    
     const steps: ExecutionStep[] = [];
 
     steps.push({
@@ -45,7 +55,7 @@ export async function runAgent(
       userInput: prompt,
       tools: await getToolsForAgent(agent),
       model: getModelReference(agent.model),
-      history: agent.enableMemory ? history : undefined,
+      history: conversationHistory.length > 0 ? conversationHistory : undefined,
     });
 
     // Log successful execution
@@ -92,6 +102,27 @@ export async function runAgent(
       title: 'Final Response',
       content: finalResponse,
     });
+
+    // Update conversation history in DB if memory is enabled
+    if (agent.enableMemory && sessionId) {
+        const newHistory = [
+            ...conversationHistory,
+            { role: 'user', content: prompt },
+            { role: 'model', content: finalResponse },
+        ];
+        const existingConversation = await db.conversation.findUnique({ where: { sessionId } });
+        if (existingConversation) {
+            await db.conversation.update({
+                where: { sessionId },
+                data: { messages: newHistory },
+            });
+        } else {
+            await db.conversation.create({
+                data: { sessionId, messages: newHistory },
+            });
+        }
+    }
+
 
     return {
       response: finalResponse,

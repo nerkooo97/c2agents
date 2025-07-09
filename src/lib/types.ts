@@ -5,6 +5,11 @@ export interface Message {
   content: string;
 }
 
+export interface Conversation {
+  sessionId: string;
+  messages: Message[];
+}
+
 export interface ExecutionStep {
   type: 'prompt' | 'memory' | 'tool' | 'response';
   title: string;

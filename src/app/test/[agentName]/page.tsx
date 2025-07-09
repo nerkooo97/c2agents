@@ -12,7 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Send, Home, LineChart } from 'lucide-react'
+import { Send, Home, LineChart, Eraser } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import AgentExecutionGraph from '@/components/agent-execution-graph'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -30,6 +30,7 @@ export default function AgentTestPage() {
   
   const [logs, setLogs] = useState<AgentExecutionLog[]>([]);
   const [isLogsLoading, setIsLogsLoading] = useState(true);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const { toast } = useToast()
   const scrollAreaRef = useRef<HTMLDivElement>(null)
@@ -55,12 +56,22 @@ export default function AgentTestPage() {
     }
   }, [agentName, toast]);
 
+  const startNewSession = useCallback(() => {
+    const newSessionId = crypto.randomUUID();
+    setSessionId(newSessionId);
+    setMessages([{ role: 'model', content: `Hello! I'm ready to help. Send a message to start testing the "${agentName}" agent.` }])
+    toast({
+      title: "New Session Started",
+      description: "The conversation history has been cleared.",
+    });
+  }, [agentName, toast]);
+
   useEffect(() => {
     if (agentName) {
-        setMessages([{ role: 'model', content: `Hello! I'm ready to help. How can I assist you today? Send a message to start testing the "${agentName}" agent.` }])
+        startNewSession();
         fetchLogs();
     }
-  }, [agentName, fetchLogs])
+  }, [agentName, fetchLogs, startNewSession])
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -72,10 +83,9 @@ export default function AgentTestPage() {
   }, [messages])
 
   const handleSendMessage = async () => {
-    if (!input.trim() || isLoading || !agentName) return
+    if (!input.trim() || isLoading || !agentName || !sessionId) return
 
     const userMessage: Message = { role: 'user', content: input }
-    const currentHistory = messages;
 
     setMessages(prev => [...prev, userMessage])
     setInput('')
@@ -83,7 +93,7 @@ export default function AgentTestPage() {
     setExecutionSteps([])
 
     try {
-      const result = await runAgent(agentName, input, currentHistory)
+      const result = await runAgent(agentName, input, sessionId)
       if (result.error) {
         toast({
           variant: "destructive",
@@ -124,6 +134,10 @@ export default function AgentTestPage() {
           </div>
         </div>
         <div className="flex items-center gap-4">
+          <Button variant="outline" size="sm" onClick={startNewSession}>
+            <Eraser className="mr-2 h-4 w-4" />
+            New Session
+          </Button>
           <Link href="/" passHref>
             <Button variant="outline">
               <Home className="mr-2 h-4 w-4"/>

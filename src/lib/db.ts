@@ -33,7 +33,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
-import type { WorkflowDefinition, WorkflowCreateAPISchema, AgentExecutionLog } from '@/lib/types';
+import type { WorkflowDefinition, WorkflowCreateAPISchema, AgentExecutionLog, Message, Conversation } from '@/lib/types';
 import type { z } from 'zod';
 
 const dbPath = path.join(process.cwd(), 'prisma', 'db.json');
@@ -41,21 +41,23 @@ const dbPath = path.join(process.cwd(), 'prisma', 'db.json');
 interface DbData {
     workflows: WorkflowDefinition[];
     agentExecutionLogs: AgentExecutionLog[];
+    conversations: Conversation[];
 }
 
 async function readDb(): Promise<DbData> {
     try {
         await fs.access(dbPath);
         const fileContent = await fs.readFile(dbPath, 'utf-8');
-        if (!fileContent) return { workflows: [], agentExecutionLogs: [] };
+        if (!fileContent) return { workflows: [], agentExecutionLogs: [], conversations: [] };
         const data = JSON.parse(fileContent);
         // Ensure all expected keys exist
         return {
             workflows: data.workflows || [],
             agentExecutionLogs: data.agentExecutionLogs || [],
+            conversations: data.conversations || [],
         };
     } catch (error) {
-        return { workflows: [], agentExecutionLogs: [] };
+        return { workflows: [], agentExecutionLogs: [], conversations: [] };
     }
 }
 
@@ -159,6 +161,30 @@ const db = {
             await writeDb(data);
             return newLog;
         }
+    },
+    conversation: {
+        async findUnique(args: { where: { sessionId: string } }): Promise<Conversation | null> {
+            const data = await readDb();
+            const conversation = data.conversations.find(c => c.sessionId === args.where.sessionId);
+            return conversation || null;
+        },
+        async create(args: { data: { sessionId: string; messages: Message[] } }): Promise<Conversation> {
+            const data = await readDb();
+            const newConversation: Conversation = {
+                ...args.data,
+            };
+            data.conversations.push(newConversation);
+            await writeDb(data);
+            return newConversation;
+        },
+        async update(args: { where: { sessionId: string }, data: { messages: Message[] } }): Promise<Conversation> {
+            const data = await readDb();
+            const index = data.conversations.findIndex(c => c.sessionId === args.where.sessionId);
+            if (index === -1) throw new Error('Conversation not found to update.');
+            data.conversations[index].messages = args.data.messages;
+            await writeDb(data);
+            return data.conversations[index];
+        }
     }
 };
 
@@ -181,6 +207,4 @@ declare global {
 const db = globalThis.prisma ?? prismaClientSingleton()
 
 export default db
-
-if (process.env.NODE_ENV !== 'production') globalThis.prisma = db
 */
