@@ -19,8 +19,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Switch } from '@/components/ui/switch';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Separator } from '@/components/ui/separator';
 import AgentExecutionGraph from '@/components/agent-execution-graph';
-import { Bot, Home, PlusCircle, Trash2, Workflow, Save, FilePlus2, ChevronsUpDown } from 'lucide-react';
+import { Bot, Home, PlusCircle, Trash2, Workflow, Save, FilePlus2, ChevronsUpDown, Code } from 'lucide-react';
 
 const COORDINATOR_AGENT_NAME = 'Coordinator Agent';
 
@@ -39,6 +42,7 @@ const WorkflowSaveForm = ({
     defaultValues: {
       name: currentWorkflow?.name || '',
       description: currentWorkflow?.description || '',
+      enableApiAccess: currentWorkflow?.enableApiAccess || false,
     },
   });
   
@@ -46,6 +50,7 @@ const WorkflowSaveForm = ({
     form.reset({
       name: currentWorkflow?.name || '',
       description: currentWorkflow?.description || '',
+      enableApiAccess: currentWorkflow?.enableApiAccess || false,
     });
   }, [currentWorkflow, form]);
 
@@ -75,6 +80,19 @@ const WorkflowSaveForm = ({
             </FormItem>
           )}
         />
+         <FormField
+            control={form.control}
+            name="enableApiAccess"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                <div className="space-y-0.5">
+                  <FormLabel>Enable API Access</FormLabel>
+                   <p className="text-xs text-muted-foreground">Allow this workflow to be run via an API endpoint.</p>
+                </div>
+                <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+              </FormItem>
+            )}
+          />
         <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
             <Button type="submit">Save Workflow</Button>
@@ -262,6 +280,7 @@ After executing the plan, synthesize the results from all steps into a final, co
     const workflowDataPayload = {
         name: formData.name,
         description: formData.description,
+        enableApiAccess: formData.enableApiAccess,
         goal,
         planSteps,
     };
@@ -315,7 +334,8 @@ After executing the plan, synthesize the results from all steps into a final, co
                 <Button variant="outline" size="sm"><ChevronsUpDown /> Load Workflow</Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {workflows.length === 0 ? (
+                {isDataLoading && <DropdownMenuItem disabled>Loading...</DropdownMenuItem>}
+                {!isDataLoading && workflows.length === 0 ? (
                   <DropdownMenuItem disabled>No saved workflows</DropdownMenuItem>
                 ) : (
                   workflows.map(wf => (
@@ -352,6 +372,28 @@ After executing the plan, synthesize the results from all steps into a final, co
                 onChange={(e) => setGoal(e.target.value)}
                 className="min-h-[100px]"
               />
+              {currentWorkflow && currentWorkflow.enableApiAccess && (
+                  <div className="mt-4">
+                    <Accordion type="single" collapsible className="w-full">
+                        <AccordionItem value="api-details" className="border rounded-md px-3">
+                            <AccordionTrigger className="py-2 text-sm font-medium text-muted-foreground hover:no-underline">
+                                <div className="flex items-center gap-2">
+                                    <Code className="h-4 w-4" />
+                                    <span>API Details</span>
+                                </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="pt-2 pb-2 text-xs">
+                                <div className="space-y-2 rounded-md bg-muted p-3 font-code">
+                                    <p><span className="font-semibold text-green-500">POST</span> /api/workflows/{currentWorkflow.id}</p>
+                                    <Separator className="bg-border/50"/>
+                                    <p className="font-semibold">Body:</p>
+                                    <pre><code>{JSON.stringify({ input: "<optional_goal_override>" }, null, 2)}</code></pre>
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+                </div>
+              )}
             </CardContent>
           </Card>
           <Card className="flex-1">

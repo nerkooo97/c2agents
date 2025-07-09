@@ -37,6 +37,7 @@ export async function POST(request: Request) {
                 name: workflowData.name,
                 description: workflowData.description,
                 goal: workflowData.goal,
+                enableApiAccess: workflowData.enableApiAccess,
                 planSteps: {
                     deleteMany: {}, // Delete all existing steps
                     create: workflowData.planSteps.map((step, index) => ({ // Create new ones

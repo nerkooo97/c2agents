@@ -31,6 +31,7 @@ export async function POST(request: Request) {
                 name: workflowData.name,
                 description: workflowData.description,
                 goal: workflowData.goal,
+                enableApiAccess: workflowData.enableApiAccess,
                 planSteps: {
                     create: workflowData.planSteps.map((step, index) => ({
                         agentName: step.agentName,

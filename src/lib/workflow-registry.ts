@@ -23,6 +23,7 @@ export async function getWorkflows(): Promise<WorkflowDefinition[]> {
         name: wf.name,
         description: wf.description,
         goal: wf.goal,
+        enableApiAccess: wf.enableApiAccess,
         planSteps: wf.planSteps.map(step => ({
             id: step.id, // Use the database step ID for the React key
             agentName: step.agentName,
