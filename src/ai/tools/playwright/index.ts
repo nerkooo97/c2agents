@@ -1,5 +1,6 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
+import { startServer } from '@/lib/mcp-server-manager';
 
 const playwrightTool = ai.defineTool({
     name: 'playwright',
@@ -9,13 +10,15 @@ const playwrightTool = ai.defineTool({
     }),
     outputSchema: z.string().describe('The result from the Playwright script execution.'),
 }, async (input) => {
-    // This function communicates with a running MCP server process.
-    // You must start this server separately by running `npm run mcp:playwright` in another terminal.
+    // This function automatically starts and communicates with a Playwright MCP server process.
     const mcpServerUrl = 'http://localhost:6543'; // Default Playwright MCP server port
-
-    console.log(`Calling Playwright MCP server at ${mcpServerUrl} with script: ${input.script}`);
-
+    
     try {
+        // Ensure the MCP server is running before trying to connect.
+        await startServer('playwright');
+        
+        console.log(`Calling Playwright MCP server at ${mcpServerUrl} with script: ${input.script}`);
+
         const response = await fetch(mcpServerUrl, {
             method: 'POST',
             headers: {
@@ -41,8 +44,8 @@ const playwrightTool = ai.defineTool({
 
     } catch (e) {
         const errorMessage = e instanceof Error ? e.message : String(e);
-        console.error(`Failed to connect to Playwright MCP server: ${errorMessage}`);
-        return `Error: Could not connect to the Playwright MCP server at ${mcpServerUrl}. Is it running?`;
+        console.error(`Failed to execute Playwright tool: ${errorMessage}`);
+        return `Error: Could not execute the Playwright script. The MCP server may have encountered an issue.`;
     }
 });
 

@@ -1,5 +1,6 @@
 'use server';
 
+import '@/lib/mcp-server-manager'; // Ensures MCP server shutdown hooks are registered
 import { getAgent, getAgents } from '@/lib/agent-registry';
 import { getToolsForAgent } from '@/ai/tools';
 import { runAgentWithConfig } from '@/ai/flows/run-agent';
