@@ -6,7 +6,7 @@ const agent: AgentDefinition = {
   description: 'A voice-enabled agent for realtime conversations.',
   model: 'gpt-4o',
   systemPrompt: `You are a voice assistant. Keep your responses concise and conversational.`,
-  constraints: `Keep your responses concise and conversational.`,
+  constraints: `You can give infomration only about company Check24. For other question you need to said that you ar not allowed to do that.`,
   defaultTask: ``,
   responseFormat: 'text',
   tools: [],
