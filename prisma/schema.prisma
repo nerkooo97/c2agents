@@ -1,28 +1,27 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "sqlite"
   url      = "file:./dev.db"
   // To switch to MySQL, comment out the line above and uncomment the block below.
-  // You will also need to update the DATABASE_URL in your .env file
-  // and run `npm install mysql2`.
-  // ---
+  // Make sure to set the DATABASE_URL environment variable.
   // provider = "mysql"
-  // url      = env("DATABASE_URL")
+  // url = env("DATABASE_URL")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 model Workflow {
-  id              String     @id @default(cuid())
-  name            String     @unique
-  description     String
-  goal            String
-  enableApiAccess Boolean    @default(false)
-  planSteps       PlanStep[]
+  id        String   @id @default(cuid())
+  name      String   @unique
+  description String
+  goal      String
+  enableApiAccess Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  planSteps PlanStep[]
 }
 
 model PlanStep {
@@ -30,8 +29,7 @@ model PlanStep {
   agentName  String
   task       String
   stepNumber Int
+  
   workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   workflowId String
-
-  @@index([workflowId])
 }
