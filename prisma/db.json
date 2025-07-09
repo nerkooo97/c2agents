@@ -72,6 +72,47 @@
       "agentName": "Realtime%20Voice%20Agent",
       "status": "error",
       "errorDetails": "Agent 'Realtime%20Voice%20Agent' not found."
+    },
+    {
+      "id": "863ba89e-df3d-4d43-991f-59c8a6926f4e",
+      "timestamp": "2025-07-09T17:23:33.934Z",
+      "agentName": "openai",
+      "status": "success",
+      "inputTokens": 49,
+      "outputTokens": 13,
+      "totalTokens": 62
+    },
+    {
+      "id": "c49f07c7-60f2-4f48-8497-e5d524b85efa",
+      "timestamp": "2025-07-09T17:23:51.540Z",
+      "agentName": "openai",
+      "status": "success",
+      "inputTokens": 57,
+      "outputTokens": 71,
+      "totalTokens": 128
+    },
+    {
+      "id": "c23cc64b-b273-4bb7-bfe7-c8cd652121ff",
+      "timestamp": "2025-07-09T17:26:19.225Z",
+      "agentName": "openai",
+      "status": "success",
+      "inputTokens": 57,
+      "outputTokens": 1766,
+      "totalTokens": 1823
+    },
+    {
+      "id": "71b20082-0c33-4604-886f-e7516193412f",
+      "timestamp": "2025-07-09T17:27:53.515Z",
+      "agentName": "Realtime%20Voice%20Agent",
+      "status": "error",
+      "errorDetails": "Agent 'Realtime%20Voice%20Agent' not found."
+    },
+    {
+      "id": "4d9b432f-fecf-4a84-be4a-e2f9e89bfa15",
+      "timestamp": "2025-07-09T17:28:30.234Z",
+      "agentName": "Realtime%20Voice%20Agent",
+      "status": "error",
+      "errorDetails": "Agent 'Realtime%20Voice%20Agent' not found."
     }
   ]
 }

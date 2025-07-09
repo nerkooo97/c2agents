@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Home, Mic, MicOff, Bot } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { Skeleton } from '@/components/ui/skeleton'
+import type { Message } from '@/lib/types'
 
 // Define SpeechRecognition type for broader compatibility
 type SpeechRecognition = typeof window.SpeechRecognition
@@ -21,12 +22,20 @@ export default function VoiceChatPage() {
   const [isListening, setIsListening] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [transcript, setTranscript] = useState('')
-  const [agentResponse, setAgentResponse] = useState('')
   const [isSupported, setIsSupported] = useState(true)
+  const [messages, setMessages] = useState<Message[]>([])
 
   const recognitionRef = useRef<InstanceType<SpeechRecognition> | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const { toast } = useToast()
+
+  useEffect(() => {
+    // Set initial greeting from the agent
+    if (agentName) {
+      const agentDisplayName = agentName.replace(/-/g, ' ')
+      setMessages([{ role: 'model', content: `Hello! I'm the ${agentDisplayName}. How can I help you today?` }]);
+    }
+  }, [agentName]);
 
   useEffect(() => {
     const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition
@@ -76,7 +85,6 @@ export default function VoiceChatPage() {
       // The onend event will handle processing
     } else {
       setTranscript('')
-      setAgentResponse('')
       recognitionRef.current?.start()
       setIsListening(true)
     }
@@ -93,18 +101,22 @@ export default function VoiceChatPage() {
 
   const processRequest = async (text: string) => {
     if (!agentName) return
+
     setIsLoading(true)
-    setAgentResponse('')
+    const userMessage: Message = { role: 'user', content: text };
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
 
     try {
-      const agentResult = await runAgent(agentName, text)
+      const agentResult = await runAgent(agentName, text, newMessages)
 
       if (agentResult.error) {
         throw new Error(agentResult.error)
       }
 
       const responseText = agentResult.response ?? "I didn't get a response."
-      setAgentResponse(responseText)
+      const modelMessage: Message = { role: 'model', content: responseText };
+      setMessages(prev => [...prev, modelMessage]);
       
       const speechResult = await generateSpeechAction(responseText)
       if (speechResult.error) {
@@ -117,12 +129,13 @@ export default function VoiceChatPage() {
       }
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred'
+      const errorResponse: Message = { role: 'model', content: 'Sorry, an error occurred.' }
+      setMessages(prev => [...prev, errorResponse]);
       toast({
         variant: 'destructive',
         title: 'Error processing request',
         description: errorMessage,
       })
-      setAgentResponse('Sorry, an error occurred.')
     } finally {
       setIsLoading(false)
     }
@@ -136,6 +149,9 @@ export default function VoiceChatPage() {
   } else if (isListening) {
     statusText = "Listening..."
   }
+  
+  const lastUserTranscript = messages.filter(m => m.role === 'user').at(-1)?.content || "..."
+  const lastAgentResponse = messages.filter(m => m.role === 'model').at(-1)?.content || "..."
 
   return (
     <div className="min-h-screen w-full bg-background flex flex-col">
@@ -184,7 +200,7 @@ export default function VoiceChatPage() {
                     </Avatar>
                     <h4 className="font-medium">You Said</h4>
                   </div>
-                  <p className="text-muted-foreground italic h-16">{transcript || "..."}</p>
+                  <p className="text-muted-foreground italic h-16">{isListening ? transcript : lastUserTranscript}</p>
               </div>
               <div className="space-y-2">
                   <div className="flex items-center gap-2">
@@ -193,7 +209,7 @@ export default function VoiceChatPage() {
                     </Avatar>
                     <h4 className="font-medium">Agent Replied</h4>
                   </div>
-                  <p className="text-muted-foreground h-16">{agentResponse || "..."}</p>
+                  <p className="text-muted-foreground h-16">{lastAgentResponse}</p>
               </div>
             </div>
           </CardContent>
