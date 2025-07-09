@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import type { AgentDefinition, ExecutionStep, PlanStep, WorkflowDefinition, WorkflowFormData } from '@/lib/types';
 import { WorkflowMetadataSchema } from '@/lib/types';
@@ -8,25 +8,27 @@ import { runAgent } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import ReactFlow, { useNodesState, useEdgesState, addEdge, type Node, type Edge, type OnConnect } from 'reactflow';
+import 'reactflow/dist/style.css';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Switch } from '@/components/ui/switch';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Separator } from '@/components/ui/separator';
 import AgentExecutionGraph from '@/components/agent-execution-graph';
+import WorkflowGraphEditor from '@/components/workflow-graph-editor';
+import CustomAgentNode from '@/components/custom-agent-node';
 import { Bot, Home, PlusCircle, Trash2, Workflow, Save, FilePlus2, ChevronsUpDown, Code } from 'lucide-react';
 
 const COORDINATOR_AGENT_NAME = 'Coordinator Agent';
-
 
 const WorkflowSaveForm = ({
   currentWorkflow,
@@ -53,7 +55,6 @@ const WorkflowSaveForm = ({
       enableApiAccess: currentWorkflow?.enableApiAccess || false,
     });
   }, [currentWorkflow, form]);
-
 
   return (
     <Form {...form}>
@@ -105,7 +106,6 @@ const WorkflowSaveForm = ({
 
 export default function ComposerPage() {
   const [goal, setGoal] = useState('');
-  const [planSteps, setPlanSteps] = useState<PlanStep[]>([]);
   const [agents, setAgents] = useState<AgentDefinition[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isDataLoading, setIsDataLoading] = useState(true);
@@ -116,7 +116,66 @@ export default function ComposerPage() {
   const [currentWorkflow, setCurrentWorkflow] = useState<WorkflowDefinition | null>(null);
   const [isSaveSheetOpen, setIsSaveSheetOpen] = useState(false);
 
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  
+  const nodeTypes = useMemo(() => ({ customAgentNode: CustomAgentNode }), []);
+
   const { toast } = useToast();
+
+  const onConnect: OnConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
+
+  const planStepsToFlow = (planSteps: PlanStep[]) => {
+      const newNodes: Node[] = planSteps.map((step, index) => ({
+          id: step.id,
+          type: 'customAgentNode',
+          position: { x: 250, y: 150 * index },
+          data: { 
+              agentName: step.agentName, 
+              task: step.task,
+              availableAgents: agents,
+              onChange: handleNodeDataChange,
+          },
+      }));
+      const newEdges: Edge[] = planSteps.slice(0, -1).map((step, index) => ({
+          id: `e${step.id}-${planSteps[index+1].id}`,
+          source: step.id,
+          target: planSteps[index+1].id,
+          animated: true,
+      }));
+      setNodes(newNodes);
+      setEdges(newEdges);
+  };
+  
+  const flowToPlanSteps = (): PlanStep[] => {
+    const plan: PlanStep[] = [];
+    if (nodes.length === 0) return plan;
+    
+    // Find the starting node (a node with no incoming edges)
+    const startNode = nodes.find(node => !edges.some(edge => edge.target === node.id));
+    
+    if (!startNode) {
+        // Fallback for cyclic or invalid graphs: just use node order
+        return nodes.map(n => ({ id: n.id, agentName: n.data.agentName, task: n.data.task }));
+    }
+
+    let currentNode: Node | undefined = startNode;
+    const visited = new Set<string>();
+
+    while (currentNode && !visited.has(currentNode.id)) {
+        visited.add(currentNode.id);
+        plan.push({
+            id: currentNode.id,
+            agentName: currentNode.data.agentName,
+            task: currentNode.data.task,
+        });
+
+        const nextEdge = edges.find(edge => edge.source === currentNode?.id);
+        currentNode = nodes.find(node => node.id === nextEdge?.target);
+    }
+    return plan;
+  };
+
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -131,8 +190,9 @@ export default function ComposerPage() {
         
         const agentsData = await agentsResponse.json();
         const workflowsData = await workflowsResponse.json();
-
-        setAgents(agentsData.filter((a: AgentDefinition) => a.name !== COORDINATOR_AGENT_NAME));
+        
+        const availableAgents = agentsData.filter((a: AgentDefinition) => a.name !== COORDINATOR_AGENT_NAME);
+        setAgents(availableAgents);
         setWorkflows(workflowsData);
 
       } catch (error) {
@@ -147,6 +207,19 @@ export default function ComposerPage() {
     };
     fetchInitialData();
   }, [toast]);
+  
+  // Update node data when agents list is loaded
+  useEffect(() => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.type === 'customAgentNode') {
+          node.data = { ...node.data, availableAgents: agents };
+        }
+        return node;
+      })
+    );
+  }, [agents, setNodes]);
+
 
   const fetchWorkflows = async () => {
       try {
@@ -164,20 +237,34 @@ export default function ComposerPage() {
   };
 
   const handleAddStep = () => {
-    setPlanSteps([...planSteps, { id: Date.now().toString(), agentName: '', task: '' }]);
+    const newNodeId = `node_${Date.now()}`;
+    const newNode: Node = {
+      id: newNodeId,
+      type: 'customAgentNode',
+      position: { x: 250, y: nodes.length * 150 },
+      data: {
+        agentName: '',
+        task: '',
+        availableAgents: agents,
+        onChange: handleNodeDataChange,
+      },
+    };
+    setNodes((nds) => nds.concat(newNode));
   };
-
-  const handleRemoveStep = (id: string) => {
-    setPlanSteps(planSteps.filter(step => step.id !== id));
-  };
-
-  const handleStepChange = (id: string, field: 'agentName' | 'task', value: string) => {
-    setPlanSteps(
-      planSteps.map(step => (step.id === id ? { ...step, [field]: value } : step))
+  
+  const handleNodeDataChange = (id: string, field: 'agentName' | 'task', value: string) => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === id) {
+          node.data = { ...node.data, [field]: value };
+        }
+        return node;
+      })
     );
   };
   
   const handleRunWorkflow = async () => {
+      const planSteps = flowToPlanSteps();
       if (!goal.trim()) {
           toast({ variant: 'destructive', title: 'Please define a goal for the workflow.'});
           return;
@@ -227,14 +314,15 @@ After executing the plan, synthesize the results from all steps into a final, co
   const handleNewWorkflow = () => {
     setCurrentWorkflow(null);
     setGoal('');
-    setPlanSteps([]);
+    setNodes([]);
+    setEdges([]);
     toast({ title: 'New workflow started', description: 'The composer has been cleared.' });
   };
 
   const handleLoadWorkflow = (workflow: WorkflowDefinition) => {
     setCurrentWorkflow(workflow);
     setGoal(workflow.goal);
-    setPlanSteps(workflow.planSteps);
+    planStepsToFlow(workflow.planSteps);
     toast({ title: `Workflow "${workflow.name}" loaded.`});
   };
 
@@ -266,6 +354,7 @@ After executing the plan, synthesize the results from all steps into a final, co
   };
   
   const handleOpenSaveSheet = () => {
+    const planSteps = flowToPlanSteps();
     if (!goal.trim() || planSteps.length === 0) {
         toast({ variant: 'destructive', title: 'Cannot Save', description: 'A workflow must have a goal and at least one step.' });
         return;
@@ -276,6 +365,7 @@ After executing the plan, synthesize the results from all steps into a final, co
   const handleSaveWorkflow = async (formData: WorkflowFormData) => {
     const isUpdating = !!currentWorkflow;
     const apiEndpoint = isUpdating ? '/api/workflows/update' : '/api/workflows/create';
+    const planSteps = flowToPlanSteps();
     
     const workflowDataPayload = {
         name: formData.name,
@@ -396,59 +486,26 @@ After executing the plan, synthesize the results from all steps into a final, co
               )}
             </CardContent>
           </Card>
-          <Card className="flex-1">
+          <Card className="flex-1 flex flex-col">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Execution Plan</CardTitle>
-                <CardDescription>Add and configure the sequence of tasks for your agents.</CardDescription>
+                <CardDescription>Visually construct your workflow by adding and connecting agent tasks.</CardDescription>
               </div>
               <Button variant="outline" size="sm" onClick={handleAddStep} disabled={isDataLoading}>
                 <PlusCircle className="mr-2" />
                 Add Step
               </Button>
             </CardHeader>
-            <CardContent className="space-y-4">
-                {isDataLoading && <Skeleton className="h-24 w-full" />}
-                {planSteps.length === 0 && !isDataLoading && (
-                    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center h-full">
-                        <p className="text-sm text-muted-foreground">No steps defined. Click "Add Step" to begin.</p>
-                    </div>
-                )}
-                {planSteps.map((step, index) => (
-                    <Card key={step.id} className="p-4 relative bg-card/50">
-                        <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => handleRemoveStep(step.id)}>
-                            <Trash2 className="text-destructive" />
-                        </Button>
-                        <div className="flex items-center gap-4 mb-3">
-                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold">{index + 1}</span>
-                            <h4 className="font-semibold">Plan Step</h4>
-                        </div>
-                        <div className="space-y-3">
-                            <div>
-                                <Label htmlFor={`agent-select-${step.id}`}>Agent</Label>
-                                <Select value={step.agentName} onValueChange={(value) => handleStepChange(step.id, 'agentName', value)}>
-                                    <SelectTrigger id={`agent-select-${step.id}`}>
-                                        <SelectValue placeholder="Select an agent..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {agents.map(agent => (
-                                            <SelectItem key={agent.name} value={agent.name}>{agent.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                             <div>
-                                <Label htmlFor={`task-input-${step.id}`}>Task</Label>
-                                <Textarea 
-                                    id={`task-input-${step.id}`}
-                                    placeholder="Describe the task for this agent..." 
-                                    value={step.task}
-                                    onChange={(e) => handleStepChange(step.id, 'task', e.target.value)}
-                                />
-                             </div>
-                        </div>
-                    </Card>
-                ))}
+            <CardContent className="flex-1 p-0">
+               <WorkflowGraphEditor 
+                    nodes={nodes}
+                    edges={edges}
+                    onNodesChange={onNodesChange}
+                    onEdgesChange={onEdgesChange}
+                    onConnect={onConnect}
+                    nodeTypes={nodeTypes}
+                />
             </CardContent>
           </Card>
         </div>
