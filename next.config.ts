@@ -23,11 +23,14 @@ const nextConfig: NextConfig = {
       // Don't resolve server-only packages on the client
       config.resolve.fallback = {
         ...config.resolve.fallback,
-        async_hooks: false,
-        handlebars: false,
+        'node:async_hooks': false,
+        'async_hooks': false,
+        'handlebars': false,
         // These are Node.js modules, and should not be bundled for the client.
-        fs: false,
-        child_process: false,
+        'fs': false,
+        'child_process': false,
+        'net': false,
+        'tls': false
       };
     }
     return config;
