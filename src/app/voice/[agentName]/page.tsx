@@ -21,6 +21,7 @@ export default function VoiceChatPage() {
   const [isListening, setIsListening] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [transcript, setTranscript] = useState('')
+  const [statusText, setStatusText] = useState('Click the microphone to start speaking.')
   const [isSupported, setIsSupported] = useState(true)
   const [messages, setMessages] = useState<Message[]>([])
 
@@ -85,6 +86,7 @@ export default function VoiceChatPage() {
     setTranscript('')
 
     try {
+      setStatusText('Agent is thinking...');
       const agentResult = await runAgent(agentName, text, newMessages)
 
       if (agentResult.error) {
@@ -95,6 +97,7 @@ export default function VoiceChatPage() {
       const modelMessage: Message = { role: 'model', content: responseText };
       setMessages(prev => [...prev, modelMessage]);
       
+      setStatusText('Generating audio...');
       const speechResult = await generateSpeechAction(responseText)
       if (speechResult.error) {
         throw new Error(speechResult.error)
@@ -102,7 +105,14 @@ export default function VoiceChatPage() {
 
       if (audioRef.current && speechResult.audioUrl) {
         audioRef.current.src = speechResult.audioUrl
-        audioRef.current.play()
+        audioRef.current.onended = () => {
+            setIsLoading(false);
+            setStatusText('Click the microphone to start speaking.');
+        };
+        audioRef.current.play();
+      } else {
+        setIsLoading(false);
+        setStatusText('Click the microphone to start speaking.');
       }
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred'
@@ -113,8 +123,8 @@ export default function VoiceChatPage() {
         title: 'Error processing request',
         description: errorMessage,
       })
-    } finally {
-      setIsLoading(false)
+      setIsLoading(false);
+      setStatusText('Click the microphone to start speaking.');
     }
   }, [agentName, messages, toast]);
 
@@ -132,19 +142,13 @@ export default function VoiceChatPage() {
       recognitionRef.current?.stop()
     } else {
       setTranscript('')
+      setStatusText('Listening...');
       recognitionRef.current?.start()
       setIsListening(true)
     }
   }
 
   const agentDisplayName = agentName?.replace(/-/g, ' ') ?? 'Agent'
-
-  let statusText = "Click the microphone to start speaking."
-  if (isLoading) {
-    statusText = "Thinking..."
-  } else if (isListening) {
-    statusText = "Listening..."
-  }
   
   const lastUserTranscript = messages.filter(m => m.role === 'user').at(-1)?.content || "..."
   const lastAgentResponse = messages.filter(m => m.role === 'model').at(-1)?.content || "I'm ready to help."
@@ -182,9 +186,9 @@ export default function VoiceChatPage() {
               <p>{statusText}</p>
               {isLoading && (
                   <div className="absolute bottom-4 flex items-center space-x-2">
-                      <Skeleton className="w-3 h-3 rounded-full" />
-                      <Skeleton className="w-3 h-3 rounded-full" />
-                      <Skeleton className="w-3 h-3 rounded-full" />
+                      <Skeleton className="w-3 h-3 rounded-full animate-pulse [animation-delay:-0.3s]" />
+                      <Skeleton className="w-3 h-3 rounded-full animate-pulse [animation-delay:-0.15s]" />
+                      <Skeleton className="w-3 h-3 rounded-full animate-pulse" />
                   </div>
               )}
             </div>
@@ -210,9 +214,9 @@ export default function VoiceChatPage() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button size="lg" className="w-full h-16 text-lg" onClick={handleToggleListening} disabled={isLoading || !isSupported} >
+            <Button size="lg" className="w-full h-16 text-lg" onClick={handleToggleListening} disabled={!isSupported}>
               {isListening ? <MicOff className="mr-2"/> : <Mic className="mr-2"/>}
-              {isListening ? 'Stop Listening' : 'Start Talking'}
+              {isLoading ? statusText : (isListening ? 'Stop Listening' : 'Start Talking')}
             </Button>
           </CardFooter>
         </Card>

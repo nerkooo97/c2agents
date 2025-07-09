@@ -120,6 +120,69 @@
       "agentName": "Realtime%20Voice%20Agent",
       "status": "error",
       "errorDetails": "Agent 'Realtime%20Voice%20Agent' not found."
+    },
+    {
+      "id": "f4ab182a-1d64-43b2-b1aa-990d967b5faa",
+      "timestamp": "2025-07-09T17:33:47.540Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "inputTokens": 52,
+      "outputTokens": 27,
+      "totalTokens": 79
+    },
+    {
+      "id": "1ecd7f8b-ed37-435c-a56d-e6ee8258716b",
+      "timestamp": "2025-07-09T17:34:13.227Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "inputTokens": 58,
+      "outputTokens": 12,
+      "totalTokens": 70
+    },
+    {
+      "id": "325d1b0c-ad4d-4c06-a293-ed03789a3f8f",
+      "timestamp": "2025-07-09T17:34:36.598Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "inputTokens": 54,
+      "outputTokens": 12,
+      "totalTokens": 66
+    },
+    {
+      "id": "9305b38f-2afc-4292-8053-4d8c6dd1e5d6",
+      "timestamp": "2025-07-09T17:34:55.453Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "inputTokens": 52,
+      "outputTokens": 18,
+      "totalTokens": 70
+    },
+    {
+      "id": "d0023acb-d009-4a91-a726-9a29179ca6dc",
+      "timestamp": "2025-07-09T17:35:26.947Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "inputTokens": 58,
+      "outputTokens": 48,
+      "totalTokens": 106
+    },
+    {
+      "id": "b1d5f164-b244-4f23-ad80-cc641d4ae341",
+      "timestamp": "2025-07-09T17:36:59.110Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "inputTokens": 57,
+      "outputTokens": 12,
+      "totalTokens": 69
+    },
+    {
+      "id": "571f6235-8006-4b8e-9aa1-c89be042f186",
+      "timestamp": "2025-07-09T17:37:17.499Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "inputTokens": 59,
+      "outputTokens": 59,
+      "totalTokens": 118
     }
   ]
 }
