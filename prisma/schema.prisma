@@ -1,15 +1,18 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 datasource db {
   provider = "sqlite"
   url      = "file:./dev.db"
-  // To switch to MySQL, comment out the line above and uncomment the block below.
-  // Make sure to set the DATABASE_URL environment variable.
+  // To switch to MySQL, uncomment the following and comment out the SQLite lines
   // provider = "mysql"
-  // url = env("DATABASE_URL")
+  // url      = env("DATABASE_URL")
 }
 
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "debian-openssl-3.0.x"]
+  provider   = "prisma-client-js"
+  // Use the Node-API library engine to avoid libssl dependency issues
+  engineType = "library"
 }
 
 model Workflow {
@@ -20,16 +23,17 @@ model Workflow {
   enableApiAccess Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   planSteps PlanStep[]
 }
 
 model PlanStep {
   id         String   @id @default(cuid())
+  workflowId String
+  stepNumber Int
   agentName  String
   task       String
-  stepNumber Int
-  
-  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-  workflowId String
+  createdAt  DateTime @default(now())
+
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
 }
