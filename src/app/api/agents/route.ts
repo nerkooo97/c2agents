@@ -14,6 +14,7 @@ export async function GET() {
     tools: agent.tools,
     enableApiAccess: agent.enableApiAccess,
     realtime: agent.realtime,
+    enableMemory: agent.enableMemory || false,
   }));
   return NextResponse.json(agentInfos);
 }

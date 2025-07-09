@@ -31,6 +31,7 @@ export interface AgentDefinition {
   tags?: string[]; // Optional tags for agent capabilities
   enableApiAccess: boolean;
   realtime: boolean;
+  enableMemory: boolean;
 }
 
 export const AgentDefinitionSchema = z.object({
@@ -42,6 +43,7 @@ export const AgentDefinitionSchema = z.object({
   tags: z.array(z.string()).optional().default([]),
   enableApiAccess: z.boolean().default(true),
   realtime: z.boolean().default(false),
+  enableMemory: z.boolean().default(false),
 });
 
 export type AgentFormData = z.infer<typeof AgentDefinitionSchema>;

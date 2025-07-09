@@ -26,6 +26,7 @@ const agent: AgentDefinition = {
   tools: ${toolsString},
   enableApiAccess: ${agentData.enableApiAccess},
   realtime: ${agentData.realtime},
+  enableMemory: ${agentData.enableMemory},
 };
 
 export default agent;

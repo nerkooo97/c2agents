@@ -54,6 +54,7 @@ const AgentForm = ({
       tags: [],
       enableApiAccess: true,
       realtime: false,
+      enableMemory: false,
     },
   });
 
@@ -202,6 +203,19 @@ const AgentForm = ({
             )}
           />
         </div>
+        <FormField
+            control={form.control}
+            name="enableMemory"
+            render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                <div className="space-y-0.5">
+                    <FormLabel>Enable Memory</FormLabel>
+                    <FormDescription>Allow the agent to remember past conversations in a session.</FormDescription>
+                </div>
+                <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                </FormItem>
+            )}
+        />
         <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
             <Button type="submit">Save Agent</Button>
@@ -266,6 +280,10 @@ const AgentCard = ({
                     <span className="text-muted-foreground text-xs">No tags</span>
                 )}
             </div>
+        </div>
+         <div className="flex items-center justify-between text-sm pt-2">
+            <span className="font-medium text-muted-foreground">Memory</span>
+            {agent.enableMemory ? <Badge>Enabled</Badge> : <Badge variant="destructive">Disabled</Badge>}
         </div>
          <div className="flex items-center justify-between text-sm pt-2">
             <span className="font-medium text-muted-foreground">API Access</span>
