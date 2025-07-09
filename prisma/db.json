@@ -309,6 +309,24 @@
       "inputTokens": 83,
       "outputTokens": 47,
       "totalTokens": 130
+    },
+    {
+      "id": "579d1ad1-5ed5-43e1-b680-9c060aa75aeb",
+      "timestamp": "2025-07-09T18:56:53.308Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "inputTokens": 83,
+      "outputTokens": 55,
+      "totalTokens": 138
+    },
+    {
+      "id": "31db3960-2ccf-489b-8093-0b3923a1bd4e",
+      "timestamp": "2025-07-09T18:57:10.364Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "inputTokens": 83,
+      "outputTokens": 73,
+      "totalTokens": 156
     }
   ]
 }

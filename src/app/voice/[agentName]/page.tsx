@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
@@ -27,6 +28,7 @@ export default function VoiceChatPage() {
   const [isSupported, setIsSupported] = useState(true)
   const [messages, setMessages] = useState<Message[]>([])
   const [ttsModel, setTtsModel] = useState('gemini-2.5-flash-preview-tts');
+  const [subtitle, setSubtitle] = useState("I'm ready to help.");
 
   const recognitionRef = useRef<InstanceType<SpeechRecognition> | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -37,6 +39,7 @@ export default function VoiceChatPage() {
   useEffect(() => {
     if (agentName) {
       setMessages([{ role: 'model', content: `Hello! I'm the ${agentDisplayName}. How can I help you today?` }]);
+      setSubtitle(`Hello! I'm the ${agentDisplayName}. How can I help you today?`);
     }
   }, [agentName, agentDisplayName]);
 
@@ -67,6 +70,7 @@ export default function VoiceChatPage() {
           .map(result => result.transcript)
           .join('')
         setTranscript(currentTranscript)
+        setSubtitle(currentTranscript || '...');
     };
 
     recognition.onend = () => {
@@ -124,6 +128,7 @@ export default function VoiceChatPage() {
       const responseText = agentResult.response ?? "I didn't get a response."
       const modelMessage: Message = { role: 'model', content: responseText };
       setMessages(prev => [...prev, modelMessage]);
+      setSubtitle(responseText);
       
       setStatusText('Generating audio...');
       const response = await fetch('/api/speech', {
@@ -147,6 +152,7 @@ export default function VoiceChatPage() {
       const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred'
       const errorResponse: Message = { role: 'model', content: 'Sorry, an error occurred.' }
       setMessages(prev => [...prev, errorResponse]);
+      setSubtitle('Sorry, an error occurred.');
       toast({
         variant: 'destructive',
         title: 'Error processing request',
@@ -173,14 +179,12 @@ export default function VoiceChatPage() {
     } else {
       setTranscript('')
       setStatusText('Listening...');
+      setSubtitle('Listening...');
       recognitionRef.current?.start()
     }
      setIsListening(prev => !prev);
   }
   
-  const lastUserTranscript = messages.filter(m => m.role === 'user').at(-1)?.content || "..."
-  const lastAgentResponse = messages.filter(m => m.role === 'model').at(-1)?.content || "I'm ready to help."
-
   return (
     <div className="min-h-screen w-full bg-background flex flex-col">
        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-card px-6 shrink-0">
@@ -217,12 +221,7 @@ export default function VoiceChatPage() {
                         <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="person portrait" />
                         <AvatarFallback>YOU</AvatarFallback>
                     </Avatar>
-                    <div className="space-y-1">
-                        <p className="font-bold text-lg">You</p>
-                        <p className="text-muted-foreground text-sm h-12 w-60">
-                           {isListening ? (<i>{transcript || "Listening..."}</i>) : (<i>"{lastUserTranscript}"</i>)}
-                        </p>
-                    </div>
+                    <p className="font-bold text-lg">You</p>
                 </div>
 
                 {/* Agent Section */}
@@ -231,11 +230,16 @@ export default function VoiceChatPage() {
                         <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="futuristic robot" />
                         <AvatarFallback>{agentDisplayName?.substring(0, 3).toUpperCase()}</AvatarFallback>
                     </Avatar>
-                     <div className="space-y-1">
-                        <p className="font-bold text-lg capitalize">{agentDisplayName}</p>
-                        <p className="text-muted-foreground text-sm h-12 w-60"><i>"{lastAgentResponse}"</i></p>
-                    </div>
+                    <p className="font-bold text-lg capitalize">{agentDisplayName}</p>
                 </div>
+            </div>
+
+            <div className="w-full pt-4">
+              <div className="h-14 w-full rounded-lg bg-muted flex items-center justify-center p-4">
+                <p className="text-center text-muted-foreground italic">
+                  {subtitle}
+                </p>
+              </div>
             </div>
 
             <div className="flex flex-col items-center gap-6 pt-6 w-full max-w-xs">
