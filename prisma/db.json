@@ -183,6 +183,33 @@
       "inputTokens": 59,
       "outputTokens": 59,
       "totalTokens": 118
+    },
+    {
+      "id": "e03c963c-cfed-4240-a09c-c37d3ec76b0d",
+      "timestamp": "2025-07-09T17:38:47.894Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "inputTokens": 61,
+      "outputTokens": 26,
+      "totalTokens": 87
+    },
+    {
+      "id": "c483e3ff-20ee-4a45-aacf-4e8a1cb6bb75",
+      "timestamp": "2025-07-09T17:39:16.451Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "inputTokens": 54,
+      "outputTokens": 9,
+      "totalTokens": 63
+    },
+    {
+      "id": "a3ccb5c6-7c1d-492e-95d8-427ca68be3c8",
+      "timestamp": "2025-07-09T17:41:41.517Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "inputTokens": 57,
+      "outputTokens": 49,
+      "totalTokens": 106
     }
   ]
 }

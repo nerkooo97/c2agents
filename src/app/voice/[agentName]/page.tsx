@@ -6,11 +6,11 @@ import { useParams } from 'next/navigation'
 import { runAgent, generateSpeechAction } from '@/lib/actions'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Home, Mic, MicOff, Bot } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { Skeleton } from '@/components/ui/skeleton'
 import type { Message } from '@/lib/types'
+import { cn } from '@/lib/utils'
 
 type SpeechRecognition = typeof window.SpeechRecognition
 
@@ -21,7 +21,7 @@ export default function VoiceChatPage() {
   const [isListening, setIsListening] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [transcript, setTranscript] = useState('')
-  const [statusText, setStatusText] = useState('Click the microphone to start speaking.')
+  const [statusText, setStatusText] = useState('Tap to speak')
   const [isSupported, setIsSupported] = useState(true)
   const [messages, setMessages] = useState<Message[]>([])
 
@@ -107,12 +107,12 @@ export default function VoiceChatPage() {
         audioRef.current.src = speechResult.audioUrl
         audioRef.current.onended = () => {
             setIsLoading(false);
-            setStatusText('Click the microphone to start speaking.');
+            setStatusText('Tap to speak');
         };
         audioRef.current.play();
       } else {
         setIsLoading(false);
-        setStatusText('Click the microphone to start speaking.');
+        setStatusText('Tap to speak');
       }
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred'
@@ -124,7 +124,7 @@ export default function VoiceChatPage() {
         description: errorMessage,
       })
       setIsLoading(false);
-      setStatusText('Click the microphone to start speaking.');
+      setStatusText('Tap to speak');
     }
   }, [agentName, messages, toast]);
 
@@ -176,49 +176,49 @@ export default function VoiceChatPage() {
         </div>
       </header>
       <main className="flex-1 flex items-center justify-center p-4 lg:p-6">
-        <Card className="w-full max-w-2xl">
-          <CardHeader className="text-center">
-            <CardTitle>Voice Conversation</CardTitle>
-            <CardDescription>Click the button and speak to the agent.</CardDescription>
+        <Card className="w-full max-w-4xl">
+           <CardHeader className="text-center">
+            <CardTitle className="text-2xl">Voice Conversation</CardTitle>
+            <CardDescription>Press the microphone and speak to the agent.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="w-full min-h-[8rem] rounded-lg bg-muted flex items-center justify-center p-6 text-center text-muted-foreground relative">
-              <p>{statusText}</p>
-              {isLoading && (
-                  <div className="absolute bottom-4 flex items-center space-x-2">
-                      <Skeleton className="w-3 h-3 rounded-full animate-pulse [animation-delay:-0.3s]" />
-                      <Skeleton className="w-3 h-3 rounded-full animate-pulse [animation-delay:-0.15s]" />
-                      <Skeleton className="w-3 h-3 rounded-full animate-pulse" />
-                  </div>
-              )}
+          <CardContent className="flex flex-col items-center justify-center space-y-8 p-10">
+            <div className="flex w-full items-start justify-around">
+                {/* User Section */}
+                <div className="flex flex-col items-center gap-3 text-center">
+                    <Avatar className={cn('h-28 w-28 border-4', isListening ? 'border-primary shadow-lg shadow-primary/50 animate-pulse' : 'border-muted')}>
+                        <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="person portrait" />
+                        <AvatarFallback>YOU</AvatarFallback>
+                    </Avatar>
+                    <div className="space-y-1">
+                        <p className="font-bold text-lg">You</p>
+                        <p className="text-muted-foreground text-sm h-12 w-60">
+                           {isListening ? (<i>{transcript || "Listening..."}</i>) : (<i>"{lastUserTranscript}"</i>)}
+                        </p>
+                    </div>
+                </div>
+
+                {/* Agent Section */}
+                <div className="flex flex-col items-center gap-3 text-center">
+                    <Avatar className={cn('h-28 w-28 border-4', isLoading ? 'border-primary shadow-lg shadow-primary/50 animate-pulse' : 'border-muted')}>
+                        <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="futuristic robot" />
+                        <AvatarFallback>{agentDisplayName?.substring(0, 3).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                     <div className="space-y-1">
+                        <p className="font-bold text-lg capitalize">{agentDisplayName}</p>
+                        <p className="text-muted-foreground text-sm h-12 w-60"><i>"{lastAgentResponse}"</i></p>
+                    </div>
+                </div>
             </div>
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-6 w-6">
-                      <AvatarFallback>U</AvatarFallback>
-                    </Avatar>
-                    <h4 className="font-medium">You Said</h4>
-                  </div>
-                  <p className="text-muted-foreground italic h-16">{isListening ? transcript : lastUserTranscript}</p>
-              </div>
-              <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                     <Avatar className="h-6 w-6">
-                      <AvatarFallback><Bot className="w-4 h-4" /></AvatarFallback>
-                    </Avatar>
-                    <h4 className="font-medium">Agent Replied</h4>
-                  </div>
-                  <p className="text-muted-foreground h-16">{lastAgentResponse}</p>
-              </div>
+
+            <div className="flex flex-col items-center gap-3 pt-6">
+                <Button size="icon" className={cn('w-24 h-24 rounded-full transition-all', isListening && 'bg-destructive hover:bg-destructive/90 scale-110')} onClick={handleToggleListening} disabled={!isSupported}>
+                    {isListening ? <MicOff className="h-10 w-10"/> : <Mic className="h-10 w-10"/>}
+                </Button>
+                <p className="text-muted-foreground text-sm h-5 font-medium">
+                    {isListening ? statusText : (isLoading ? statusText : 'Tap to speak')}
+                </p>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button size="lg" className="w-full h-16 text-lg" onClick={handleToggleListening} disabled={!isSupported}>
-              {isListening ? <MicOff className="mr-2"/> : <Mic className="mr-2"/>}
-              {isLoading ? statusText : (isListening ? 'Stop Listening' : 'Start Talking')}
-            </Button>
-          </CardFooter>
         </Card>
         <audio ref={audioRef} className="hidden" />
       </main>
