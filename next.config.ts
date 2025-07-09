@@ -1,3 +1,4 @@
+
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
@@ -24,6 +25,9 @@ const nextConfig: NextConfig = {
         ...config.resolve.fallback,
         async_hooks: false,
         handlebars: false,
+        // These are Node.js modules, and should not be bundled for the client.
+        fs: false,
+        child_process: false,
       };
     }
     return config;

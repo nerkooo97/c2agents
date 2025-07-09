@@ -1,31 +1,54 @@
+
+import fs from 'fs';
+import path from 'path';
 import type { Tool } from 'genkit/tool';
 import type { AgentDefinition } from '@/lib/types';
 
-import calculator from './calculator';
-import delegateTask from './delegate-task';
-import playwright from './playwright';
-import webSearch from './web-search';
 
-const allTools: Tool<any, any>[] = [
-    calculator,
-    delegateTask,
-    playwright,
-    webSearch,
-];
+async function loadTools(): Promise<Tool<any, any>[]> {
+    const tools: Tool<any, any>[] = [];
+    const toolsDir = path.join(process.cwd(), 'src', 'ai', 'tools');
+    
+    try {
+        const toolFolders = fs.readdirSync(toolsDir, { withFileTypes: true })
+            .filter(dirent => dirent.isDirectory())
+            .map(dirent => dirent.name);
 
-const toolMap: Record<string, Tool<any, any>> = {};
-allTools.forEach(tool => {
-    if (tool && tool.name) {
-        toolMap[tool.name] = tool;
+        for (const folderName of toolFolders) {
+            const indexPath = path.join(toolsDir, folderName, 'index.ts');
+            if (fs.existsSync(indexPath)) {
+                try {
+                    const { default: tool } = await import(`@/ai/tools/${folderName}`);
+                    if (tool && tool.name) {
+                        tools.push(tool);
+                    }
+                } catch (e) {
+                    console.error(`[Tool Loader] Failed to load tool from ${folderName}:`, e);
+                }
+            }
+        }
+    } catch (error) {
+        console.error(`[Tool Loader] Could not read tools directory:`, error);
     }
-});
-
-export async function getToolMap(): Promise<Record<string, Tool<any, any>>> {
-    return Promise.resolve(toolMap);
+    
+    return tools;
 }
 
+const allToolsPromise = loadTools();
+
 export async function getAllTools(): Promise<Tool<any, any>[]> {
-    return Promise.resolve(allTools);
+    return allToolsPromise;
+}
+
+export async function getToolMap(): Promise<Record<string, Tool<any, any>>> {
+    const allTools = await getAllTools();
+    const toolMap: Record<string, Tool<any, any>> = {};
+    allTools.forEach(tool => {
+        if (tool && tool.name) {
+            toolMap[tool.name] = tool;
+        }
+    });
+    return toolMap;
 }
 
 export async function getToolsForAgent(agent: AgentDefinition): Promise<Tool<any, any>[]> {
