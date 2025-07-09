@@ -4,7 +4,7 @@ import { getAgent, getAgents } from '@/lib/agent-registry';
 import { getToolsForAgent } from '@/ai/tools';
 import { runAgentWithConfig } from '@/ai/flows/run-agent';
 import { generateSpeech } from '@/ai/flows/text-to-speech';
-import type { ExecutionStep } from '@/lib/types';
+import type { ExecutionStep, Message } from '@/lib/types';
 
 // Helper to construct the full model reference string
 const getModelReference = (modelName: string): string => {
@@ -20,7 +20,8 @@ const getModelReference = (modelName: string): string => {
 
 export async function runAgent(
   agentName: string,
-  prompt: string
+  prompt: string,
+  history: Message[] = []
 ): Promise<{ response?: string; steps?: ExecutionStep[]; error?: string }> {
   try {
     const agent = await getAgent(agentName);
@@ -58,6 +59,7 @@ export async function runAgent(
       userInput: prompt,
       tools: await getToolsForAgent(agent),
       model: getModelReference(agent.model),
+      history: agent.enableMemory ? history : undefined,
     });
 
     if (genkitResponse.history) {

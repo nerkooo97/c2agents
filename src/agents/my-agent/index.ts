@@ -9,6 +9,7 @@ const agent: AgentDefinition = {
   tools: ["calculator","webSearch"],
   enableApiAccess: true,
   realtime: false,
+  enableMemory: true,
 };
 
 export default agent;

@@ -29,7 +29,7 @@ export default function AgentTestPage() {
 
   useEffect(() => {
     if (agentName) {
-        setMessages([{ role: 'assistant', content: `Hello! I'm ready to help. How can I assist you today? Send a message to start testing the "${agentName}" agent.` }])
+        setMessages([{ role: 'model', content: `Hello! I'm ready to help. How can I assist you today? Send a message to start testing the "${agentName}" agent.` }])
     }
   }, [agentName])
 
@@ -46,22 +46,24 @@ export default function AgentTestPage() {
     if (!input.trim() || isLoading || !agentName) return
 
     const userMessage: Message = { role: 'user', content: input }
+    const currentHistory = messages;
+
     setMessages(prev => [...prev, userMessage])
     setInput('')
     setIsLoading(true)
     setExecutionSteps([])
 
     try {
-      const result = await runAgent(agentName, input)
+      const result = await runAgent(agentName, input, currentHistory)
       if (result.error) {
         toast({
           variant: "destructive",
           title: "An error occurred",
           description: result.error,
         })
-        setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I encountered an error. Please try again." }])
+        setMessages(prev => [...prev, { role: 'model', content: "Sorry, I encountered an error. Please try again." }])
       } else {
-        setMessages(prev => [...prev, { role: 'assistant', content: result.response as string }])
+        setMessages(prev => [...prev, { role: 'model', content: result.response as string }])
         setExecutionSteps(result.steps as ExecutionStep[])
       }
     } catch (e) {
@@ -70,7 +72,7 @@ export default function AgentTestPage() {
         title: "An error occurred",
         description: "Could not connect to the agent.",
       })
-       setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I couldn't connect to the agent. Please check the console and try again." }])
+       setMessages(prev => [...prev, { role: 'model', content: "Sorry, I couldn't connect to the agent. Please check the console and try again." }])
     } finally {
       setIsLoading(false)
     }
@@ -116,13 +118,13 @@ export default function AgentTestPage() {
                 <div className="space-y-6">
                   {messages.map((message, index) => (
                     <div key={index} className={`flex items-start gap-4 ${message.role === 'user' ? 'justify-end' : ''}`}>
-                      {message.role === 'assistant' && (
+                      {message.role === 'model' && (
                         <Avatar className="h-9 w-9 border">
                           <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="robot logo" alt={agentDisplayName} />
                           <AvatarFallback>{agentDisplayName?.substring(0, 2).toUpperCase()}</AvatarFallback>
                         </Avatar>
                       )}
-                      <div className={`rounded-lg p-3 max-w-[80%] ${message.role === 'assistant' ? 'bg-muted' : 'bg-primary text-primary-foreground'}`}>
+                      <div className={`rounded-lg p-3 max-w-[80%] ${message.role === 'model' ? 'bg-muted' : 'bg-primary text-primary-foreground'}`}>
                         <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                       </div>
                       {message.role === 'user' && (
