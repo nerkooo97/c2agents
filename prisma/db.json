@@ -113,6 +113,13 @@
       "agentName": "Realtime%20Voice%20Agent",
       "status": "error",
       "errorDetails": "Agent 'Realtime%20Voice%20Agent' not found."
+    },
+    {
+      "id": "d446552f-c73e-4364-ae95-ab77f854bda7",
+      "timestamp": "2025-07-09T17:31:13.270Z",
+      "agentName": "Realtime%20Voice%20Agent",
+      "status": "error",
+      "errorDetails": "Agent 'Realtime%20Voice%20Agent' not found."
     }
   ]
 }

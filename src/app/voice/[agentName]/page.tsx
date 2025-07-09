@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { runAgent, generateSpeechAction } from '@/lib/actions'
@@ -12,12 +12,11 @@ import { useToast } from '@/hooks/use-toast'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Message } from '@/lib/types'
 
-// Define SpeechRecognition type for broader compatibility
 type SpeechRecognition = typeof window.SpeechRecognition
 
 export default function VoiceChatPage() {
   const params = useParams()
-  const agentName = Array.isArray(params.agentName) ? params.agentName[0] : params.agentName
+  const agentName = decodeURIComponent(Array.isArray(params.agentName) ? params.agentName[0] : (params.agentName as string) || '')
   
   const [isListening, setIsListening] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -30,7 +29,6 @@ export default function VoiceChatPage() {
   const { toast } = useToast()
 
   useEffect(() => {
-    // Set initial greeting from the agent
     if (agentName) {
       const agentDisplayName = agentName.replace(/-/g, ' ')
       setMessages([{ role: 'model', content: `Hello! I'm the ${agentDisplayName}. How can I help you today?` }]);
@@ -77,35 +75,14 @@ export default function VoiceChatPage() {
     recognitionRef.current = recognition
   }, [toast])
 
-  const handleToggleListening = () => {
-    if (isLoading) return
-
-    if (isListening) {
-      recognitionRef.current?.stop()
-      // The onend event will handle processing
-    } else {
-      setTranscript('')
-      recognitionRef.current?.start()
-      setIsListening(true)
-    }
-  }
-
-  // Effect to process request when listening stops and we have a transcript
-  useEffect(() => {
-    if (!isListening && transcript.trim() && !isLoading) {
-      processRequest(transcript)
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isListening, transcript])
-
-
-  const processRequest = async (text: string) => {
+  const processRequest = useCallback(async (text: string) => {
     if (!agentName) return
 
     setIsLoading(true)
     const userMessage: Message = { role: 'user', content: text };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
+    setTranscript('')
 
     try {
       const agentResult = await runAgent(agentName, text, newMessages)
@@ -139,19 +116,38 @@ export default function VoiceChatPage() {
     } finally {
       setIsLoading(false)
     }
+  }, [agentName, messages, toast]);
+
+  useEffect(() => {
+    if (!isListening && transcript.trim() && !isLoading) {
+      processRequest(transcript)
+    }
+  }, [isListening, transcript, isLoading, processRequest]);
+
+
+  const handleToggleListening = () => {
+    if (isLoading) return
+
+    if (isListening) {
+      recognitionRef.current?.stop()
+    } else {
+      setTranscript('')
+      recognitionRef.current?.start()
+      setIsListening(true)
+    }
   }
 
   const agentDisplayName = agentName?.replace(/-/g, ' ') ?? 'Agent'
 
   let statusText = "Click the microphone to start speaking."
   if (isLoading) {
-    statusText = "Processing your request..."
+    statusText = "Thinking..."
   } else if (isListening) {
     statusText = "Listening..."
   }
   
   const lastUserTranscript = messages.filter(m => m.role === 'user').at(-1)?.content || "..."
-  const lastAgentResponse = messages.filter(m => m.role === 'model').at(-1)?.content || "..."
+  const lastAgentResponse = messages.filter(m => m.role === 'model').at(-1)?.content || "I'm ready to help."
 
   return (
     <div className="min-h-screen w-full bg-background flex flex-col">
