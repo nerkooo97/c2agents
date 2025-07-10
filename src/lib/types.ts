@@ -171,4 +171,17 @@ export interface AppSettings {
         enabled: boolean;
         embeddingModel: string;
     };
+    integrations?: Record<string, {
+        installed: boolean;
+        apiKey?: string;
+    }>;
+}
+
+// Integrations
+export interface IntegrationDefinition {
+    id: string; // e.g., 'firecrawl', 'exa'
+    name: string;
+    description: string;
+    icon: React.ElementType;
+    toolName: string; // The associated tool name (e.g., 'firecrawlScraper')
 }
