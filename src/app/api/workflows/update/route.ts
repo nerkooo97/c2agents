@@ -22,17 +22,23 @@ export async function POST(request: Request) {
         const { originalId, workflowData } = parseResult.data;
 
         // Check if the new name is already taken by another workflow
-        const conflictingWorkflow = await db.workflow.findUnique({
-            where: { name: workflowData.name },
+        const conflictingWorkflow = await db.workflow.findFirst({
+            where: { 
+                name: workflowData.name,
+                id: { not: originalId }
+            },
         });
 
-        if (conflictingWorkflow && conflictingWorkflow.id !== originalId) {
+        if (conflictingWorkflow) {
             return NextResponse.json({ error: `A workflow with the name '${workflowData.name}' already exists.` }, { status: 409 });
         }
 
         const updatedWorkflow = await db.workflow.update({
             where: { id: originalId },
-            data: workflowData,
+            data: {
+                ...workflowData,
+                planSteps: JSON.stringify(workflowData.planSteps),
+            }
         });
         
         return NextResponse.json({ message: 'Workflow updated successfully', workflow: updatedWorkflow });

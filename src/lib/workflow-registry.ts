@@ -1,5 +1,6 @@
 import db from '@/lib/db';
 import type { WorkflowDefinition } from '@/lib/types';
+import { PlanStep } from './types';
 
 // Fetches all workflows from the database.
 export async function getWorkflows(): Promise<WorkflowDefinition[]> {
@@ -9,7 +10,11 @@ export async function getWorkflows(): Promise<WorkflowDefinition[]> {
             name: 'asc',
         },
     });
-    return workflows;
+    // Manually cast the JSON 'planSteps' to the correct type.
+    return workflows.map(wf => ({
+        ...wf,
+        planSteps: JSON.parse(wf.planSteps) as PlanStep[],
+    }));
   } catch (error) {
      console.error(`[Workflow Loader] Could not read workflows from database:`, error);
      // In case of a DB error, return an empty array to prevent the app from crashing.

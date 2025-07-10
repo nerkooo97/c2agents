@@ -2,7 +2,7 @@
 import type { ToolDefinition } from '@/lib/types';
 
 const tool: ToolDefinition = {
-  name: 'calculator',
+  name: 'calculator1',
   description: 'A simple calculator for math operations.',
   command: 'npx',
   args: ["-y","@modelcontextprotocol/server-everything"],

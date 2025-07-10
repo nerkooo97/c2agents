@@ -17,7 +17,7 @@ export async function POST(request: Request) {
         const workflowData = parseResult.data;
 
         // Check for existing workflow with the same name
-        const existingWorkflow = await db.workflow.findUnique({
+        const existingWorkflow = await db.workflow.findFirst({
             where: { name: workflowData.name },
         });
 
@@ -26,7 +26,10 @@ export async function POST(request: Request) {
         }
 
         const newWorkflow = await db.workflow.create({
-            data: workflowData,
+            data: {
+                ...workflowData,
+                planSteps: JSON.stringify(workflowData.planSteps),
+            }
         });
         
         return NextResponse.json({ message: 'Workflow created successfully', workflow: newWorkflow }, { status: 201 });

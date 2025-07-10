@@ -75,7 +75,7 @@ export async function runAgent(
     if (agent.enableMemory && sessionId) {
         const conversation = await db.conversation.findUnique({ where: { sessionId } });
         if (conversation) {
-            conversationHistory = conversation.messages;
+            conversationHistory = JSON.parse(conversation.messages) as Message[];
         }
     }
     
@@ -155,17 +155,11 @@ export async function runAgent(
             { role: 'user', content: prompt },
             { role: 'model', content: finalResponse },
         ];
-        const existingConversation = await db.conversation.findUnique({ where: { sessionId } });
-        if (existingConversation) {
-            await db.conversation.update({
-                where: { sessionId },
-                data: { messages: newHistory },
-            });
-        } else {
-            await db.conversation.create({
-                data: { sessionId, messages: newHistory },
-            });
-        }
+        await db.conversation.upsert({
+            where: { sessionId },
+            create: { sessionId, messages: JSON.stringify(newHistory) },
+            update: { messages: JSON.stringify(newHistory) },
+        });
     }
 
 

@@ -4,7 +4,7 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { runAgent } from '@/lib/actions';
-import type { ExecutionStep } from '@/lib/types';
+import type { ExecutionStep, PlanStep } from '@/lib/types';
 
 
 export async function POST(
@@ -30,6 +30,8 @@ export async function POST(
     }
     
     const goal = input || workflow.goal;
+    const planSteps = JSON.parse(workflow.planSteps) as PlanStep[];
+
 
     if (!goal) {
         return NextResponse.json({ error: 'Workflow goal is not defined.' }, { status: 400 });
@@ -38,7 +40,7 @@ export async function POST(
     let previousStepOutput = `Initial goal: ${goal}`;
     const allSteps: ExecutionStep[] = [];
     
-    for (const step of workflow.planSteps) {
+    for (const step of planSteps) {
         if (step.type === 'agent') {
             const currentPrompt = `Based on the overall goal and the previous step's result, perform your task.
 \nOverall Goal: "${goal}"

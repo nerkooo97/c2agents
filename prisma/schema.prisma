@@ -6,46 +6,43 @@ generator client {
 }
 
 datasource db {
-  // By default, this is set to use SQLite for easy development.
-  // When you're ready, you can switch to a different database like PostgreSQL or MySQL.
-  // Just change the provider and the `url` which should point to your database connection string.
   provider = "sqlite"
   url      = "file:./dev.db"
-  //
-  // EXAMPLE FOR MYSQL:
-  // provider = "mysql"
-  // url      = env("DATABASE_URL")
-  //
 }
 
-// =================================================================================
-// Data Models
-// =================================================================================
-
-// Represents a workflow, which is a sequence of agent steps to achieve a goal.
 model Workflow {
-  id              String     @id @default(uuid())
-  name            String     @unique
+  id              String   @id @default(uuid())
+  name            String   @unique
   description     String
   goal            String
-  enableApiAccess Boolean    @default(false)
-  planSteps       PlanStep[]
+  enableApiAccess Boolean  @default(false)
+  planSteps       String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
 
+model AgentExecutionLog {
+  id           String    @id @default(uuid())
+  agentName    String
+  timestamp    DateTime  @default(now())
+  status       String // "success" or "error"
+  latency      Int?
+  inputTokens  Int?
+  outputTokens Int?
+  totalTokens  Int?
+  errorDetails String?
+}
+
+model Conversation {
+  sessionId String   @id
+  messages  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-// Represents a single step within a workflow plan.
-model PlanStep {
+model Knowledge {
   id        String   @id @default(uuid())
-  agentName String
-  task      String
-
-  workflowId String
-  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-
-  // Defines the order of the step within the workflow
-  order Int
-
-  @@unique([workflowId, order])
+  filename  String
+  content   String
+  createdAt DateTime @default(now())
 }

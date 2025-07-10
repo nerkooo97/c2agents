@@ -1,5 +1,5 @@
 // =================================================================================================
-// IMPORTANT: DATABASE ADAPTER
+// DATABASE ADAPTER
 // =================================================================================================
 // This file acts as a flexible database adapter.
 //
@@ -8,7 +8,7 @@
 //
 // =================================================================================================
 
-
+/*
 // =================================================================================================
 // JSON FILE DATABASE IMPLEMENTATION (Default for Development)
 // =================================================================================================
@@ -72,7 +72,7 @@ async function readDb(): Promise<DbData> {
 
 type WorkflowCreateData = z.infer<typeof WorkflowCreateAPISchema>;
 type AgentExecutionLogCreateData = Omit<AgentExecutionLog, 'id' | 'timestamp'>;
-type KnowledgeCreateData = Omit<KnowledgeDocument, 'id'>;
+type KnowledgeCreateData = Omit<KnowledgeDocument, 'id' | 'createdAt'>;
 
 const db = {
     workflow: {
@@ -106,6 +106,8 @@ const db = {
                     ...step,
                     id: crypto.randomUUID(),
                 })),
+                createdAt: new Date(),
+                updatedAt: new Date(),
             };
             data.workflows.push(newWorkflow);
             await writeDb(data);
@@ -122,6 +124,8 @@ const db = {
                     ...step,
                     id: step.id || crypto.randomUUID(),
                 })),
+                createdAt: data.workflows[index].createdAt, // Preserve original creation date
+                updatedAt: new Date(),
              };
              data.workflows[index] = updatedWorkflow;
              await writeDb(data);
@@ -154,7 +158,7 @@ const db = {
             const data = await readDb();
             const newLog: AgentExecutionLog = {
                 id: crypto.randomUUID(),
-                timestamp: new Date().toISOString(),
+                timestamp: new Date(),
                 ...args.data,
             };
             data.agentExecutionLogs.push(newLog);
@@ -171,6 +175,8 @@ const db = {
         async create(args: { data: { sessionId: string; messages: Message[] } }): Promise<Conversation> {
             const data = await readDb();
             const newConversation: Conversation = {
+                createdAt: new Date(),
+                updatedAt: new Date(),
                 ...args.data,
             };
             data.conversations.push(newConversation);
@@ -182,19 +188,29 @@ const db = {
             const index = data.conversations.findIndex(c => c.sessionId === args.where.sessionId);
             if (index === -1) throw new Error('Conversation not found to update.');
             data.conversations[index].messages = args.data.messages;
+            data.conversations[index].updatedAt = new Date();
             await writeDb(data);
             return data.conversations[index];
+        },
+        async upsert(args: { where: { sessionId: string }, create: { sessionId: string, messages: Message[] }, update: { messages: Message[] } }): Promise<Conversation> {
+            const existing = await this.findUnique(args.where);
+            if (existing) {
+                return this.update(args);
+            }
+            return this.create(args.create);
         }
     },
     knowledge: {
-        async findMany(): Promise<KnowledgeDocument[]> {
+        async findMany(args: { orderBy: { createdAt: 'desc' }}): Promise<KnowledgeDocument[]> {
             const db = await readDb();
+             db.knowledge.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
             return db.knowledge;
         },
         async create(args: { data: KnowledgeCreateData }): Promise<KnowledgeDocument> {
             const db = await readDb();
             const newDoc: KnowledgeDocument = {
                 id: crypto.randomUUID(),
+                createdAt: new Date(),
                 ...args.data,
             };
             db.knowledge.push(newDoc);
@@ -228,8 +244,9 @@ const db = {
 };
 
 export default db;
+*/
 
-/*
+
 // =================================================================================================
 // PRISMA CLIENT IMPLEMENTATION (For Production with MySQL/Postgres/etc.)
 // =================================================================================================
@@ -246,4 +263,7 @@ declare global {
 const db = globalThis.prisma ?? prismaClientSingleton()
 
 export default db
-*/
+
+if (process.env.NODE_ENV !== 'production') {
+  globalThis.prisma = db
+}
