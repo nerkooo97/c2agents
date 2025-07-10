@@ -91,6 +91,16 @@
       "inputTokens": 57,
       "outputTokens": 1766,
       "totalTokens": 1823
+    },
+    {
+      "id": "5a9245d2-4c7d-408e-9ff4-26da168f5922",
+      "timestamp": "2025-07-10T09:23:48.479Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "latency": 3387,
+      "inputTokens": 69,
+      "outputTokens": 86,
+      "totalTokens": 155
     }
   ],
   "conversations": [
@@ -162,6 +172,19 @@
         {
           "role": "model",
           "content": "Vaša prva poruka meni u ovoj sesiji je bila \"1 - 1\"."
+        }
+      ]
+    },
+    {
+      "sessionId": "937383d5-9d7c-47c0-a316-e102c9719754",
+      "messages": [
+        {
+          "role": "user",
+          "content": "hej, koaj je tvoja uloga"
+        },
+        {
+          "role": "model",
+          "content": "Ja sam digitalni asistent, MyAgent, i moja uloga je da pružam informacije, odgovore na pitanja i pomažem u obavljanju različitih zadataka. Ako imate neko specifično pitanje ili trebate pomoć oko nečega, slobodno mi se obratite!"
         }
       ]
     }
