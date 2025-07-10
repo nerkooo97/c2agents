@@ -1,6 +1,6 @@
 import db from '@/lib/db';
 import type { WorkflowDefinition } from '@/lib/types';
-import { PlanStep } from './types';
+import type { PlanStep } from './types';
 
 // Fetches all workflows from the database.
 export async function getWorkflows(): Promise<WorkflowDefinition[]> {
