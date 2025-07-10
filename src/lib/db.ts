@@ -33,7 +33,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
-import type { WorkflowDefinition, AgentExecutionLog, Message, Conversation, KnowledgeDocument } from '@/lib/types';
+import type { WorkflowDefinition, AgentExecutionLog, Message, Conversation, KnowledgeDocument, AppSettings } from '@/lib/types';
 import type { z } from 'zod';
 import { WorkflowCreateAPISchema } from '@/lib/types';
 
@@ -44,6 +44,7 @@ interface DbData {
     agentExecutionLogs: AgentExecutionLog[];
     conversations: Conversation[];
     knowledge: KnowledgeDocument[];
+    settings?: AppSettings; // Added for app settings
 }
 
 async function readDb(): Promise<DbData> {
@@ -58,6 +59,7 @@ async function readDb(): Promise<DbData> {
             agentExecutionLogs: data.agentExecutionLogs || [],
             conversations: data.conversations || [],
             knowledge: data.knowledge || [],
+            settings: data.settings || undefined,
         };
     } catch (error) {
         return { workflows: [], agentExecutionLogs: [], conversations: [], knowledge: [] };
@@ -216,6 +218,19 @@ const db = {
             await writeDb(db);
             return deletedDoc;
         }
+    },
+    settings: {
+        async findFirst(): Promise<AppSettings | null> {
+            const data = await readDb();
+            return data.settings || null;
+        },
+        async upsert(args: { create: AppSettings; update: AppSettings }): Promise<AppSettings> {
+            const data = await readDb();
+            const newSettings = { ...data.settings, ...args.update };
+            data.settings = newSettings;
+            await writeDb(data);
+            return newSettings;
+        },
     }
 };
 

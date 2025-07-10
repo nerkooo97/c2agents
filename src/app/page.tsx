@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -738,6 +739,7 @@ export default function AgentsDashboardPage() {
                 <Link href="/tools" className="text-muted-foreground transition-colors hover:text-foreground">Tools</Link>
                 <Link href="/knowledge" className="text-muted-foreground transition-colors hover:text-foreground">Knowledge</Link>
                 <Link href="/analytics" className="text-muted-foreground transition-colors hover:text-foreground">Analytics</Link>
+                <Link href="/settings" className="text-muted-foreground transition-colors hover:text-foreground">Settings</Link>
             </nav>
             <Button onClick={handleCreateNew}>
                 <LucideIcons.PlusCircle className="mr-2 h-4 w-4" /> Create Agent
@@ -753,6 +755,7 @@ export default function AgentsDashboardPage() {
                     <DropdownMenuItem asChild><Link href="/tools">Tools</Link></DropdownMenuItem>
                      <DropdownMenuItem asChild><Link href="/knowledge">Knowledge</Link></DropdownMenuItem>
                     <DropdownMenuItem asChild><Link href="/analytics">Analytics</Link></DropdownMenuItem>
+                     <DropdownMenuItem asChild><Link href="/settings">Settings</Link></DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>
                         <ModeToggle />

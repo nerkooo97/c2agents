@@ -164,3 +164,11 @@ export interface KnowledgeDocument {
     // In a real vector DB, you'd store embeddings here
     // embedding: number[]; 
 }
+
+// App Settings
+export interface AppSettings {
+    rag: {
+        enabled: boolean;
+        embeddingModel: string;
+    };
+}
