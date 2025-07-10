@@ -221,12 +221,11 @@ export default function ComposerPage() {
         if (!currentNode) break;
 
         if (currentNode.type === 'customAgentNode') {
-            const agent = agents.find(a => a.name === currentNode.data.agentName);
             const step: PlanStep = {
                 id: currentNode.id,
                 type: 'agent',
                 agentName: currentNode.data.agentName,
-                task: agent?.defaultTask, // Always include the task field
+                task: undefined, // Let the server handle the task from the agent definition
             };
             plan.push(step);
         } else if (currentNode.type === 'delayNode') {
@@ -466,8 +465,16 @@ export default function ComposerPage() {
   
   const handleOpenSaveSheet = () => {
     const planSteps = flowToPlanSteps();
-    if (!goal.trim() || planSteps.length === 0) {
-        toast({ variant: 'destructive', title: 'Cannot Save', description: 'A workflow must have a goal and at least one connected step.' });
+    if (!goal.trim()) {
+        toast({ variant: 'destructive', title: 'Cannot Save', description: 'A workflow must have a goal.' });
+        return;
+    }
+    if (planSteps.length === 0) {
+        toast({ variant: 'destructive', title: 'Cannot Save', description: 'A workflow must have at least one connected step.' });
+        return;
+    }
+    if (planSteps.some(step => step.type === 'agent' && !step.agentName)) {
+        toast({ variant: 'destructive', title: 'Cannot Save', description: 'Please select an agent for each agent step.'});
         return;
     }
     setIsSaveSheetOpen(true);
@@ -486,8 +493,6 @@ export default function ComposerPage() {
         planSteps,
     };
     
-    console.log('Client: Sending workflow payload:', JSON.stringify(workflowDataPayload, null, 2));
-
     const body = isUpdating
       ? JSON.stringify({ originalId: currentWorkflow.id, workflowData: workflowDataPayload })
       : JSON.stringify(workflowDataPayload);

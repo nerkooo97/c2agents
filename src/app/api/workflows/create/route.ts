@@ -8,8 +8,6 @@ import { WorkflowCreateAPISchema } from '@/lib/types';
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        console.log('Server: Received raw request body:', JSON.stringify(body, null, 2));
-        
         const parseResult = WorkflowCreateAPISchema.safeParse(body);
 
         if (!parseResult.success) {

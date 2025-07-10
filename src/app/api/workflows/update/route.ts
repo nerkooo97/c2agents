@@ -1,3 +1,4 @@
+
 'use server';
 
 import { NextResponse } from 'next/server';
@@ -11,19 +12,17 @@ export async function POST(request: Request) {
         
         const UpdateRequestSchema = z.object({
             originalId: z.string().uuid('Invalid workflow ID.'),
-            workflowData: WorkflowCreateAPISchema, // Use the correct schema here
+            workflowData: WorkflowCreateAPISchema,
         });
         
-        // 1. Validate the raw incoming data first.
         const parseResult = UpdateRequestSchema.safeParse(body);
         if (!parseResult.success) {
-            // Return detailed validation errors for better debugging
+            console.error('Server: Zod validation failed on update!', parseResult.error.flatten());
             return NextResponse.json({ error: 'Invalid workflow data', details: parseResult.error.flatten() }, { status: 400 });
         }
 
         const { originalId, workflowData } = parseResult.data;
 
-        // Check if the new name is already taken by another workflow
         const conflictingWorkflow = await db.workflow.findFirst({
             where: { 
                 name: workflowData.name,
@@ -35,7 +34,6 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: `A workflow with the name '${workflowData.name}' already exists.` }, { status: 409 });
         }
 
-        // 2. Stringify the validated data for database storage.
         const updatedWorkflow = await db.workflow.update({
             where: { id: originalId },
             data: {
