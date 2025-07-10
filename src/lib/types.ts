@@ -209,5 +209,3 @@ export const McpServerFormSchema = McpServerConfigSchema.omit({id: true}).extend
 });
 
 export type McpServerFormData = z.infer<typeof McpServerFormSchema>;
-
-    

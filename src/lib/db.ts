@@ -76,26 +76,6 @@ const initialDbData: DbData = {
   ],
 };
 
-async function readDb(): Promise<DbData> {
-    try {
-        await fs.access(dbPath);
-        const fileContent = await fs.readFile(dbPath, 'utf-8');
-        if (!fileContent) return { ...initialDbData };
-        const data = JSON.parse(fileContent);
-        // Ensure all expected keys exist
-        return {
-            workflows: data.workflows || [],
-            agentExecutionLogs: data.agentExecutionLogs || [],
-            conversations: data.conversations || [],
-            knowledge: data.knowledge || [],
-            settings: data.settings || undefined,
-            mcpServers: data.mcpServers || initialDbData.mcpServers,
-        };
-    } catch (error) {
-        return { ...initialDbData };
-    }
-}
-
 async function writeDb(data: DbData): Promise<void> {
     try {
         await fs.mkdir(path.dirname(dbPath), { recursive: true });
@@ -105,6 +85,30 @@ async function writeDb(data: DbData): Promise<void> {
         throw new Error("Could not save data to the database file.");
     }
 }
+
+async function readDb(): Promise<DbData> {
+    try {
+        await fs.access(dbPath);
+        const fileContent = await fs.readFile(dbPath, 'utf-8');
+        if (!fileContent) {
+            await writeDb(initialDbData);
+            return { ...initialDbData };
+        }
+        const data = JSON.parse(fileContent);
+        // Ensure all expected keys exist, merge with initial data
+        const completeData = {
+            ...initialDbData,
+            ...data,
+            mcpServers: data.mcpServers || initialDbData.mcpServers,
+        };
+        return completeData;
+    } catch (error) {
+        // If file doesn't exist or is corrupted, create it with initial data.
+        await writeDb(initialDbData);
+        return { ...initialDbData };
+    }
+}
+
 
 type WorkflowCreateData = z.infer<typeof WorkflowCreateAPISchema>;
 type AgentExecutionLogCreateData = Omit<AgentExecutionLog, 'id' | 'timestamp'>;
