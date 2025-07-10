@@ -6,6 +6,7 @@ import calculator from './calculator';
 import delegateTask from './delegate-task';
 import webSearch from './web-search';
 import playwright from './playwright';
+import runWorkflow from './run-workflow';
 
 // Statically define all tools. This is more reliable than dynamic loading.
 const allTools: (Tool<any, any> | undefined)[] = [
@@ -13,6 +14,7 @@ const allTools: (Tool<any, any> | undefined)[] = [
     delegateTask,
     webSearch,
     playwright,
+    runWorkflow,
 ];
 
 // Filter out any undefined tools (like disabled ones) and create the final list and map.
