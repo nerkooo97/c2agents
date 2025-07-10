@@ -176,31 +176,38 @@ export interface IntegrationDefinition {
     toolName: string; // The associated tool name (e.g., 'firecrawlScraper')
 }
 
+const McpServerEnvSchema = z.record(z.string(), z.any());
+
 export const McpServerConfigSchema = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().uuid(),
   name: z.string().min(1, 'Server name is required.'),
   description: z.string().optional(),
   command: z.string().min(1, 'Command is required.'),
-  args: z.string().transform(val => val.split(' ').map(s => s.trim()).filter(Boolean)), // transform string to array
-  env: z.string().optional().transform(val => {
-      if (!val) return {};
-      try {
-          const parsed = JSON.parse(val);
-          if (typeof parsed === 'object' && !Array.isArray(parsed) && parsed !== null) {
-              return parsed;
-          }
-          return {};
-      } catch {
-          return {};
-      }
-  }),
+  args: z.array(z.string()),
+  env: McpServerEnvSchema,
   enabled: z.boolean().default(true),
 });
 
-export type McpServerConfig = z.infer<typeof McpServerConfigSchema> & { id: string };
+export type McpServerConfig = z.infer<typeof McpServerConfigSchema>;
 
 export const McpServerFormSchema = McpServerConfigSchema.omit({id: true}).extend({
-    args: z.string(),
-    env: z.string().optional(),
+    args: z.string().transform(val => val.split(' ').map(s => s.trim()).filter(Boolean)),
+    env: z.string().optional().transform(val => {
+        if (!val) return {};
+        try {
+            const parsed = JSON.parse(val);
+            if (typeof parsed === 'object' && !Array.isArray(parsed) && parsed !== null) {
+                return parsed;
+            }
+            throw new Error("Invalid JSON object");
+        } catch(e) {
+            throw new Error("Environment variables must be a valid JSON object.");
+        }
+    }).refine(data => McpServerEnvSchema.safeParse(data).success, {
+        message: "Invalid environment variable format."
+    }),
 });
+
 export type McpServerFormData = z.infer<typeof McpServerFormSchema>;
+
+    

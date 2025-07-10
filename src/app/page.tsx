@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { AgentDefinition, AgentFormData } from '@/lib/types';
+import type { AgentDefinition, AgentFormData, McpServerConfig } from '@/lib/types';
 import { AgentDefinitionSchema } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -567,25 +567,16 @@ export default function AgentsDashboardPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const [agentsResponse, toolsResponse] = await Promise.all([
-            fetch('/api/agents'),
-            fetch('/api/tools'),
-        ]);
+        const agentsResponse = await fetch('/api/agents');
 
         if (!agentsResponse.ok) {
           const errorData = await agentsResponse.json();
           throw new Error(errorData.error || 'Failed to fetch agents');
         }
-         if (!toolsResponse.ok) {
-          const errorData = await toolsResponse.json();
-          throw new Error(errorData.error || 'Failed to fetch tools');
-        }
-
+        
         const agentsData = await agentsResponse.json();
-        const toolsData = await toolsResponse.json();
-
         setAgents(agentsData);
-        setAvailableTools(toolsData);
+
       } catch (e) {
         const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
         setError(errorMessage);
@@ -600,6 +591,31 @@ export default function AgentsDashboardPage() {
     };
     fetchInitialData();
   }, [toast]);
+  
+  useEffect(() => {
+    // Only fetch tools when the sheet is opened to avoid unnecessary calls
+    if (isSheetOpen) {
+        const fetchTools = async () => {
+             try {
+                const toolsResponse = await fetch('/api/tools');
+                 if (!toolsResponse.ok) {
+                  const errorData = await toolsResponse.json();
+                  throw new Error(errorData.error || 'Failed to fetch tools');
+                }
+                const toolsData = await toolsResponse.json();
+                setAvailableTools(toolsData);
+             } catch(e) {
+                const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
+                toast({
+                  variant: 'destructive',
+                  title: 'Failed to load available tools',
+                  description: errorMessage,
+                });
+             }
+        };
+        fetchTools();
+    }
+  }, [isSheetOpen, toast]);
 
   const handleCreateNew = () => {
     setEditingAgent(undefined);
@@ -823,3 +839,5 @@ export default function AgentsDashboardPage() {
     </div>
   );
 }
+
+    
