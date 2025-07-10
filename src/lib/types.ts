@@ -28,7 +28,7 @@ export interface AgentInfo {
 }
 
 export interface AgentDefinition {
-  name: string;
+  name:string;
   description: string;
   model: string;
   systemPrompt: string;
@@ -167,45 +167,44 @@ export interface AppSettings {
     }>;
 }
 
-// Integrations & MCP
-export interface IntegrationDefinition {
-    id: string; // e.g., 'firecrawl', 'exa'
-    name: string;
-    description: string;
-    icon: React.ElementType;
-    toolName: string; // The associated tool name (e.g., 'firecrawlScraper')
+// ================== FILE-BASED TOOL MANAGEMENT TYPES ==================
+
+// This is the definition of a tool as it is stored in its `index.ts` file.
+export interface ToolDefinition {
+  name: string;
+  description: string;
+  command: string;
+  args: string[];
+  env?: Record<string, any>;
+  enabled: boolean;
 }
 
-const McpServerEnvSchema = z.record(z.string(), z.any());
+// This is the schema used in the form for creating/editing a tool.
+// It handles transformations from form-friendly formats (string) to the stored format (array/object).
+const ToolEnvSchema = z.record(z.string(), z.any());
 
-export const McpServerConfigSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string().min(1, 'Server name is required.'),
+export const ToolFormSchema = z.object({
+  name: z.string().min(1, 'Tool name is required.').regex(/^[a-zA-Z0-9_-]+$/, 'Name can only contain letters, numbers, hyphens, and underscores.'),
   description: z.string().optional(),
   command: z.string().min(1, 'Command is required.'),
-  args: z.array(z.string()),
-  env: McpServerEnvSchema,
+  // Transforms space-separated string of args into an array
+  args: z.string().transform(val => val.split(' ').map(s => s.trim()).filter(Boolean)),
+  // Transforms a JSON string into an object for env vars
+  env: z.string().optional().transform(val => {
+      if (!val) return {};
+      try {
+          const parsed = JSON.parse(val);
+          if (typeof parsed === 'object' && !Array.isArray(parsed) && parsed !== null) {
+              return parsed;
+          }
+          throw new Error("Invalid JSON object");
+      } catch(e) {
+          throw new Error("Environment variables must be a valid JSON object.");
+      }
+  }).refine(data => ToolEnvSchema.safeParse(data).success, {
+      message: "Invalid environment variable format."
+  }),
   enabled: z.boolean().default(true),
 });
 
-export type McpServerConfig = z.infer<typeof McpServerConfigSchema>;
-
-export const McpServerFormSchema = McpServerConfigSchema.omit({id: true}).extend({
-    args: z.string().transform(val => val.split(' ').map(s => s.trim()).filter(Boolean)),
-    env: z.string().optional().transform(val => {
-        if (!val) return {};
-        try {
-            const parsed = JSON.parse(val);
-            if (typeof parsed === 'object' && !Array.isArray(parsed) && parsed !== null) {
-                return parsed;
-            }
-            throw new Error("Invalid JSON object");
-        } catch(e) {
-            throw new Error("Environment variables must be a valid JSON object.");
-        }
-    }).refine(data => McpServerEnvSchema.safeParse(data).success, {
-        message: "Invalid environment variable format."
-    }),
-});
-
-export type McpServerFormData = z.infer<typeof McpServerFormSchema>;
+export type ToolFormData = z.infer<typeof ToolFormSchema>;

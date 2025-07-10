@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { McpServerConfig, McpServerFormSchema, McpServerFormData } from '@/lib/types';
+import { ToolDefinition, ToolFormSchema, ToolFormData } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -33,29 +33,29 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 
-const McpServerForm = ({
-  server,
+const ToolForm = ({
+  tool,
   onSave,
   onClose,
 }: {
-  server?: McpServerConfig;
-  onSave: (data: McpServerFormData) => void;
+  tool?: ToolDefinition;
+  onSave: (data: ToolFormData, originalName?: string) => void;
   onClose: () => void;
 }) => {
-  const form = useForm<McpServerFormData>({
-    resolver: zodResolver(McpServerFormSchema),
+  const form = useForm<ToolFormData>({
+    resolver: zodResolver(ToolFormSchema),
     defaultValues: {
-      name: server?.name || '',
-      description: server?.description || '',
-      command: server?.command || 'npx',
-      args: server?.args.join(' ') || '',
-      env: server?.env ? JSON.stringify(server.env, null, 2) : '',
-      enabled: server?.enabled ?? true,
+      name: tool?.name || '',
+      description: tool?.description || '',
+      command: tool?.command || 'npx',
+      args: tool?.args.join(' ') || '',
+      env: tool?.env ? JSON.stringify(tool.env, null, 2) : '',
+      enabled: tool?.enabled ?? true,
     },
   });
 
-  const onSubmit = (data: McpServerFormData) => {
-    onSave(data);
+  const onSubmit = (data: ToolFormData) => {
+    onSave(data, tool?.name);
   };
 
   return (
@@ -66,9 +66,9 @@ const McpServerForm = ({
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Server Name</FormLabel>
-              <FormControl><Input placeholder="e.g., firecrawl" {...field} /></FormControl>
-              <FormDescription>A unique name for this server (no spaces).</FormDescription>
+              <FormLabel>Tool Name</FormLabel>
+              <FormControl><Input placeholder="e.g., calculator" {...field} disabled={!!tool} /></FormControl>
+              <FormDescription>A unique name for this tool (letters, numbers, -, _). Cannot be changed after creation.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -79,7 +79,7 @@ const McpServerForm = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Description</FormLabel>
-              <FormControl><Input placeholder="A short summary of what this server provides." {...field} /></FormControl>
+              <FormControl><Input placeholder="A short summary of what this tool provides." {...field} /></FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -127,7 +127,7 @@ const McpServerForm = ({
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                 <div className="space-y-0.5">
                   <FormLabel>Enabled</FormLabel>
-                   <p className="text-xs text-muted-foreground">Enable this server to be loaded at startup.</p>
+                   <p className="text-xs text-muted-foreground">Enable this tool to be loaded at startup.</p>
                 </div>
                 <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
               </FormItem>
@@ -135,7 +135,7 @@ const McpServerForm = ({
           />
         <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
-            <Button type="submit">Save Server</Button>
+            <Button type="submit">Save Tool</Button>
         </div>
       </form>
     </Form>
@@ -143,26 +143,26 @@ const McpServerForm = ({
 };
 
 export default function McpToolsPage() {
-  const [servers, setServers] = useState<McpServerConfig[]>([]);
+  const [tools, setTools] = useState<ToolDefinition[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [editingServer, setEditingServer] = useState<McpServerConfig | null>(null);
-  const [deletingServer, setDeletingServer] = useState<McpServerConfig | null>(null);
+  const [editingTool, setEditingTool] = useState<ToolDefinition | null>(null);
+  const [deletingTool, setDeletingTool] = useState<ToolDefinition | null>(null);
 
   const { toast } = useToast();
 
-  const fetchServers = useCallback(async () => {
+  const fetchTools = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/mcp');
-      if (!response.ok) throw new Error('Failed to fetch MCP servers.');
+      const response = await fetch('/api/tools-management');
+      if (!response.ok) throw new Error('Failed to fetch tools.');
       const data = await response.json();
-      setServers(data);
+      setTools(data);
     } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Could not fetch servers.',
+        description: error instanceof Error ? error.message : 'Could not fetch tools.',
       });
     } finally {
       setIsLoading(false);
@@ -170,49 +170,49 @@ export default function McpToolsPage() {
   }, [toast]);
 
   useEffect(() => {
-    fetchServers();
-  }, [fetchServers]);
+    fetchTools();
+  }, [fetchTools]);
 
   const handleCreateNew = () => {
-    setEditingServer(null);
+    setEditingTool(null);
     setIsSheetOpen(true);
   };
   
-  const handleEdit = (server: McpServerConfig) => {
-    setEditingServer(server);
+  const handleEdit = (tool: ToolDefinition) => {
+    setEditingTool(tool);
     setIsSheetOpen(true);
   };
   
   const handleDelete = async () => {
-    if (!deletingServer) return;
+    if (!deletingTool) return;
     try {
-        const response = await fetch('/api/mcp/delete', {
+        const response = await fetch('/api/tools-management/delete', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: deletingServer.id }),
+            body: JSON.stringify({ name: deletingTool.name }),
         });
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to delete server');
+            throw new Error(errorData.error || 'Failed to delete tool');
         }
-        toast({ title: "MCP Server Deleted", description: `"${deletingServer.name}" has been deleted.` });
-        fetchServers();
+        toast({ title: "Tool Deleted", description: `"${deletingTool.name}" has been deleted.` });
+        fetchTools();
     } catch (e) {
         toast({
             variant: "destructive",
-            title: "Error deleting server",
-            description: e instanceof Error ? e.message : 'Could not delete server.',
+            title: "Error deleting tool",
+            description: e instanceof Error ? e.message : 'Could not delete tool.',
         });
     } finally {
-        setDeletingServer(null);
+        setDeletingTool(null);
     }
   };
   
-  const handleSave = async (formData: McpServerFormData) => {
-    const isEditing = !!editingServer;
-    const apiEndpoint = isEditing ? '/api/mcp/update' : '/api/mcp/create';
+  const handleSave = async (formData: ToolFormData, originalName?: string) => {
+    const isEditing = !!originalName;
+    const apiEndpoint = isEditing ? '/api/tools-management/update' : '/api/tools-management/create';
     const body = isEditing 
-        ? JSON.stringify({ id: editingServer.id, ...formData }) 
+        ? JSON.stringify({ originalName, toolData: formData }) 
         : JSON.stringify(formData);
         
     try {
@@ -224,24 +224,34 @@ export default function McpToolsPage() {
         
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to save server');
+            throw new Error(errorData.error || 'Failed to save tool');
         }
         
         toast({ 
-            title: `Server ${isEditing ? 'Updated' : 'Created'}`, 
+            title: `Tool ${isEditing ? 'Updated' : 'Created'}`, 
             description: `"${formData.name}" has been saved. You may need to restart the application for changes to take effect.`
         });
-        fetchServers();
+        fetchTools();
     } catch(e) {
         toast({
             variant: "destructive",
-            title: `Error saving server`,
-            description: e instanceof Error ? e.message : 'Could not save server.',
+            title: `Error saving tool`,
+            description: e instanceof Error ? e.message : 'Could not save tool.',
         });
     } finally {
         setIsSheetOpen(false);
-        setEditingServer(null);
+        setEditingTool(null);
     }
+  };
+  
+  const handleToggle = async (tool: ToolDefinition) => {
+      const updatedToolData: ToolFormData = {
+          ...tool,
+          args: tool.args.join(' '),
+          env: tool.env ? JSON.stringify(tool.env) : '',
+          enabled: !tool.enabled,
+      };
+      await handleSave(updatedToolData, tool.name);
   };
 
   return (
@@ -258,14 +268,14 @@ export default function McpToolsPage() {
         <div className="flex items-center gap-2">
           <Button onClick={handleCreateNew}>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Add MCP Server
+            Add Tool
           </Button>
         </div>
       </header>
       <main className="flex-1 p-4 md:p-6">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold tracking-tight">Manage MCP Servers</h2>
-          <p className="text-muted-foreground">Add, configure, and manage your Model Context Protocol servers.</p>
+          <h2 className="text-2xl font-bold tracking-tight">Manage Tools</h2>
+          <p className="text-muted-foreground">Add, configure, and manage your MCP-compatible tools.</p>
         </div>
 
         {isLoading ? (
@@ -274,42 +284,42 @@ export default function McpToolsPage() {
               <Card key={i}><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-20 w-full" /></CardContent></Card>
             ))}
           </div>
-        ) : servers.length === 0 ? (
+        ) : tools.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center h-64">
             <Server className="h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-4 text-lg font-semibold">No MCP Servers Found</h3>
+            <h3 className="mt-4 text-lg font-semibold">No Tools Found</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Add your first MCP server to provide tools to your agents.
+              Add your first tool to provide capabilities to your agents.
             </p>
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {servers.map(server => (
-              <Card key={server.id} className="flex flex-col">
+            {tools.map(tool => (
+              <Card key={tool.name} className="flex flex-col">
                 <CardHeader className="flex-row items-start justify-between gap-4 pb-4">
                   <div className="flex items-center gap-3">
                     <Server className="h-6 w-6 text-primary" />
-                    <CardTitle className="text-lg">{server.name}</CardTitle>
+                    <CardTitle className="text-lg">{tool.name}</CardTitle>
                   </div>
-                   <Switch checked={server.enabled} onCheckedChange={(checked) => handleSave({ ...server, args: server.args.join(' '), env: server.env ? JSON.stringify(server.env) : '', enabled: checked})} />
+                   <Switch checked={tool.enabled} onCheckedChange={() => handleToggle(tool)} />
                 </CardHeader>
                 <CardContent className="flex-1 space-y-4">
                   <p className="text-sm text-muted-foreground min-h-[40px]">
-                    {server.description || 'No description provided.'}
+                    {tool.description || 'No description provided.'}
                   </p>
                   <Separator/>
                   <div className="space-y-2 font-code text-xs">
                     <div className="flex items-start gap-3">
                       <Terminal className="h-4 w-4 mt-0.5 text-muted-foreground" />
                       <p className="break-all">
-                        <span className="font-semibold">{server.command}</span> {server.args.join(' ')}
+                        <span className="font-semibold">{tool.command}</span> {tool.args.join(' ')}
                       </p>
                     </div>
-                    {Object.keys(server.env).length > 0 && (
+                    {tool.env && Object.keys(tool.env).length > 0 && (
                       <div className="flex items-start gap-3">
                         <KeyRound className="h-4 w-4 mt-0.5 text-muted-foreground" />
                         <p className="break-all text-muted-foreground">
-                          {Object.keys(server.env).join(', ')}
+                          {Object.keys(tool.env).join(', ')}
                         </p>
                       </div>
                     )}
@@ -317,10 +327,10 @@ export default function McpToolsPage() {
                 </CardContent>
                 <CardFooter className="border-t pt-4">
                     <div className="flex w-full justify-end gap-2">
-                        <Button variant="ghost" onClick={() => handleEdit(server)}>
+                        <Button variant="ghost" onClick={() => handleEdit(tool)}>
                             <Edit className="mr-2 h-4 w-4"/> Edit
                         </Button>
-                        <Button variant="destructive" onClick={() => setDeletingServer(server)}>
+                        <Button variant="destructive" onClick={() => setDeletingTool(tool)}>
                             <Trash2 className="mr-2 h-4 w-4"/> Delete
                         </Button>
                     </div>
@@ -334,25 +344,25 @@ export default function McpToolsPage() {
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent className="sm:max-w-xl w-full">
             <SheetHeader>
-                <SheetTitle>{editingServer ? 'Edit MCP Server' : 'Add New MCP Server'}</SheetTitle>
+                <SheetTitle>{editingTool ? 'Edit Tool' : 'Add New Tool'}</SheetTitle>
                 <SheetDescription>
-                    Configure a server process to provide tools to your agents.
+                    Configure a tool process to provide capabilities to your agents.
                 </SheetDescription>
             </SheetHeader>
-            <McpServerForm 
-                server={editingServer!}
+            <ToolForm 
+                tool={editingTool!}
                 onSave={handleSave}
                 onClose={() => setIsSheetOpen(false)}
             />
         </SheetContent>
       </Sheet>
       
-       <AlertDialog open={!!deletingServer} onOpenChange={(open) => !open && setDeletingServer(null)}>
+       <AlertDialog open={!!deletingTool} onOpenChange={(open) => !open && setDeletingTool(null)}>
         <AlertDialogContent>
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This will permanently delete the MCP server configuration for "{deletingServer?.name}". This action cannot be undone.
+                    This will permanently delete the tool configuration for "{deletingTool?.name}". This action cannot be undone.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

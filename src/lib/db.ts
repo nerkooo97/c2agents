@@ -6,24 +6,6 @@
 // By default, it uses a simple JSON file (`prisma/db.json`) for data storage, which is
 // perfect for development and prototyping as it requires no external database setup.
 //
-// When you are ready to move to a production environment with a real database like MySQL,
-// you can easily switch the implementation without changing any other part of your application code.
-//
-// HOW TO SWITCH TO PRISMA WITH MYSQL:
-// ------------------------------------
-// 1. CONFIGURE YOUR DATABASE URL:
-//    Open the `prisma/schema.prisma` file and update the `url` in the `datasource` block
-//    with your MySQL connection string. It's best to use an environment variable.
-//
-// 2. RUN DATABASE MIGRATION:
-//    In your terminal, run the command `npx prisma db push`. This will create the
-//    necessary tables (`Workflow`, `PlanStep`) in your MySQL database based on the schema.
-//
-// 3. SWAP THE CODE BELOW:
-//    - Comment out or delete the "JSON FILE DATABASE IMPLEMENTATION" section.
-//    - Uncomment the "PRISMA CLIENT IMPLEMENTATION" section.
-//
-// That's it! Your application will now use MySQL via Prisma.
 // =================================================================================================
 
 
@@ -33,7 +15,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
-import type { WorkflowDefinition, AgentExecutionLog, Message, Conversation, KnowledgeDocument, AppSettings, McpServerConfig } from '@/lib/types';
+import type { WorkflowDefinition, AgentExecutionLog, Message, Conversation, KnowledgeDocument, AppSettings } from '@/lib/types';
 import { z } from 'zod';
 import { WorkflowCreateAPISchema } from '@/lib/types';
 
@@ -45,7 +27,6 @@ interface DbData {
     conversations: Conversation[];
     knowledge: KnowledgeDocument[];
     settings?: AppSettings;
-    mcpServers?: McpServerConfig[];
 }
 
 const initialDbData: DbData = {
@@ -54,26 +35,6 @@ const initialDbData: DbData = {
   conversations: [],
   knowledge: [],
   settings: undefined,
-  mcpServers: [
-    {
-      id: crypto.randomUUID(),
-      name: 'calculator',
-      description: 'A simple calculator for math operations.',
-      command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-everything'],
-      env: {},
-      enabled: true,
-    },
-    {
-      id: crypto.randomUUID(),
-      name: 'webSearch',
-      description: 'Performs web searches using an external tool.',
-      command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-everything'],
-      env: {},
-      enabled: true,
-    },
-  ],
 };
 
 async function writeDb(data: DbData): Promise<void> {
@@ -99,7 +60,6 @@ async function readDb(): Promise<DbData> {
         const completeData = {
             ...initialDbData,
             ...data,
-            mcpServers: data.mcpServers || initialDbData.mcpServers,
         };
         return completeData;
     } catch (error) {
@@ -113,7 +73,6 @@ async function readDb(): Promise<DbData> {
 type WorkflowCreateData = z.infer<typeof WorkflowCreateAPISchema>;
 type AgentExecutionLogCreateData = Omit<AgentExecutionLog, 'id' | 'timestamp'>;
 type KnowledgeCreateData = Omit<KnowledgeDocument, 'id'>;
-type McpServerCreateData = Omit<McpServerConfig, 'id'>;
 
 const db = {
     workflow: {
@@ -266,44 +225,6 @@ const db = {
             return newSettings;
         },
     },
-    mcpServer: {
-      async findMany(): Promise<McpServerConfig[]> {
-        const db = await readDb();
-        return db.mcpServers || [];
-      },
-      async findUnique(args: { where: { id: string } }): Promise<McpServerConfig | null> {
-        const db = await readDb();
-        return db.mcpServers?.find(s => s.id === args.where.id) || null;
-      },
-      async create(args: { data: McpServerCreateData }): Promise<McpServerConfig> {
-        const db = await readDb();
-        if (!db.mcpServers) db.mcpServers = [];
-        const newServer: McpServerConfig = {
-          id: crypto.randomUUID(),
-          ...args.data,
-        };
-        db.mcpServers.push(newServer);
-        await writeDb(db);
-        return newServer;
-      },
-      async update(args: { where: { id: string }, data: McpServerCreateData }): Promise<McpServerConfig> {
-        const db = await readDb();
-        const index = db.mcpServers?.findIndex(s => s.id === args.where.id);
-        if (index === undefined || index === -1) throw new Error('MCP server not found.');
-        const updatedServer = { ...db.mcpServers![index], ...args.data };
-        db.mcpServers![index] = updatedServer;
-        await writeDb(db);
-        return updatedServer;
-      },
-      async delete(args: { where: { id: string } }): Promise<McpServerConfig> {
-        const db = await readDb();
-        const index = db.mcpServers?.findIndex(s => s.id === args.where.id);
-        if (index === undefined || index === -1) throw new Error('Record to delete not found.');
-        const [deleted] = db.mcpServers!.splice(index, 1);
-        await writeDb(db);
-        return deleted;
-      }
-    }
 };
 
 export default db;
