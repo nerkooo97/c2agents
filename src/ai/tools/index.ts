@@ -10,7 +10,7 @@ export async function getAllTools(): Promise<Tool<any, any>[]> {
     // Note: This is a simplification. In a real complex app, you might need
     // a more robust way to manage tools if they aren't all globally registered
     // on the main `ai` object. For this project, this works perfectly.
-    const registeredTools = (await (ai as any)).__tools;
+    const registeredTools = (await (ai as any).__tools);
     return registeredTools || [];
 }
 

@@ -562,60 +562,54 @@ export default function AgentsDashboardPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      setIsLoading(true);
-      setError(null);
+  const fetchAgents = async () => {
       try {
         const agentsResponse = await fetch('/api/agents');
-
         if (!agentsResponse.ok) {
           const errorData = await agentsResponse.json();
           throw new Error(errorData.error || 'Failed to fetch agents');
         }
-        
         const agentsData = await agentsResponse.json();
         setAgents(agentsData);
-
       } catch (e) {
-        const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
-        setError(errorMessage);
-        toast({
+         const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
+         setError(errorMessage);
+         toast({
           variant: 'destructive',
-          title: 'Failed to load dashboard data',
+          title: 'Failed to load agents',
           description: errorMessage,
         });
-      } finally {
-        setIsLoading(false);
       }
+  }
+
+  const fetchTools = async () => {
+      try {
+        const toolsResponse = await fetch('/api/tools');
+        if (!toolsResponse.ok) {
+            const errorData = await toolsResponse.json();
+            throw new Error(errorData.error || 'Failed to fetch tools');
+        }
+        const toolsData = await toolsResponse.json();
+        setAvailableTools(toolsData);
+      } catch (e) {
+          const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
+          toast({
+            variant: 'destructive',
+            title: 'Failed to load available tools',
+            description: errorMessage,
+          });
+      }
+  }
+
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      setIsLoading(true);
+      setError(null);
+      await Promise.all([fetchAgents(), fetchTools()]);
+      setIsLoading(false);
     };
     fetchInitialData();
-  }, [toast]);
-  
-  useEffect(() => {
-    // Only fetch tools when the sheet is opened to avoid unnecessary calls
-    if (isSheetOpen) {
-        const fetchTools = async () => {
-             try {
-                const toolsResponse = await fetch('/api/tools');
-                 if (!toolsResponse.ok) {
-                  const errorData = await toolsResponse.json();
-                  throw new Error(errorData.error || 'Failed to fetch tools');
-                }
-                const toolsData = await toolsResponse.json();
-                setAvailableTools(toolsData);
-             } catch(e) {
-                const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
-                toast({
-                  variant: 'destructive',
-                  title: 'Failed to load available tools',
-                  description: errorMessage,
-                });
-             }
-        };
-        fetchTools();
-    }
-  }, [isSheetOpen, toast]);
+  }, []);
 
   const handleCreateNew = () => {
     setEditingAgent(undefined);
