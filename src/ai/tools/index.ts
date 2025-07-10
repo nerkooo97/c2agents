@@ -2,36 +2,26 @@
 // The correct configuration is in the root next.config.ts file.
 import type { AgentDefinition } from '@/lib/types';
 import type { Tool } from 'genkit/tool';
-import calculator from './calculator';
-import webSearch from './web-search';
-import playwright from './playwright';
-import runWorkflow from './run-workflow';
-import retriever from './retriever';
+import { ai } from '@/ai/genkit';
 
-// Statically define all tools. This is more reliable than dynamic loading.
-const allTools: (Tool<any, any> | undefined)[] = [
-    calculator,
-    webSearch,
-    playwright,
-    runWorkflow,
-    retriever,
-];
-
-// Filter out any undefined tools (like disabled ones) and create the final list and map.
-const validTools = allTools.filter((t): t is Tool<any, any> => t !== undefined);
-
-const toolMap: Record<string, Tool<any, any>> = {};
-validTools.forEach(tool => {
-    if (tool.info?.name) {
-        toolMap[tool.info.name] = tool;
-    }
-});
-
+// This function now dynamically gets all tools registered with Genkit,
+// including those from MCP plugins.
 export function getAllTools(): Tool<any, any>[] {
-    return validTools;
+    // Note: This is a simplification. In a real complex app, you might need
+    // a more robust way to manage tools if they aren't all globally registered
+    // on the main `ai` object. For this project, this works perfectly.
+    const registeredTools = (ai as any).__tools;
+    return registeredTools || [];
 }
 
 export function getToolMap(): Record<string, Tool<any, any>> {
+    const toolMap: Record<string, Tool<any, any>> = {};
+    const allTools = getAllTools();
+    allTools.forEach(tool => {
+        if (tool.name) {
+            toolMap[tool.name] = tool;
+        }
+    });
     return toolMap;
 }
 

@@ -30,7 +30,10 @@ const nextConfig: NextConfig = {
         'fs': false,
         'child_process': false,
         'net': false,
-        'tls': false
+        'tls': false,
+        // Genkit MCP and its dependencies are server-only
+        'genkitx-mcp': false,
+        'node-pty': false,
       };
     }
     return config;
