@@ -8,6 +8,7 @@ export async function POST(request: Request) {
     try {
         const body = await request.json();
         
+        // 1. Validate the raw incoming data first.
         const parseResult = WorkflowCreateAPISchema.safeParse(body);
 
         if (!parseResult.success) {
@@ -25,6 +26,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: `A workflow with the name '${workflowData.name}' already exists.` }, { status: 409 });
         }
 
+        // 2. Stringify the validated data for database storage.
         const newWorkflow = await db.workflow.create({
             data: {
                 ...workflowData,
