@@ -13,6 +13,8 @@ const agent: AgentDefinition = {
   enableApiAccess: false,
   realtime: false,
   enableMemory: false,
+  icon: 'Book',
+  iconColor: 'hsl(24.6 95.0% 53.1%)',
 };
 
 export default agent;

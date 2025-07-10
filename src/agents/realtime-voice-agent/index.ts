@@ -13,6 +13,8 @@ const agent: AgentDefinition = {
   enableApiAccess: true,
   realtime: true,
   enableMemory: true,
+  icon: 'Mic',
+  iconColor: 'hsl(333.3 83.3% 57.8%)',
 };
 
 export default agent;

@@ -54,6 +54,8 @@ export async function GET() {
     enableMemory: agent.enableMemory || false,
     defaultTask: agent.defaultTask || '',
     tags: agent.tags || [],
+    icon: agent.icon || 'Bot',
+    iconColor: agent.iconColor || 'hsl(var(--primary))',
   }));
   return NextResponse.json(agentInfos);
 }

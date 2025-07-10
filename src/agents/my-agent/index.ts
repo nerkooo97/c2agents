@@ -13,6 +13,8 @@ const agent: AgentDefinition = {
   enableApiAccess: true,
   realtime: false,
   enableMemory: true,
+  icon: 'Bot',
+  iconColor: 'hsl(221.2 83.2% 53.3%)',
 };
 
 export default agent;

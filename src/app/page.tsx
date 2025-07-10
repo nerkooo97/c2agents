@@ -25,12 +25,34 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Separator } from '@/components/ui/separator';
-import { Bot, BrainCircuit, Code, Mic, MoreVertical, Pencil, PlusCircle, TestTube2, Trash2, Workflow, Wrench, Moon, Sun, Settings } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import { useTheme } from "next-themes";
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { cn } from '@/lib/utils';
 
 type ToolMetadata = {
   name: string;
   description: string;
+};
+
+const iconNames = [
+  'Bot', 'BrainCircuit', 'Rocket', 'Code', 'MessageSquare', 'PieChart', 
+  'Globe', 'Search', 'Wrench', 'Lightbulb', 'Book', 'ShieldCheck', 'TestTube2', 'Mic'
+] as const;
+type IconName = typeof iconNames[number];
+
+const availableColors = [
+    { name: 'Blue', value: 'hsl(221.2 83.2% 53.3%)' }, // Primary
+    { name: 'Green', value: 'hsl(142.1 76.2% 36.3%)' },
+    { name: 'Purple', value: 'hsl(262.1 83.3% 57.8%)' },
+    { name: 'Orange', value: 'hsl(24.6 95.0% 53.1%)' },
+    { name: 'Pink', value: 'hsl(333.3 83.3% 57.8%)' },
+    { name: 'Yellow', value: 'hsl(47.9 95.8% 53.1%)' },
+];
+
+const AgentIcon = ({ iconName, ...props }: { iconName?: string } & LucideIcons.LucideProps) => {
+    const IconComponent = LucideIcons[iconName as keyof typeof LucideIcons] || LucideIcons.Bot;
+    return <IconComponent {...props} />;
 };
 
 // AGENT FORM COMPONENT
@@ -53,6 +75,8 @@ const AgentForm = ({
         tags: agent.tags || [],
         constraints: agent.constraints || '',
         responseFormat: agent.responseFormat || 'text',
+        icon: agent.icon || 'Bot',
+        iconColor: agent.iconColor || availableColors[0].value,
     } : {
       name: '',
       description: '',
@@ -66,6 +90,8 @@ const AgentForm = ({
       enableApiAccess: true,
       realtime: false,
       enableMemory: false,
+      icon: 'Bot',
+      iconColor: availableColors[0].value,
     },
   });
   
@@ -131,6 +157,73 @@ const AgentForm = ({
             </FormItem>
           )}
         />
+        <div className="grid grid-cols-2 gap-4">
+             <FormField
+                control={form.control}
+                name="icon"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Icon</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                    <div className="flex items-center gap-2">
+                                        <AgentIcon iconName={field.value} className="h-4 w-4" />
+                                        <SelectValue placeholder="Select an icon" />
+                                    </div>
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {iconNames.map(icon => (
+                                    <SelectItem key={icon} value={icon}>
+                                        <div className="flex items-center gap-2">
+                                            <AgentIcon iconName={icon} className="h-4 w-4" />
+                                            <span>{icon}</span>
+                                        </div>
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+            <FormField
+                control={form.control}
+                name="iconColor"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Icon Color</FormLabel>
+                        <FormControl>
+                            <RadioGroup
+                                onValueChange={field.onChange}
+                                value={field.value}
+                                className="flex flex-wrap gap-2 pt-2"
+                            >
+                                {availableColors.map(color => (
+                                    <FormItem key={color.name} className="flex items-center space-x-1 space-y-0">
+                                        <FormControl>
+                                            <RadioGroupItem value={color.value} className="sr-only" />
+                                        </FormControl>
+                                        <FormLabel className="cursor-pointer">
+                                            <div
+                                                className={cn(
+                                                    'h-8 w-8 rounded-full border-2 border-transparent transition-all',
+                                                    field.value === color.value && 'ring-2 ring-offset-2 ring-ring ring-offset-background'
+                                                )}
+                                                style={{ backgroundColor: color.value }}
+                                                title={color.name}
+                                            />
+                                        </FormLabel>
+                                    </FormItem>
+                                ))}
+                            </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+        </div>
         <FormField
           control={form.control}
           name="systemPrompt"
@@ -329,8 +422,8 @@ const AgentCard = ({
     <Card className="flex flex-col justify-between transition-all hover:shadow-lg">
       <div>
         <CardHeader className="flex flex-row items-start gap-4 space-y-0 pb-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-            <Bot className="h-6 w-6 text-primary" />
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: `${agent.iconColor}1A` }}>
+             <AgentIcon iconName={agent.icon} className="h-6 w-6" style={{ color: agent.iconColor }} />
           </div>
           <div className="flex-1">
             <CardTitle>{agent.name}</CardTitle>
@@ -338,12 +431,12 @@ const AgentCard = ({
           </div>
           <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon"><LucideIcons.MoreVertical className="h-4 w-4" /></Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                  <DropdownMenuItem onSelect={onEdit}><Pencil className="mr-2 h-4 w-4"/>Edit</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={onEdit}><LucideIcons.Pencil className="mr-2 h-4 w-4"/>Edit</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onSelect={onDelete} className="text-destructive focus:text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Delete</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={onDelete} className="text-destructive focus:text-destructive"><LucideIcons.Trash2 className="mr-2 h-4 w-4"/>Delete</DropdownMenuItem>
               </DropdownMenuContent>
           </DropdownMenu>
         </CardHeader>
@@ -378,7 +471,7 @@ const AgentCard = ({
           <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label htmlFor={`api-toggle-${agent.name}`} className="flex items-center gap-2 font-medium">
-                  <Code className="h-4 w-4" />
+                  <LucideIcons.Code className="h-4 w-4" />
                   <span>API Access</span>
                 </Label>
                 <Switch id={`api-toggle-${agent.name}`} checked={agent.enableApiAccess} onCheckedChange={(checked) => onToggleApi(agent.name, checked)} />
@@ -402,7 +495,7 @@ const AgentCard = ({
               )}
               <div className="flex items-center justify-between">
                 <Label className="flex items-center gap-2 font-medium">
-                  <BrainCircuit className="h-4 w-4" />
+                  <LucideIcons.BrainCircuit className="h-4 w-4" />
                   <span>Memory</span>
                 </Label>
                 <Badge variant={agent.enableMemory ? 'default' : 'secondary'}>
@@ -411,7 +504,7 @@ const AgentCard = ({
               </div>
               <div className="flex items-center justify-between">
                 <Label className="flex items-center gap-2 font-medium">
-                  <Mic className="h-4 w-4" />
+                  <LucideIcons.Mic className="h-4 w-4" />
                   <span>Realtime Voice</span>
                 </Label>
                 <Badge variant={agent.realtime ? 'default' : 'secondary'}>
@@ -423,13 +516,13 @@ const AgentCard = ({
       </div>
       <CardFooter className="flex-col items-stretch gap-2 border-t pt-4">
           <Button onClick={onTest}>
-              <TestTube2 className="mr-2 h-4 w-4" />
+              <LucideIcons.TestTube2 className="mr-2 h-4 w-4" />
               Test in Playground
           </Button>
           {agent.realtime && (
               <Button variant="outline" asChild>
                   <Link href={`/voice/${agent.name}`} className="w-full">
-                      <Mic className="mr-2 h-4 w-4" />
+                      <LucideIcons.Mic className="mr-2 h-4 w-4" />
                       Open Voice Chat
                   </Link>
               </Button>
@@ -446,8 +539,8 @@ function ModeToggle() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon">
-          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <LucideIcons.Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <LucideIcons.Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
@@ -619,7 +712,7 @@ export default function AgentsDashboardPage() {
     
     const updatedAgentData = { ...agentToUpdate, enableApiAccess: enabled };
     
-    handleSaveAgent(updatedAgentData);
+    handleSaveAgent(updatedAgentData as AgentFormData);
   };
   
 
@@ -635,7 +728,7 @@ export default function AgentsDashboardPage() {
        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur-sm sm:h-16 sm:px-6">
         <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-2 font-semibold">
-              <Bot className="h-6 w-6 text-primary" />
+              <LucideIcons.Bot className="h-6 w-6 text-primary" />
               <span className="hidden font-bold sm:inline-block">MyAgent</span>
             </Link>
         </div>
@@ -645,12 +738,12 @@ export default function AgentsDashboardPage() {
                 <Link href="/tools" className="text-muted-foreground transition-colors hover:text-foreground">Tools</Link>
             </nav>
             <Button onClick={handleCreateNew}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Create Agent
+                <LucideIcons.PlusCircle className="mr-2 h-4 w-4" /> Create Agent
             </Button>
              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="icon" className="relative h-8 w-8 md:hidden">
-                        <Settings className="h-4 w-4" />
+                        <LucideIcons.Settings className="h-4 w-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -740,5 +833,3 @@ export default function AgentsDashboardPage() {
     </div>
   );
 }
-
-    

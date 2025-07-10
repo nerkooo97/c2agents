@@ -13,6 +13,8 @@ const agent: AgentDefinition = {
   enableApiAccess: true,
   realtime: false,
   enableMemory: true,
+  icon: 'Rocket',
+  iconColor: 'hsl(142.1 76.2% 36.3%)',
 };
 
 export default agent;

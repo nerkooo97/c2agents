@@ -13,6 +13,8 @@ const agent: AgentDefinition = {
   enableApiAccess: true,
   realtime: false,
   enableMemory: false,
+  icon: 'TestTube2',
+  iconColor: 'hsl(262.1 83.3% 57.8%)',
 };
 
 export default agent;

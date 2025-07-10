@@ -32,6 +32,8 @@ const agent: AgentDefinition = {
   enableApiAccess: ${agentData.enableApiAccess},
   realtime: ${agentData.realtime},
   enableMemory: ${agentData.enableMemory},
+  icon: '${agentData.icon || 'Bot'}',
+  iconColor: '${agentData.iconColor || 'hsl(var(--primary))'}',
 };
 
 export default agent;
