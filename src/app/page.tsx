@@ -304,6 +304,29 @@ const AgentForm = ({
           )}
         />
         <FormField
+            control={form.control}
+            name="tags"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Tags</FormLabel>
+                <FormControl>
+                    <Input
+                    placeholder="e.g., planner, writer, coder"
+                    value={Array.isArray(field.value) ? field.value.join(', ') : ''}
+                    onChange={(e) => {
+                        const tags = e.target.value.split(',').map(tag => tag.trim()).filter(Boolean);
+                        field.onChange(tags);
+                    }}
+                    />
+                </FormControl>
+                <FormDescription>
+                    Comma-separated tags to help other agents discover this one.
+                </FormDescription>
+                <FormMessage />
+                </FormItem>
+            )}
+        />
+        <FormField
           control={form.control}
           name="tools"
           render={() => (
