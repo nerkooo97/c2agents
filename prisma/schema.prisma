@@ -2,8 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "debian-openssl-3.0.x"]
+  provider     = "prisma-client-js"
+  engineType   = "wasm"
 }
 
 datasource db {
@@ -17,7 +17,7 @@ model Workflow {
   description     String
   goal            String
   enableApiAccess Boolean  @default(false)
-  planSteps       String
+  planSteps       String // Stored as JSON string
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
@@ -36,12 +36,12 @@ model AgentExecutionLog {
 
 model Conversation {
   sessionId String   @id
-  messages  String
+  messages  String // Stored as JSON string
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model Knowledge {
+model KnowledgeDocument {
   id        String   @id @default(uuid())
   filename  String
   content   String
