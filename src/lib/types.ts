@@ -104,7 +104,7 @@ export const AgentPlanStepSchema = z.object({
     id: z.string(),
     type: z.literal('agent'),
     agentName: z.string().min(1, "Agent must be selected for each step."),
-    task: z.string().nullable().optional(),
+    task: z.string().optional(),
 });
 
 export const DelayPlanStepSchema = z.object({

@@ -1,3 +1,4 @@
+
 'use server';
 
 import { NextResponse } from 'next/server';
@@ -7,18 +8,17 @@ import { WorkflowCreateAPISchema } from '@/lib/types';
 export async function POST(request: Request) {
     try {
         const body = await request.json();
+        console.log('Server: Received raw request body:', JSON.stringify(body, null, 2));
         
-        // 1. Validate the raw incoming data first using the correct schema.
         const parseResult = WorkflowCreateAPISchema.safeParse(body);
 
         if (!parseResult.success) {
-            // Return detailed validation errors for better debugging
+            console.error('Server: Zod validation failed!', parseResult.error.flatten());
             return NextResponse.json({ error: 'Invalid workflow data', details: parseResult.error.flatten() }, { status: 400 });
         }
 
         const workflowData = parseResult.data;
 
-        // Check for existing workflow with the same name
         const existingWorkflow = await db.workflow.findFirst({
             where: { name: workflowData.name },
         });
@@ -27,7 +27,6 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: `A workflow with the name '${workflowData.name}' already exists.` }, { status: 409 });
         }
 
-        // 2. Stringify the validated data for database storage.
         const newWorkflow = await db.workflow.create({
             data: {
                 ...workflowData,

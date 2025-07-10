@@ -226,11 +226,8 @@ export default function ComposerPage() {
                 id: currentNode.id,
                 type: 'agent',
                 agentName: currentNode.data.agentName,
+                task: agent?.defaultTask, // Always include the task field
             };
-            // Only include the task if it exists to avoid validation errors
-            if (agent?.defaultTask) {
-                step.task = agent.defaultTask;
-            }
             plan.push(step);
         } else if (currentNode.type === 'delayNode') {
             plan.push({
@@ -488,6 +485,8 @@ export default function ComposerPage() {
         goal,
         planSteps,
     };
+    
+    console.log('Client: Sending workflow payload:', JSON.stringify(workflowDataPayload, null, 2));
 
     const body = isUpdating
       ? JSON.stringify({ originalId: currentWorkflow.id, workflowData: workflowDataPayload })
