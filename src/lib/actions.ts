@@ -64,6 +64,7 @@ export async function runAgent(
   prompt: string,
   sessionId?: string
 ): Promise<{ response?: string; steps?: ExecutionStep[]; error?: string }> {
+  const startTime = Date.now();
   try {
     const agent = await getAgent(agentName);
     if (!agent) {
@@ -96,12 +97,16 @@ export async function runAgent(
       history: conversationHistory,
     });
 
+    const endTime = Date.now();
+    const latency = endTime - startTime;
+
     // Log successful execution
     const usage = genkitResponse.usage;
     await db.agentExecutionLog.create({
         data: {
             agentName,
             status: 'success',
+            latency,
             inputTokens: usage?.inputTokens,
             outputTokens: usage?.outputTokens,
             totalTokens: usage?.totalTokens,
@@ -167,6 +172,8 @@ export async function runAgent(
       steps: steps,
     };
   } catch (error) {
+    const endTime = Date.now();
+    const latency = endTime - startTime;
     console.error('Error running agent:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
     
@@ -175,6 +182,7 @@ export async function runAgent(
         data: {
             agentName,
             status: 'error',
+            latency,
             errorDetails: errorMessage,
         },
     });

@@ -125,6 +125,7 @@ export const AgentExecutionLogSchema = z.object({
   agentName: z.string(),
   timestamp: z.string(),
   status: z.enum(['success', 'error']),
+  latency: z.number().optional().nullable(),
   inputTokens: z.number().optional().nullable(),
   outputTokens: z.number().optional().nullable(),
   totalTokens: z.number().optional().nullable(),

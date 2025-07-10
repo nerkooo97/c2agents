@@ -241,7 +241,8 @@ const AgentForm = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Constraints</FormLabel>
-              <FormControl><Textarea placeholder="e.g., - Do not use emojis.&#10;- Always reply in French." className="min-h-[80px]" {...field} /></FormControl>
+              <FormControl><Textarea placeholder="e.g., - Do not use emojis.
+- Always reply in French." className="min-h-[80px]" {...field} /></FormControl>
               <FormDescription>Strict rules the agent must follow. Each constraint on a new line.</FormDescription>
               <FormMessage />
             </FormItem>
@@ -736,6 +737,7 @@ export default function AgentsDashboardPage() {
             <nav className="hidden items-center gap-2 text-sm font-medium md:flex">
                 <Link href="/composer" className="text-muted-foreground transition-colors hover:text-foreground">Composer</Link>
                 <Link href="/tools" className="text-muted-foreground transition-colors hover:text-foreground">Tools</Link>
+                <Link href="/analytics" className="text-muted-foreground transition-colors hover:text-foreground">Analytics</Link>
             </nav>
             <Button onClick={handleCreateNew}>
                 <LucideIcons.PlusCircle className="mr-2 h-4 w-4" /> Create Agent
@@ -749,6 +751,7 @@ export default function AgentsDashboardPage() {
                 <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild><Link href="/composer">Composer</Link></DropdownMenuItem>
                     <DropdownMenuItem asChild><Link href="/tools">Tools</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href="/analytics">Analytics</Link></DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>
                         <ModeToggle />
