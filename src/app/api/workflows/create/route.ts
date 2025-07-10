@@ -8,10 +8,11 @@ export async function POST(request: Request) {
     try {
         const body = await request.json();
         
-        // 1. Validate the raw incoming data first.
+        // 1. Validate the raw incoming data first using the correct schema.
         const parseResult = WorkflowCreateAPISchema.safeParse(body);
 
         if (!parseResult.success) {
+            // Return detailed validation errors for better debugging
             return NextResponse.json({ error: 'Invalid workflow data', details: parseResult.error.flatten() }, { status: 400 });
         }
 

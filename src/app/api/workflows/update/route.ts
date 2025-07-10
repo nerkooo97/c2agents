@@ -9,14 +9,15 @@ export async function POST(request: Request) {
     try {
         const body = await request.json();
         
-        const UpdateSchema = z.object({
+        const UpdateRequestSchema = z.object({
             originalId: z.string().uuid('Invalid workflow ID.'),
-            workflowData: WorkflowCreateAPISchema,
+            workflowData: WorkflowCreateAPISchema, // Use the correct schema here
         });
         
         // 1. Validate the raw incoming data first.
-        const parseResult = UpdateSchema.safeParse(body);
+        const parseResult = UpdateRequestSchema.safeParse(body);
         if (!parseResult.success) {
+            // Return detailed validation errors for better debugging
             return NextResponse.json({ error: 'Invalid workflow data', details: parseResult.error.flatten() }, { status: 400 });
         }
 
