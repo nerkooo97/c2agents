@@ -13,24 +13,12 @@ interface McpServerConfig {
 export const mcpServers: { [key: string]: McpServerConfig } = {
     // Example using the official MCP 'everything' server.
     // This server provides filesystem tools, a calculator, and a web search tool.
-    // 'fs' is a shorter alias for this server.
-    fs: {
+    calculator: {
         command: 'npx',
         args: ['-y', '@modelcontextprotocol/server-everything'],
-        // 'env' is optional. Use it to pass API keys or other secrets.
-        // env: {
-        //   SOME_API_KEY: 'your-key-here'
-        // }
     },
-
-    // To add another server, uncomment and configure the block below.
-    /*
-    firecrawl: {
+     webSearch: {
         command: 'npx',
-        args: ['-y', 'firecrawl-mcp'],
-        env: {
-            FIRECRAWL_API_KEY: "YOUR_API_KEY_HERE" // Replace with your actual key
-        }
+        args: ['-y', '@modelcontextprotocol/server-everything'],
     },
-    */
 };

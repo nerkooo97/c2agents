@@ -21,6 +21,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Separator } from '@/components/ui/separator';
@@ -28,6 +29,11 @@ import * as LucideIcons from 'lucide-react';
 import { useTheme } from "next-themes";
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
+
+type ToolMetadata = {
+  name: string;
+  description: string;
+};
 
 const iconNames = [
   'Bot', 'BrainCircuit', 'Rocket', 'Code', 'MessageSquare', 'PieChart', 
@@ -54,10 +60,12 @@ const AgentForm = ({
   agent,
   onSave,
   onClose,
+  availableTools,
 }: {
   agent?: AgentDefinition;
   onSave: (data: AgentFormData) => void;
   onClose: () => void;
+  availableTools: ToolMetadata[];
 }) => {
   const form = useForm<AgentFormData>({
     resolver: zodResolver(AgentDefinitionSchema),
@@ -296,27 +304,46 @@ const AgentForm = ({
           )}
         />
         <FormField
-            control={form.control}
-            name="tools"
-            render={({ field }) => (
-                <FormItem>
+          control={form.control}
+          name="tools"
+          render={() => (
+            <FormItem>
+              <div className="mb-4">
                 <FormLabel>Tools (from MCP Servers)</FormLabel>
-                <FormControl>
-                    <Input
-                    placeholder="e.g., filesystem/read_file, firecrawl/scrape"
-                    value={Array.isArray(field.value) ? field.value.join(', ') : ''}
-                    onChange={(e) => {
-                        const tools = e.target.value.split(',').map(tool => tool.trim()).filter(Boolean);
-                        field.onChange(tools);
-                    }}
-                    />
-                </FormControl>
-                <FormDescription>
-                    Comma-separated list of tools the agent can use. These are provided by your configured MCP servers.
-                </FormDescription>
-                <FormMessage />
-                </FormItem>
-            )}
+                <FormDescription>Select the tools this agent can use. These are provided by your configured MCP servers.</FormDescription>
+              </div>
+              <div className="grid grid-cols-2 gap-4 max-h-48 overflow-y-auto p-1 rounded-md border">
+                {availableTools.length > 0 ? availableTools.map((tool) => (
+                  <FormField
+                    key={tool.name}
+                    control={form.control}
+                    name="tools"
+                    render={({ field }) => (
+                      <FormItem key={tool.name} className="flex flex-row items-start space-x-3 space-y-0 p-2 hover:bg-muted rounded-md">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value?.includes(tool.name)}
+                            onCheckedChange={(checked) => {
+                              return checked
+                                ? field.onChange([...(field.value || []), tool.name])
+                                : field.onChange(field.value?.filter((value) => value !== tool.name));
+                            }}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                            <FormLabel className="font-normal">{tool.name}</FormLabel>
+                             <p className="text-xs text-muted-foreground">{tool.description}</p>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                )) : (
+                    <p className="text-sm text-muted-foreground p-2 col-span-2 text-center">No tools available from MCP servers.</p>
+                )}
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
         />
 
         <div className="flex space-x-8">
@@ -522,6 +549,7 @@ function ModeToggle() {
 // MAIN DASHBOARD PAGE
 export default function AgentsDashboardPage() {
   const [agents, setAgents] = useState<AgentDefinition[]>([]);
+  const [availableTools, setAvailableTools] = useState<ToolMetadata[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -539,13 +567,25 @@ export default function AgentsDashboardPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const agentsResponse = await fetch('/api/agents');
+        const [agentsResponse, toolsResponse] = await Promise.all([
+            fetch('/api/agents'),
+            fetch('/api/tools'),
+        ]);
+
         if (!agentsResponse.ok) {
           const errorData = await agentsResponse.json();
           throw new Error(errorData.error || 'Failed to fetch agents');
         }
+         if (!toolsResponse.ok) {
+          const errorData = await toolsResponse.json();
+          throw new Error(errorData.error || 'Failed to fetch tools');
+        }
+
         const agentsData = await agentsResponse.json();
+        const toolsData = await toolsResponse.json();
+
         setAgents(agentsData);
+        setAvailableTools(toolsData);
       } catch (e) {
         const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
         setError(errorMessage);
@@ -757,6 +797,7 @@ export default function AgentsDashboardPage() {
              agent={editingAgent} 
              onSave={handleSaveAgent} 
              onClose={() => setIsSheetOpen(false)}
+             availableTools={availableTools}
             />
         </SheetContent>
       </Sheet>
