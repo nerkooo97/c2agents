@@ -480,6 +480,24 @@
       "inputTokens": 65,
       "outputTokens": 72,
       "totalTokens": 137
+    },
+    {
+      "id": "25463270-59d3-4a9d-8b5d-e84dd0ddcd77",
+      "timestamp": "2025-07-09T22:42:03.843Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "inputTokens": 62,
+      "outputTokens": 14,
+      "totalTokens": 76
+    },
+    {
+      "id": "b765d512-07a4-4b70-8646-3ee88ba57a16",
+      "timestamp": "2025-07-09T22:42:11.756Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "inputTokens": 65,
+      "outputTokens": 83,
+      "totalTokens": 148
     }
   ],
   "conversations": [
@@ -588,6 +606,27 @@
         {
           "role": "model",
           "content": "Nemam pristup prethodnim porukama u ovoj sesiji, pa ne mogu vidjeti što ste me prvo pitali. Ako mi možete ponovno postaviti vaše pitanje ili traženu informaciju, rado ću vam pomoći!"
+        }
+      ]
+    },
+    {
+      "sessionId": "7734dfec-d7fa-4fcb-a632-a32fd1ee31e8",
+      "messages": [
+        {
+          "role": "user",
+          "content": "1 - 1"
+        },
+        {
+          "role": "model",
+          "content": "The result of \\(1 - 1\\) is \\(0\\)."
+        },
+        {
+          "role": "user",
+          "content": "sta sam te prvo pitao"
+        },
+        {
+          "role": "model",
+          "content": "Kao AI asistent, nemam mogućnost da vidim prethodnu istoriju razgovora osim u trenutnoj sesiji. Zato ne mogu da znam šta ste me prvo pitali u prethodnim sesijama ili ranije u ovoj sesiji. Molim vas, ponovite svoje pitanje."
         }
       ]
     }

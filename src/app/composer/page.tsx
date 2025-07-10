@@ -27,7 +27,7 @@ import AgentExecutionGraph from '@/components/agent-execution-graph';
 import WorkflowGraphEditor from '@/components/workflow-graph-editor';
 import CustomAgentNode from '@/components/custom-agent-node';
 import GoalNode from '@/components/goal-node';
-import { Bot, Home, PlusCircle, Trash2, Workflow, Save, FilePlus2, ChevronsUpDown, Code, Target } from 'lucide-react';
+import { Bot, Home, PlusCircle, Trash2, Workflow, Save, FilePlus2, ChevronsUpDown, Code, Target, ArrowLeft } from 'lucide-react';
 import { useNodesState, useEdgesState, addEdge, type Node, type Edge } from 'reactflow';
 
 const WorkflowSaveForm = ({
@@ -480,21 +480,22 @@ export default function ComposerPage() {
 
   return (
     <div className="min-h-screen w-full bg-background flex flex-col">
-      <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-card px-6 shrink-0">
-        <div className="flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-2 font-semibold font-headline">
-            <Bot className="h-6 w-6 text-primary" />
-            <h1 className="text-lg">MyAgent</h1>
-          </Link>
-          <span className="text-lg text-muted-foreground">/</span>
-          <h1 className="text-lg font-semibold">Composer</h1>
-           {currentWorkflow && <span className="text-sm text-muted-foreground hidden md:block">/ {currentWorkflow.name}</span>}
-        </div>
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur-sm sm:h-16 sm:px-6">
         <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleNewWorkflow}><FilePlus2 /> New</Button>
+          <Link href="/" passHref>
+             <Button variant="outline" size="icon" className="h-8 w-8">
+                <ArrowLeft className="h-4 w-4" />
+             </Button>
+          </Link>
+          <h1 className="text-lg font-semibold md:text-xl">Composer</h1>
+          {currentWorkflow && <span className="text-sm text-muted-foreground hidden md:block">/ {currentWorkflow.name}</span>}
+        </div>
+        
+        <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleNewWorkflow}><FilePlus2 className="h-4 w-4 mr-2" /> New</Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm"><ChevronsUpDown /> Load Workflow</Button>
+                <Button variant="outline" size="sm"><ChevronsUpDown className="h-4 w-4 mr-2" /> Load</Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 {isDataLoading && <DropdownMenuItem disabled>Loading...</DropdownMenuItem>}
@@ -504,20 +505,19 @@ export default function ComposerPage() {
                   workflows.map(wf => (
                     <DropdownMenuItem key={wf.id} onSelect={() => handleLoadWorkflow(wf)} className="justify-between">
                       {wf.name}
-                      <Trash2 className="h-4 w-4 ml-4 text-destructive/70 hover:text-destructive" onClick={(e) => { e.stopPropagation(); handleDeleteWorkflow(wf.id); }}/>
+                      <button onClick={(e) => { e.stopPropagation(); handleDeleteWorkflow(wf.id); }} className="ml-4 p-1 rounded-sm hover:bg-destructive/20">
+                        <Trash2 className="h-4 w-4 text-destructive/70 "/>
+                      </button>
                     </DropdownMenuItem>
                   ))
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button size="sm" onClick={handleOpenSaveSheet}><Save/> {currentWorkflow ? 'Update' : 'Save'}</Button>
+            <Button size="sm" onClick={handleOpenSaveSheet}><Save className="h-4 w-4 mr-2"/> {currentWorkflow ? 'Update' : 'Save'}</Button>
           <Button onClick={handleRunWorkflow} disabled={isLoading || isDataLoading}>
             <Workflow className="mr-2 h-4 w-4" />
-            {isLoading ? 'Running...' : 'Run Workflow'}
+            {isLoading ? 'Running...' : 'Run'}
           </Button>
-           <Link href="/" passHref>
-            <Button variant="ghost" size="icon"><Home/></Button>
-          </Link>
         </div>
       </header>
       <main className="flex-1 grid grid-cols-1 lg:grid-cols-10 gap-6 p-4 lg:p-6">
@@ -530,8 +530,8 @@ export default function ComposerPage() {
                 <CardDescription>Connect the 'Start' node to agent steps to build your workflow.</CardDescription>
               </div>
               <Button variant="outline" size="sm" onClick={handleAddStep} disabled={isDataLoading}>
-                <PlusCircle className="mr-2" />
-                Add Agent Step
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Step
               </Button>
             </CardHeader>
             <CardContent className="flex-1 p-0">

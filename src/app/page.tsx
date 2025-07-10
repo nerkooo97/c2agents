@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -24,7 +25,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Separator } from '@/components/ui/separator';
-import { Bot, BrainCircuit, Code, Mic, MoreVertical, Pencil, PlusCircle, TestTube2, Trash2, Workflow, Wrench, Moon, Sun } from 'lucide-react';
+import { Bot, BrainCircuit, Code, Mic, MoreVertical, Pencil, PlusCircle, TestTube2, Trash2, Workflow, Wrench, Moon, Sun, Settings } from 'lucide-react';
 import { useTheme } from "next-themes";
 
 type ToolMetadata = {
@@ -439,7 +440,7 @@ const AgentCard = ({
 };
 
 function ModeToggle() {
-  const { setTheme } = useTheme();
+  const { setTheme, theme } = useTheme();
 
   return (
     <DropdownMenu>
@@ -631,30 +632,40 @@ export default function AgentsDashboardPage() {
 
   return (
     <div className="min-h-screen w-full bg-background flex flex-col">
-      <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-card px-6 shrink-0">
+       <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur-sm sm:h-16 sm:px-6">
         <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-2 font-semibold font-headline">
+            <Link href="/" className="flex items-center gap-2 font-semibold">
               <Bot className="h-6 w-6 text-primary" />
-              <h1 className="text-lg">MyAgent</h1>
+              <span className="hidden font-bold sm:inline-block">MyAgent</span>
             </Link>
-            <span className="text-lg text-muted-foreground">/</span>
-            <h1 className="text-lg font-semibold">Dashboard</h1>
         </div>
-         <div className="flex items-center gap-2">
-          <Link href="/composer" passHref>
-            <Button variant="outline">
-              <Workflow className="mr-2 h-4 w-4" /> Composer
+         <div className="flex flex-1 items-center justify-end gap-2">
+            <nav className="hidden items-center gap-2 text-sm font-medium md:flex">
+                <Link href="/composer" className="text-muted-foreground transition-colors hover:text-foreground">Composer</Link>
+                <Link href="/tools" className="text-muted-foreground transition-colors hover:text-foreground">Tools</Link>
+            </nav>
+            <Button onClick={handleCreateNew}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Create Agent
             </Button>
-          </Link>
-           <Link href="/tools" passHref>
-            <Button variant="outline">
-              <Wrench className="mr-2 h-4 w-4" /> Build Tools
-            </Button>
-          </Link>
-          <Button onClick={handleCreateNew}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Create Agent
-          </Button>
-          <ModeToggle />
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="relative h-8 w-8 md:hidden">
+                        <Settings className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild><Link href="/composer">Composer</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href="/tools">Tools</Link></DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                        <ModeToggle />
+                        <span>Toggle Theme</span>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+             </DropdownMenu>
+            <div className="hidden md:block">
+                <ModeToggle />
+            </div>
         </div>
       </header>
       <main className="flex-1 p-4 md:p-6">
@@ -672,15 +683,15 @@ export default function AgentsDashboardPage() {
         </div>
 
         {isLoading ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {[...Array(3)].map((_, i) => (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[...Array(4)].map((_, i) => (
               <Card key={i}><CardHeader><Skeleton className="h-6 w-1/2" /><Skeleton className="h-4 w-3/4" /></CardHeader><CardContent className="space-y-4"><Skeleton className="h-8 w-full" /><Skeleton className="h-8 w-full" /><Skeleton className="h-8 w-full" /></CardContent><CardFooter><Skeleton className="h-10 w-full" /></CardFooter></Card>
             ))}
           </div>
         ) : error ? (
             <div className="flex items-center justify-center rounded-lg border border-dashed p-8 text-center h-full"><div className="text-destructive">{error}</div></div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredAgents.map(agent => (
               <AgentCard 
                 key={agent.name} 
@@ -729,3 +740,5 @@ export default function AgentsDashboardPage() {
     </div>
   );
 }
+
+    

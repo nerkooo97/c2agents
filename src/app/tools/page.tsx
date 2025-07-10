@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -16,7 +17,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
-import { Bot, Home, MoreVertical, Pencil, PlusCircle, Trash2, Wrench } from 'lucide-react';
+import { Bot, Home, MoreVertical, Pencil, PlusCircle, Trash2, Wrench, ArrowLeft } from 'lucide-react';
 
 type ToolMetadata = {
   name: string;
@@ -276,19 +277,17 @@ export default function ToolBuilderPage() {
 
   return (
     <div className="min-h-screen w-full bg-background flex flex-col">
-      <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-card px-6 shrink-0">
-        <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-2 font-semibold font-headline">
-              <Bot className="h-6 w-6 text-primary" />
-              <h1 className="text-lg">MyAgent</h1>
+       <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur-sm sm:h-16 sm:px-6">
+        <div className="flex items-center gap-2">
+            <Link href="/" passHref>
+                <Button variant="outline" size="icon" className="h-8 w-8">
+                    <ArrowLeft className="h-4 w-4" />
+                </Button>
             </Link>
-            <span className="text-lg text-muted-foreground">/</span>
-            <h1 className="text-lg font-semibold">Tool Builder</h1>
+            <h1 className="text-lg font-semibold md:text-xl">Tool Builder</h1>
         </div>
-         <div className="flex items-center gap-2">
-           <Link href="/" passHref>
-            <Button variant="ghost" size="icon"><Home/></Button>
-          </Link>
+        
+        <div className="flex items-center gap-2">
           <Button onClick={handleCreateNew}>
             <PlusCircle className="mr-2 h-4 w-4" /> Create Tool
           </Button>
@@ -309,7 +308,7 @@ export default function ToolBuilderPage() {
         </div>
 
         {isLoading ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[...Array(3)].map((_, i) => (
               <Card key={i}><CardHeader><Skeleton className="h-6 w-1/2" /><Skeleton className="h-4 w-3/4" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent></Card>
             ))}
@@ -317,7 +316,7 @@ export default function ToolBuilderPage() {
         ) : error ? (
             <div className="flex items-center justify-center rounded-lg border border-dashed p-8 text-center h-full"><div className="text-destructive">{error}</div></div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredTools.map(tool => (
               <ToolCard 
                 key={tool.name} 
@@ -363,3 +362,5 @@ export default function ToolBuilderPage() {
     </div>
   );
 }
+
+    

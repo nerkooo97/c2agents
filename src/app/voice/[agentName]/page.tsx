@@ -8,7 +8,7 @@ import { runAgent } from '@/lib/actions'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Home, Mic, MicOff, Settings } from 'lucide-react'
+import { Home, Mic, MicOff, Settings, ArrowLeft } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import type { Message } from '@/lib/types'
 import { cn } from '@/lib/utils'
@@ -209,24 +209,14 @@ export default function VoiceChatPage() {
   
   return (
     <div className="min-h-screen w-full bg-background flex flex-col">
-       <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-card px-6 shrink-0">
+       <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur-sm sm:h-16 sm:px-6">
         <div className="flex items-center gap-3">
-          <Avatar className="h-8 w-8">
-             <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="robot logo" alt={agentDisplayName} />
-            <AvatarFallback>{agentDisplayName?.substring(0, 2).toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <div>
-            <h1 className="text-lg font-semibold font-headline capitalize">{agentDisplayName}</h1>
-            <p className="text-xs text-muted-foreground">Real-time Voice Conversation</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
           <Link href="/" passHref>
-            <Button variant="outline">
-              <Home className="mr-2 h-4 w-4"/>
-              Dashboard
-            </Button>
+             <Button variant="outline" size="icon" className="h-8 w-8">
+                <ArrowLeft className="h-4 w-4" />
+             </Button>
           </Link>
+          <h1 className="text-lg font-semibold capitalize">{agentDisplayName}</h1>
         </div>
       </header>
       <main className="flex-1 flex items-center justify-center p-4 lg:p-6">
@@ -291,3 +281,5 @@ export default function VoiceChatPage() {
     </div>
   )
 }
+
+    

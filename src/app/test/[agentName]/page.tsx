@@ -13,7 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Send, Home, LineChart, Eraser } from 'lucide-react'
+import { Send, Home, LineChart, Eraser, ArrowLeft, Bot } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import AgentExecutionGraph from '@/components/agent-execution-graph'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -126,29 +126,27 @@ export default function AgentTestPage() {
 
   return (
     <div className="min-h-screen w-full bg-background flex flex-col">
-      <header className="flex h-16 items-center justify-between border-b px-6 shrink-0 bg-card">
+       <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur-sm sm:h-16 sm:px-6">
         <div className="flex items-center gap-3">
-          <Avatar className="h-8 w-8">
-             <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="robot logo" alt={agentDisplayName} />
-            <AvatarFallback>{agentDisplayName?.substring(0, 2).toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <div>
-            <h1 className="text-lg font-semibold font-headline capitalize">{agentDisplayName}</h1>
-            <p className="text-xs text-muted-foreground">Agent Test Environment</p>
+          <Link href="/" passHref>
+             <Button variant="outline" size="icon" className="h-8 w-8">
+                <ArrowLeft className="h-4 w-4" />
+             </Button>
+          </Link>
+          <div className="flex items-center gap-2">
+            <Avatar className="h-8 w-8 border">
+                <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="robot logo" alt={agentDisplayName} />
+                <AvatarFallback>{agentDisplayName?.substring(0, 2).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <h1 className="text-lg font-semibold capitalize">{agentDisplayName}</h1>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={startNewSession}>
             <Eraser className="mr-2 h-4 w-4" />
             New Session
           </Button>
-          <Link href="/" passHref>
-            <Button variant="outline">
-              <Home className="mr-2 h-4 w-4"/>
-              Dashboard
-            </Button>
-          </Link>
-          <Avatar>
+          <Avatar className="hidden sm:flex">
             <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="person" />
             <AvatarFallback>U</AvatarFallback>
           </Avatar>
@@ -301,3 +299,5 @@ export default function AgentTestPage() {
     </div>
   )
 }
+
+    
