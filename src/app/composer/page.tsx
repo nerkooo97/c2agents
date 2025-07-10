@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import type { AgentDefinition, ExecutionStep, PlanStep, WorkflowDefinition, WorkflowFormData, PlanStepNode } from '@/lib/types';
+import type { AgentDefinition, ExecutionStep, PlanStep, WorkflowDefinition, WorkflowFormData } from '@/lib/types';
 import { WorkflowMetadataSchema } from '@/lib/types';
 import { runAgent } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
@@ -221,12 +221,17 @@ export default function ComposerPage() {
         if (!currentNode) break;
 
         if (currentNode.type === 'customAgentNode') {
-            plan.push({
+            const agent = agents.find(a => a.name === currentNode.data.agentName);
+            const step: PlanStep = {
                 id: currentNode.id,
                 type: 'agent',
                 agentName: currentNode.data.agentName,
-                task: agents.find(a => a.name === currentNode.data.agentName)?.defaultTask || '',
-            });
+            };
+            // Only include the task if it exists to avoid validation errors
+            if (agent?.defaultTask) {
+                step.task = agent.defaultTask;
+            }
+            plan.push(step);
         } else if (currentNode.type === 'delayNode') {
             plan.push({
                 id: currentNode.id,
@@ -431,7 +436,7 @@ export default function ComposerPage() {
   const handleLoadWorkflow = useCallback((workflow: WorkflowDefinition) => {
     setCurrentWorkflow(workflow);
     setGoal(workflow.goal || '');
-    planStepsToFlow(workflow.planSteps);
+    planStepsToFlow(JSON.parse(workflow.planSteps as any));
     toast({ title: `Workflow "${workflow.name}" loaded.`});
   }, [planStepsToFlow, toast]);
 
@@ -486,7 +491,7 @@ export default function ComposerPage() {
 
     const body = isUpdating
       ? JSON.stringify({ originalId: currentWorkflow.id, workflowData: workflowDataPayload })
-      : JSON.stringify({ ...workflowDataPayload });
+      : JSON.stringify(workflowDataPayload);
     
     try {
       const response = await fetch(apiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
@@ -500,7 +505,8 @@ export default function ComposerPage() {
       
       toast({ title: `Workflow ${isUpdating ? 'Updated' : 'Saved'}`, description: `"${savedWorkflow.name}" has been saved.`});
       
-      setCurrentWorkflow(savedWorkflow);
+      const reloadedWorkflow = { ...savedWorkflow, planSteps: JSON.parse(savedWorkflow.planSteps) };
+      setCurrentWorkflow(reloadedWorkflow);
       await fetchWorkflows();
 
     } catch (e) {

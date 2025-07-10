@@ -4,7 +4,7 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { runAgent } from '@/lib/actions';
-import type { ExecutionStep, PlanStep } from '@/lib/types';
+import type { ExecutionStep, PlanStep, WorkflowDefinition } from '@/lib/types';
 
 
 export async function POST(
