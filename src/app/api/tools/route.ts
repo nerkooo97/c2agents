@@ -1,13 +1,9 @@
 import { NextResponse } from 'next/server';
-import { ai } from '@/ai/genkit';
-import type { Tool } from 'genkit/tool';
+import { getAllTools } from '@/ai/tools';
 
 export async function GET() {
   try {
-    // We need to 'await' the proxy to get the real genkit instance
-    const genkitInstance = await (ai as any);
-    const allTools = (genkitInstance as any).__tools as Tool<any,any>[];
-    
+    const allTools = await getAllTools();
     const toolInfo = allTools.map(tool => ({
       name: tool.name || 'Unknown Tool',
       description: tool.info?.description ?? 'No description available.',
@@ -19,5 +15,3 @@ export async function GET() {
       return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
-
-    

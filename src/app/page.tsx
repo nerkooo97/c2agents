@@ -839,5 +839,3 @@ export default function AgentsDashboardPage() {
     </div>
   );
 }
-
-    

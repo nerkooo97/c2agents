@@ -87,12 +87,14 @@ export async function runAgent(
       content: prompt,
     });
     
+    const agentTools = await getToolsForAgent(agent);
+
     const genkitResponse = await runAgentWithConfig({
       systemPrompt: agent.systemPrompt,
       constraints: agent.constraints,
       responseFormat: agent.responseFormat,
       userInput: prompt,
-      tools: getToolsForAgent(agent),
+      tools: agentTools,
       model: getModelReference(agent.model),
       history: conversationHistory,
     });
