@@ -32,9 +32,10 @@ export async function generateSpeech(text: string, model: string): Promise<strin
     if (model.startsWith('tts-') || model.startsWith('gpt-')) {
         const openaiClient = new OpenAI();
         const mp3 = await openaiClient.audio.speech.create({
-            model: model as any, // e.g., 'tts-1', 'tts-1-hd', 'gpt-4o-mini-tts'
+            model: model as any, // e.g., 'tts-1', 'tts-1-hd', 'gpt-4o'
             voice: "alloy",
             input: text,
+            response_format: 'mp3',
         });
         const buffer = Buffer.from(await mp3.arrayBuffer());
         return `data:audio/mpeg;base64,${buffer.toString('base64')}`;
@@ -53,7 +54,7 @@ export async function generateSpeech(text: string, model: string): Promise<strin
             prompt: text,
         });
 
-        if (!media) {
+        if (!media?.url) {
             throw new Error('No audio media returned from Google TTS model.');
         }
 
