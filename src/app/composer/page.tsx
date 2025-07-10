@@ -450,7 +450,7 @@ export default function ComposerPage() {
 
     const body = isUpdating
       ? JSON.stringify({ originalId: currentWorkflow.id, workflowData: workflowDataPayload })
-      : JSON.stringify(workflowDataPayload);
+      : JSON.stringify({ ...workflowDataPayload, goal });
     
     try {
       const response = await fetch(apiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
@@ -632,5 +632,3 @@ export default function ComposerPage() {
     </div>
   );
 }
-
-    

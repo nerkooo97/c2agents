@@ -76,7 +76,7 @@ export interface PlanStep {
 // This represents a full workflow object, stored in the file-based DB.
 // The `id` will be a CUID from the database.
 export interface WorkflowDefinition {
-  id: string; // Changed from number to string (UUID)
+  id: string; 
   name: string;
   description: string;
   goal: string;

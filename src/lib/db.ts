@@ -33,8 +33,9 @@
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
-import type { WorkflowDefinition, WorkflowCreateAPISchema, AgentExecutionLog, Message, Conversation } from '@/lib/types';
+import type { WorkflowDefinition, AgentExecutionLog, Message, Conversation } from '@/lib/types';
 import type { z } from 'zod';
+import { WorkflowCreateAPISchema } from '@/lib/types';
 
 const dbPath = path.join(process.cwd(), 'prisma', 'db.json');
 
