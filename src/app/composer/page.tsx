@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import type { AgentDefinition, ExecutionStep, PlanStep, WorkflowDefinition, WorkflowFormData } from '@/lib/types';
+import type { AgentDefinition, ExecutionStep, PlanStep, WorkflowDefinition, WorkflowFormData, PlanStepNode } from '@/lib/types';
 import { WorkflowMetadataSchema } from '@/lib/types';
 import { runAgent } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
@@ -27,7 +27,8 @@ import AgentExecutionGraph from '@/components/agent-execution-graph';
 import WorkflowGraphEditor from '@/components/workflow-graph-editor';
 import CustomAgentNode from '@/components/custom-agent-node';
 import GoalNode from '@/components/goal-node';
-import { Bot, Home, PlusCircle, Trash2, Workflow, Save, FilePlus2, ChevronsUpDown, Code, Target, ArrowLeft } from 'lucide-react';
+import DelayNode from '@/components/delay-node';
+import { Bot, Home, PlusCircle, Trash2, Workflow, Save, FilePlus2, ChevronsUpDown, Code, Target, ArrowLeft, Timer } from 'lucide-react';
 import { useNodesState, useEdgesState, addEdge, type Node, type Edge } from 'reactflow';
 
 const WorkflowSaveForm = ({
@@ -130,7 +131,7 @@ export default function ComposerPage() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   
-  const nodeTypes = useMemo(() => ({ customAgentNode: CustomAgentNode, goalNode: GoalNode }), []);
+  const nodeTypes = useMemo(() => ({ customAgentNode: CustomAgentNode, goalNode: GoalNode, delayNode: DelayNode }), []);
 
   const { toast } = useToast();
 
@@ -154,18 +155,37 @@ export default function ComposerPage() {
         draggable: false,
       };
 
-      const agentNodes: Node[] = planSteps.map((step, index) => ({
-          id: step.id,
-          type: 'customAgentNode',
-          position: { x: 450, y: 50 + 170 * index },
-          data: { 
-              agentName: step.agentName, 
-              availableAgents: agents,
-              onChange: handleNodeDataChange,
-          },
-      }));
+      let yPos = 50;
+      const stepNodes: Node[] = planSteps.map((step) => {
+          let node: Node;
+          if (step.type === 'agent') {
+              node = {
+                id: step.id,
+                type: 'customAgentNode',
+                position: { x: 450, y: yPos },
+                data: { 
+                    agentName: step.agentName, 
+                    availableAgents: agents,
+                    onChange: handleNodeDataChange,
+                },
+              };
+              yPos += 170;
+          } else { // delay
+              node = {
+                  id: step.id,
+                  type: 'delayNode',
+                  position: { x: 450, y: yPos },
+                  data: {
+                      delay: step.delay,
+                      onChange: handleNodeDataChange,
+                  },
+              };
+              yPos += 170;
+          }
+          return node;
+      });
 
-      const newNodes: Node[] = [goalNode, ...agentNodes];
+      const newNodes: Node[] = [goalNode, ...stepNodes];
 
       const firstEdge: Edge[] = planSteps.length > 0 ? [{
           id: `e-goal_node-${planSteps[0].id}`,
@@ -185,27 +205,35 @@ export default function ComposerPage() {
       setEdges(newEdges);
   }, [agents, setNodes, setEdges]);
   
-  const flowToPlanSteps = (): Omit<PlanStep, 'task'>[] => {
-    const plan: Omit<PlanStep, 'task'>[] = [];
+  const flowToPlanSteps = (): PlanStep[] => {
+    const plan: PlanStep[] = [];
     
     const startEdge = edges.find(edge => edge.source === 'goal_node');
     let currentNodeId = startEdge?.target;
 
-    if (!currentNodeId) {
-        return [];
-    }
+    if (!currentNodeId) return [];
     
     const visited = new Set<string>();
 
     while (currentNodeId && !visited.has(currentNodeId)) {
         visited.add(currentNodeId);
         const currentNode = nodes.find(node => node.id === currentNodeId);
-        if (!currentNode || currentNode.type !== 'customAgentNode') break;
+        if (!currentNode) break;
 
-        plan.push({
-            id: currentNode.id,
-            agentName: currentNode.data.agentName,
-        });
+        if (currentNode.type === 'customAgentNode') {
+            plan.push({
+                id: currentNode.id,
+                type: 'agent',
+                agentName: currentNode.data.agentName,
+                task: agents.find(a => a.name === currentNode.data.agentName)?.defaultTask || '',
+            });
+        } else if (currentNode.type === 'delayNode') {
+            plan.push({
+                id: currentNode.id,
+                type: 'delay',
+                delay: currentNode.data.delay || 1000,
+            });
+        }
 
         const nextEdge = edges.find(edge => edge.source === currentNodeId);
         currentNodeId = nextEdge?.target;
@@ -272,23 +300,37 @@ export default function ComposerPage() {
       }
   };
 
-  const handleAddStep = () => {
+  const handleAddNode = (type: 'agent' | 'delay') => {
     const newNodeId = `node_${Date.now()}`;
-    const agentNodes = nodes.filter(n => n.type === 'customAgentNode');
-    const newNode: Node = {
-      id: newNodeId,
-      type: 'customAgentNode',
-      position: { x: 450, y: 50 + agentNodes.length * 170 },
-      data: {
-        agentName: '',
-        availableAgents: agents,
-        onChange: handleNodeDataChange,
-      },
-    };
+    const allNodes = nodes.filter(n => n.type === 'customAgentNode' || n.type === 'delayNode');
+    
+    let newNode: Node;
+    if (type === 'agent') {
+        newNode = {
+            id: newNodeId,
+            type: 'customAgentNode',
+            position: { x: 450, y: 50 + allNodes.length * 170 },
+            data: {
+                agentName: '',
+                availableAgents: agents,
+                onChange: handleNodeDataChange,
+            },
+        };
+    } else {
+        newNode = {
+            id: newNodeId,
+            type: 'delayNode',
+            position: { x: 450, y: 50 + allNodes.length * 170 },
+            data: {
+                delay: 1000,
+                onChange: handleNodeDataChange,
+            },
+        };
+    }
     setNodes((nds) => nds.concat(newNode));
   };
   
-  const handleNodeDataChange = (id: string, field: 'agentName', value: string) => {
+  const handleNodeDataChange = (id: string, field: 'agentName' | 'delay', value: string | number) => {
     setNodes((nds) =>
       nds.map((node) => {
         if (node.id === id) {
@@ -306,8 +348,8 @@ export default function ComposerPage() {
         toast({ variant: 'destructive', title: 'Please define a goal for the workflow.'});
         return;
     }
-    if (planSteps.length === 0 || planSteps.some(step => !step.agentName)) {
-        toast({ variant: 'destructive', title: 'Please connect at least one agent to the start node and select an agent for each step.'});
+    if (planSteps.length === 0 || planSteps.some(step => step.type === 'agent' && !step.agentName)) {
+        toast({ variant: 'destructive', title: 'Please connect at least one step and select an agent for each agent step.'});
         return;
     }
 
@@ -319,49 +361,51 @@ export default function ComposerPage() {
     const allSteps: ExecutionStep[] = [];
 
     try {
-        const populatedPlanSteps: PlanStep[] = planSteps.map(step => {
-            const agent = agents.find(a => a.name === step.agentName);
-            if (!agent) throw new Error(`Agent definition for '${step.agentName}' not found.`);
-            return { ...step, task: agent.defaultTask || '' };
-        });
+      for (const step of planSteps) {
+        if (step.type === 'agent') {
+          const agent = agents.find(a => a.name === step.agentName);
+          if (!agent) throw new Error(`Agent definition for '${step.agentName}' not found.`);
+          
+          if (!agent.defaultTask?.trim()) {
+            toast({ variant: 'destructive', title: 'Missing Task', description: `Agent "${agent.name}" is missing a "Core Task". Please edit the agent and define its task.`});
+            setIsLoading(false);
+            return;
+          }
 
-        if (populatedPlanSteps.some(step => !step.task.trim())) {
-             toast({ variant: 'destructive', title: 'Missing Task', description: 'One or more agents in your plan are missing a "Core Task". Please edit the agent and define its task.'});
-             setIsLoading(false);
-             return;
-        }
-
-        for (let i = 0; i < populatedPlanSteps.length; i++) {
-            const step = populatedPlanSteps[i];
-            
-            const currentPrompt = `Based on the overall goal and the previous step's result, perform your task.
+          const currentPrompt = `Based on the overall goal and the previous step's result, perform your task.
 \nOverall Goal: "${goal}"
 \nPrevious Step Result: "${previousStepOutput}"
-\nYour Task: "${step.task}"`;
+\nYour Task: "${agent.defaultTask}"`;
             
-            const result = await runAgent(step.agentName, currentPrompt);
-            
-            if (result.error) {
-                throw new Error(`Error in step ${i + 1} (${step.agentName}): ${result.error}`);
-            }
+          const result = await runAgent(step.agentName, currentPrompt);
+          
+          if (result.error) {
+            throw new Error(`Error in step for agent ${step.agentName}: ${result.error}`);
+          }
 
-            previousStepOutput = result.response || 'No output from this step.';
+          previousStepOutput = result.response || 'No output from this step.';
 
-            if (result.steps) {
-                const stepSpecificExecutionSteps = result.steps.map(s => {
-                    if (s.type === 'prompt') {
-                        return { ...s, title: `Prompt for ${step.agentName}` };
-                    }
-                    if (s.type === 'response') {
-                        return { ...s, title: `Response from ${step.agentName}` };
-                    }
-                    return s;
-                })
-                allSteps.push(...stepSpecificExecutionSteps);
-            }
-            setExecutionSteps([...allSteps]);
+          if (result.steps) {
+            const stepSpecificExecutionSteps = result.steps.map(s => {
+              if (s.type === 'prompt') {
+                  return { ...s, title: `Prompt for ${step.agentName}` };
+              }
+              if (s.type === 'response') {
+                  return { ...s, title: `Response from ${step.agentName}` };
+              }
+              return s;
+            });
+            allSteps.push(...stepSpecificExecutionSteps);
+          }
+          setExecutionSteps([...allSteps]);
+        } else if (step.type === 'delay') {
+          const delayTime = step.delay || 1000;
+          allSteps.push({ type: 'tool', title: 'Delay', content: `Waiting for ${delayTime / 1000} seconds...`});
+          setExecutionSteps([...allSteps]);
+          await new Promise(resolve => setTimeout(resolve, delayTime));
         }
-        setFinalResponse(previousStepOutput);
+      }
+      setFinalResponse(previousStepOutput);
 
     } catch (e) {
         const errorMessage = e instanceof Error ? e.message : 'Could not execute workflow.';
@@ -386,7 +430,7 @@ export default function ComposerPage() {
 
   const handleLoadWorkflow = useCallback((workflow: WorkflowDefinition) => {
     setCurrentWorkflow(workflow);
-    setGoal(workflow.goal);
+    setGoal(workflow.goal || '');
     planStepsToFlow(workflow.planSteps);
     toast({ title: `Workflow "${workflow.name}" loaded.`});
   }, [planStepsToFlow, toast]);
@@ -431,26 +475,18 @@ export default function ComposerPage() {
     const isUpdating = !!currentWorkflow;
     const apiEndpoint = isUpdating ? '/api/workflows/update' : '/api/workflows/create';
     const planSteps = flowToPlanSteps();
-
-    const populatedPlanSteps: PlanStep[] = planSteps.map(step => {
-        const agent = agents.find(a => a.name === step.agentName);
-        return {
-            ...step,
-            task: agent?.defaultTask || '', 
-        };
-    });
     
     const workflowDataPayload = {
         name: formData.name,
         description: formData.description,
         enableApiAccess: formData.enableApiAccess,
         goal,
-        planSteps: populatedPlanSteps,
+        planSteps,
     };
 
     const body = isUpdating
       ? JSON.stringify({ originalId: currentWorkflow.id, workflowData: workflowDataPayload })
-      : JSON.stringify({ ...workflowDataPayload, goal });
+      : JSON.stringify({ ...workflowDataPayload });
     
     try {
       const response = await fetch(apiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
@@ -527,12 +563,18 @@ export default function ComposerPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Execution Plan</CardTitle>
-                <CardDescription>Connect the 'Start' node to agent steps to build your workflow.</CardDescription>
+                <CardDescription>Connect nodes to build your workflow. Add agent or delay steps.</CardDescription>
               </div>
-              <Button variant="outline" size="sm" onClick={handleAddStep} disabled={isDataLoading}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Step
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => handleAddNode('agent')} disabled={isDataLoading}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add Agent Step
+                </Button>
+                 <Button variant="outline" size="sm" onClick={() => handleAddNode('delay')} disabled={isDataLoading}>
+                  <Timer className="mr-2 h-4 w-4" />
+                  Add Delay
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="flex-1 p-0">
                <WorkflowGraphEditor 

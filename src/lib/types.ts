@@ -65,16 +65,26 @@ export type AgentFormData = z.infer<typeof AgentDefinitionSchema>;
 
 // Workflow Types
 
-// This represents the shape of a PlanStep on the client-side.
-// The `id` is used for React keys and is a UUID.
-export interface PlanStep {
-  id: string; // Changed from number to string (UUID)
+export interface PlanStepNode {
+  id: string;
+  type: 'agent' | 'delay';
+}
+
+export interface AgentPlanStep extends PlanStepNode {
+  type: 'agent';
   agentName: string;
   task: string;
 }
 
+export interface DelayPlanStep extends PlanStepNode {
+  type: 'delay';
+  delay: number; // in milliseconds
+}
+
+export type PlanStep = AgentPlanStep | DelayPlanStep;
+
+
 // This represents a full workflow object, stored in the file-based DB.
-// The `id` will be a CUID from the database.
 export interface WorkflowDefinition {
   id: string; 
   name: string;
@@ -85,11 +95,24 @@ export interface WorkflowDefinition {
 }
 
 // Zod schema for validating a plan step from the client.
-export const PlanStepSchema = z.object({
-  id: z.string(), // ID can be a placeholder string from the client
-  agentName: z.string().min(1, "Agent must be selected for each step."),
-  task: z.string(), // Task will be populated from defaultTask before saving/running
+export const AgentPlanStepSchema = z.object({
+    id: z.string(),
+    type: z.literal('agent'),
+    agentName: z.string().min(1, "Agent must be selected for each step."),
+    task: z.string(),
 });
+
+export const DelayPlanStepSchema = z.object({
+    id: z.string(),
+    type: z.literal('delay'),
+    delay: z.number().min(0),
+});
+
+export const PlanStepSchema = z.discriminatedUnion('type', [
+  AgentPlanStepSchema,
+  DelayPlanStepSchema,
+]);
+
 
 // Zod schema for validating the data needed to create a new workflow.
 export const WorkflowCreateAPISchema = z.object({

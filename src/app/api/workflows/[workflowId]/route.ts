@@ -1,3 +1,4 @@
+
 'use server';
 
 import { NextResponse } from 'next/server';
@@ -38,21 +39,28 @@ export async function POST(
     const allSteps: ExecutionStep[] = [];
     
     for (const step of workflow.planSteps) {
-        const currentPrompt = `Based on the overall goal and the previous step's result, perform your task.
+        if (step.type === 'agent') {
+            const currentPrompt = `Based on the overall goal and the previous step's result, perform your task.
 \nOverall Goal: "${goal}"
 \nPrevious Step Result: "${previousStepOutput}"
 \nYour Task: "${step.task}"`;
-        
-        // The runAgent function now correctly lives in a server-only module.
-        const result = await runAgent(step.agentName, currentPrompt);
-        
-        if (result.error) {
-            return NextResponse.json({ error: `Error in step for agent ${step.agentName}: ${result.error}` }, { status: 500 });
-        }
-        
-        previousStepOutput = result.response || 'No output from this step.';
-        if (result.steps) {
-            allSteps.push(...result.steps);
+            
+            const result = await runAgent(step.agentName, currentPrompt);
+            
+            if (result.error) {
+                return NextResponse.json({ error: `Error in step for agent ${step.agentName}: ${result.error}` }, { status: 500 });
+            }
+            
+            previousStepOutput = result.response || 'No output from this step.';
+            if (result.steps) {
+                allSteps.push(...result.steps);
+            }
+        } else if (step.type === 'delay') {
+            const delayTime = step.delay || 0;
+            if (delayTime > 0) {
+                 await new Promise(resolve => setTimeout(resolve, delayTime));
+            }
+            // No change to previousStepOutput during a delay
         }
     }
 
