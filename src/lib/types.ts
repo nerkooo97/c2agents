@@ -155,3 +155,12 @@ export const AgentExecutionLogSchema = z.object({
   errorDetails: z.string().optional().nullable(),
 });
 export type AgentExecutionLog = z.infer<typeof AgentExecutionLogSchema>;
+
+// RAG / Knowledge Base Types
+export interface KnowledgeDocument {
+    id: string; // uuid
+    filename: string;
+    content: string;
+    // In a real vector DB, you'd store embeddings here
+    // embedding: number[]; 
+}

@@ -33,7 +33,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
-import type { WorkflowDefinition, AgentExecutionLog, Message, Conversation } from '@/lib/types';
+import type { WorkflowDefinition, AgentExecutionLog, Message, Conversation, KnowledgeDocument } from '@/lib/types';
 import type { z } from 'zod';
 import { WorkflowCreateAPISchema } from '@/lib/types';
 
@@ -43,22 +43,24 @@ interface DbData {
     workflows: WorkflowDefinition[];
     agentExecutionLogs: AgentExecutionLog[];
     conversations: Conversation[];
+    knowledge: KnowledgeDocument[];
 }
 
 async function readDb(): Promise<DbData> {
     try {
         await fs.access(dbPath);
         const fileContent = await fs.readFile(dbPath, 'utf-8');
-        if (!fileContent) return { workflows: [], agentExecutionLogs: [], conversations: [] };
+        if (!fileContent) return { workflows: [], agentExecutionLogs: [], conversations: [], knowledge: [] };
         const data = JSON.parse(fileContent);
         // Ensure all expected keys exist
         return {
             workflows: data.workflows || [],
             agentExecutionLogs: data.agentExecutionLogs || [],
             conversations: data.conversations || [],
+            knowledge: data.knowledge || [],
         };
     } catch (error) {
-        return { workflows: [], agentExecutionLogs: [], conversations: [] };
+        return { workflows: [], agentExecutionLogs: [], conversations: [], knowledge: [] };
     }
 }
 
@@ -74,6 +76,8 @@ async function writeDb(data: DbData): Promise<void> {
 
 type WorkflowCreateData = z.infer<typeof WorkflowCreateAPISchema>;
 type AgentExecutionLogCreateData = Omit<AgentExecutionLog, 'id' | 'timestamp'>;
+type KnowledgeCreateData = Omit<KnowledgeDocument, 'id'>;
+
 
 const db = {
     workflow: {
@@ -185,6 +189,32 @@ const db = {
             data.conversations[index].messages = args.data.messages;
             await writeDb(data);
             return data.conversations[index];
+        }
+    },
+    knowledge: {
+        async findMany(): Promise<KnowledgeDocument[]> {
+            const db = await readDb();
+            return db.knowledge;
+        },
+        async create(args: { data: KnowledgeCreateData }): Promise<KnowledgeDocument> {
+            const db = await readDb();
+            const newDoc: KnowledgeDocument = {
+                id: crypto.randomUUID(),
+                ...args.data,
+            };
+            db.knowledge.push(newDoc);
+            await writeDb(db);
+            return newDoc;
+        },
+        async delete(args: { where: { id: string } }): Promise<KnowledgeDocument> {
+            const db = await readDb();
+            const index = db.knowledge.findIndex(d => d.id === args.where.id);
+            if (index === -1) {
+                throw new Error('Record to delete not found.');
+            }
+            const [deletedDoc] = db.knowledge.splice(index, 1);
+            await writeDb(db);
+            return deletedDoc;
         }
     }
 };

@@ -3,18 +3,18 @@
 import type { AgentDefinition } from '@/lib/types';
 import type { Tool } from 'genkit/tool';
 import calculator from './calculator';
-import delegateTask from './delegate-task';
 import webSearch from './web-search';
 import playwright from './playwright';
 import runWorkflow from './run-workflow';
+import retriever from './retriever';
 
 // Statically define all tools. This is more reliable than dynamic loading.
 const allTools: (Tool<any, any> | undefined)[] = [
     calculator,
-    delegateTask,
     webSearch,
     playwright,
     runWorkflow,
+    retriever,
 ];
 
 // Filter out any undefined tools (like disabled ones) and create the final list and map.
