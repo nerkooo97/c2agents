@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { ChartTooltipContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 
 type Stats = {
     totalRuns: number;
@@ -53,12 +53,13 @@ export default function AnalyticsPage() {
         fetchLogs();
     }, [toast]);
 
-    const { stats, tokenChartData, latencyChartData } = useMemo(() => {
+    const { stats, tokenChartData, latencyChartData, chartConfig } = useMemo(() => {
         if (!logs || logs.length === 0) {
             return {
                 stats: { totalRuns: 0, successRate: 0, averageLatency: 0, totalTokens: 0 },
                 tokenChartData: [],
                 latencyChartData: [],
+                chartConfig: {} as ChartConfig,
             };
         }
 
@@ -76,7 +77,6 @@ export default function AnalyticsPage() {
             totalTokens,
         };
 
-        // Prepare data for charts
         const agentNames = [...new Set(logs.map(l => l.agentName))];
         const last7Days = Array.from({ length: 7 }, (_, i) => format(subDays(new Date(), i), 'yyyy-MM-dd')).reverse();
         
@@ -98,7 +98,17 @@ export default function AnalyticsPage() {
             return { name, avgLatency: parseFloat((avgLatency / 1000).toFixed(2)) };
         });
 
-        return { stats, tokenChartData, latencyChartData: latencyByAgent };
+        const chartConfig: ChartConfig = {};
+        agentNames.forEach((name, i) => {
+            chartConfig[name] = {
+                label: name,
+                color: `hsl(var(--chart-${(i % 5) + 1}))`,
+            };
+        });
+        chartConfig.avgLatency = { label: 'Avg Latency (s)', color: 'hsl(var(--chart-2))' };
+
+
+        return { stats, tokenChartData, latencyChartData: latencyByAgent, chartConfig };
     }, [logs]);
 
     return (
@@ -169,18 +179,18 @@ export default function AnalyticsPage() {
                         </CardHeader>
                         <CardContent>
                              {isLoading ? <Skeleton className="h-[300px] w-full" /> : (
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <BarChart data={tokenChartData}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="date" fontSize={12} tickLine={false} axisLine={false} />
-                                        <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
-                                        <Tooltip content={<ChartTooltipContent />} />
+                                <ChartContainer config={chartConfig} className="h-[300px] w-full">
+                                    <BarChart data={tokenChartData} accessibilityLayer>
+                                        <CartesianGrid vertical={false} />
+                                        <XAxis dataKey="date" tickLine={false} tickMargin={10} axisLine={false} />
+                                        <YAxis tickLine={false} axisLine={false} tickMargin={10} />
+                                        <ChartTooltip content={<ChartTooltipContent />} />
                                         <Legend />
-                                        {[...new Set(logs.map(l => l.agentName))].map((name, i) => (
-                                            <Bar key={name} dataKey={name} stackId="a" fill={`var(--chart-${(i % 5) + 1})`} />
+                                        {Object.keys(chartConfig).filter(k => k !== 'avgLatency').map((name) => (
+                                            <Bar key={name} dataKey={name} stackId="a" fill={`var(--color-${name})`} radius={[4, 4, 0, 0]} />
                                         ))}
                                     </BarChart>
-                                </ResponsiveContainer>
+                                </ChartContainer>
                              )}
                         </CardContent>
                     </Card>
@@ -191,15 +201,15 @@ export default function AnalyticsPage() {
                         </CardHeader>
                         <CardContent>
                              {isLoading ? <Skeleton className="h-[300px] w-full" /> : (
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <BarChart data={latencyChartData} layout="vertical">
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis type="number" fontSize={12} tickLine={false} axisLine={false} />
-                                        <YAxis dataKey="name" type="category" fontSize={12} tickLine={false} axisLine={false} width={120} />
-                                        <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} />
-                                        <Bar dataKey="avgLatency" name="Avg Latency (s)" fill="var(--chart-2)" radius={[0, 4, 4, 0]} />
+                                <ChartContainer config={chartConfig} className="h-[300px] w-full">
+                                    <BarChart data={latencyChartData} layout="vertical" accessibilityLayer>
+                                        <CartesianGrid horizontal={false} />
+                                        <XAxis type="number" dataKey="avgLatency" tickLine={false} axisLine={false} tickMargin={10} />
+                                        <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tickMargin={10} width={120} />
+                                        <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} content={<ChartTooltipContent />} />
+                                        <Bar dataKey="avgLatency" name="Avg Latency (s)" fill="var(--color-avgLatency)" radius={[0, 4, 4, 0]} />
                                     </BarChart>
-                                </ResponsiveContainer>
+                                </ChartContainer>
                              )}
                         </CardContent>
                     </Card>
