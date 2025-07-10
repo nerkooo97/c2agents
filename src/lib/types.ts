@@ -1,3 +1,4 @@
+
 import { z } from 'zod';
 
 export interface Message {
@@ -7,7 +8,9 @@ export interface Message {
 
 export interface Conversation {
   sessionId: string;
-  messages: Message[];
+  messages: string; // Stored as a JSON string
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ExecutionStep {
@@ -73,7 +76,7 @@ export interface PlanStepNode {
 export interface AgentPlanStep extends PlanStepNode {
   type: 'agent';
   agentName: string;
-  task: string;
+  task?: string;
 }
 
 export interface DelayPlanStep extends PlanStepNode {
@@ -91,7 +94,9 @@ export interface WorkflowDefinition {
   description: string;
   goal: string;
   enableApiAccess: boolean;
-  planSteps: PlanStep[];
+  planSteps: string; // Stored as JSON string
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // Zod schema for validating a plan step from the client.
@@ -99,7 +104,7 @@ export const AgentPlanStepSchema = z.object({
     id: z.string(),
     type: z.literal('agent'),
     agentName: z.string().min(1, "Agent must be selected for each step."),
-    task: z.string(),
+    task: z.string().optional(),
 });
 
 export const DelayPlanStepSchema = z.object({
@@ -151,6 +156,7 @@ export interface KnowledgeDocument {
     id: string; // uuid
     filename: string;
     content: string;
+    createdAt: Date;
     // In a real vector DB, you'd store embeddings here
     // embedding: number[]; 
 }
