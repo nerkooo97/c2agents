@@ -722,6 +722,7 @@ export default function AgentsDashboardPage() {
             <nav className="hidden items-center gap-2 text-sm font-medium md:flex">
                 <Link href="/composer" className="text-muted-foreground transition-colors hover:text-foreground">Composer</Link>
                 <Link href="/knowledge" className="text-muted-foreground transition-colors hover:text-foreground">Knowledge</Link>
+                <Link href="/tools" className="text-muted-foreground transition-colors hover:text-foreground">MCP Tools</Link>
                 <Link href="/analytics" className="text-muted-foreground transition-colors hover:text-foreground">Analytics</Link>
             </nav>
             <Button onClick={handleCreateNew}>
@@ -736,6 +737,7 @@ export default function AgentsDashboardPage() {
                 <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild><Link href="/composer">Composer</Link></DropdownMenuItem>
                      <DropdownMenuItem asChild><Link href="/knowledge">Knowledge</Link></DropdownMenuItem>
+                     <DropdownMenuItem asChild><Link href="/tools">MCP Tools</Link></DropdownMenuItem>
                     <DropdownMenuItem asChild><Link href="/analytics">Analytics</Link></DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>

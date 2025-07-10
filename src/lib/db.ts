@@ -33,8 +33,8 @@
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
-import type { WorkflowDefinition, AgentExecutionLog, Message, Conversation, KnowledgeDocument, AppSettings } from '@/lib/types';
-import type { z } from 'zod';
+import type { WorkflowDefinition, AgentExecutionLog, Message, Conversation, KnowledgeDocument, AppSettings, McpServerConfig } from '@/lib/types';
+import { z } from 'zod';
 import { WorkflowCreateAPISchema } from '@/lib/types';
 
 const dbPath = path.join(process.cwd(), 'prisma', 'db.json');
@@ -44,14 +44,43 @@ interface DbData {
     agentExecutionLogs: AgentExecutionLog[];
     conversations: Conversation[];
     knowledge: KnowledgeDocument[];
-    settings?: AppSettings; // Added for app settings
+    settings?: AppSettings;
+    mcpServers?: McpServerConfig[];
 }
+
+const initialDbData: DbData = {
+  workflows: [],
+  agentExecutionLogs: [],
+  conversations: [],
+  knowledge: [],
+  settings: undefined,
+  mcpServers: [
+    {
+      id: crypto.randomUUID(),
+      name: 'calculator',
+      description: 'A simple calculator for math operations.',
+      command: 'npx',
+      args: ['-y', '@modelcontextprotocol/server-everything'],
+      env: {},
+      enabled: true,
+    },
+    {
+      id: crypto.randomUUID(),
+      name: 'webSearch',
+      description: 'Performs web searches using an external tool.',
+      command: 'npx',
+      args: ['-y', '@modelcontextprotocol/server-everything'],
+      env: {},
+      enabled: true,
+    },
+  ],
+};
 
 async function readDb(): Promise<DbData> {
     try {
         await fs.access(dbPath);
         const fileContent = await fs.readFile(dbPath, 'utf-8');
-        if (!fileContent) return { workflows: [], agentExecutionLogs: [], conversations: [], knowledge: [] };
+        if (!fileContent) return { ...initialDbData };
         const data = JSON.parse(fileContent);
         // Ensure all expected keys exist
         return {
@@ -60,9 +89,10 @@ async function readDb(): Promise<DbData> {
             conversations: data.conversations || [],
             knowledge: data.knowledge || [],
             settings: data.settings || undefined,
+            mcpServers: data.mcpServers || initialDbData.mcpServers,
         };
     } catch (error) {
-        return { workflows: [], agentExecutionLogs: [], conversations: [], knowledge: [] };
+        return { ...initialDbData };
     }
 }
 
@@ -79,7 +109,7 @@ async function writeDb(data: DbData): Promise<void> {
 type WorkflowCreateData = z.infer<typeof WorkflowCreateAPISchema>;
 type AgentExecutionLogCreateData = Omit<AgentExecutionLog, 'id' | 'timestamp'>;
 type KnowledgeCreateData = Omit<KnowledgeDocument, 'id'>;
-
+type McpServerCreateData = Omit<McpServerConfig, 'id'>;
 
 const db = {
     workflow: {
@@ -231,6 +261,44 @@ const db = {
             await writeDb(data);
             return newSettings;
         },
+    },
+    mcpServer: {
+      async findMany(): Promise<McpServerConfig[]> {
+        const db = await readDb();
+        return db.mcpServers || [];
+      },
+      async findUnique(args: { where: { id: string } }): Promise<McpServerConfig | null> {
+        const db = await readDb();
+        return db.mcpServers?.find(s => s.id === args.where.id) || null;
+      },
+      async create(args: { data: McpServerCreateData }): Promise<McpServerConfig> {
+        const db = await readDb();
+        if (!db.mcpServers) db.mcpServers = [];
+        const newServer: McpServerConfig = {
+          id: crypto.randomUUID(),
+          ...args.data,
+        };
+        db.mcpServers.push(newServer);
+        await writeDb(db);
+        return newServer;
+      },
+      async update(args: { where: { id: string }, data: McpServerCreateData }): Promise<McpServerConfig> {
+        const db = await readDb();
+        const index = db.mcpServers?.findIndex(s => s.id === args.where.id);
+        if (index === undefined || index === -1) throw new Error('MCP server not found.');
+        const updatedServer = { ...db.mcpServers![index], ...args.data };
+        db.mcpServers![index] = updatedServer;
+        await writeDb(db);
+        return updatedServer;
+      },
+      async delete(args: { where: { id: string } }): Promise<McpServerConfig> {
+        const db = await readDb();
+        const index = db.mcpServers?.findIndex(s => s.id === args.where.id);
+        if (index === undefined || index === -1) throw new Error('Record to delete not found.');
+        const [deleted] = db.mcpServers!.splice(index, 1);
+        await writeDb(db);
+        return deleted;
+      }
     }
 };
 

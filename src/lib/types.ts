@@ -167,7 +167,7 @@ export interface AppSettings {
     }>;
 }
 
-// Integrations
+// Integrations & MCP
 export interface IntegrationDefinition {
     id: string; // e.g., 'firecrawl', 'exa'
     name: string;
@@ -175,3 +175,32 @@ export interface IntegrationDefinition {
     icon: React.ElementType;
     toolName: string; // The associated tool name (e.g., 'firecrawlScraper')
 }
+
+export const McpServerConfigSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string().min(1, 'Server name is required.'),
+  description: z.string().optional(),
+  command: z.string().min(1, 'Command is required.'),
+  args: z.string().transform(val => val.split(' ').map(s => s.trim()).filter(Boolean)), // transform string to array
+  env: z.string().optional().transform(val => {
+      if (!val) return {};
+      try {
+          const parsed = JSON.parse(val);
+          if (typeof parsed === 'object' && !Array.isArray(parsed) && parsed !== null) {
+              return parsed;
+          }
+          return {};
+      } catch {
+          return {};
+      }
+  }),
+  enabled: z.boolean().default(true),
+});
+
+export type McpServerConfig = z.infer<typeof McpServerConfigSchema> & { id: string };
+
+export const McpServerFormSchema = McpServerConfigSchema.omit({id: true}).extend({
+    args: z.string(),
+    env: z.string().optional(),
+});
+export type McpServerFormData = z.infer<typeof McpServerFormSchema>;
