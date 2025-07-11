@@ -744,38 +744,42 @@ export default function AgentsDashboardPage() {
 
   return (
     <div className="min-h-screen w-full bg-background flex flex-col">
-       <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur-sm sm:h-16 sm:px-6">
+       <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur-sm sm:px-6">
         <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-2 font-semibold">
               <LucideIcons.Bot className="h-6 w-6 text-primary" />
               <span className="hidden font-bold sm:inline-block">MyAgent</span>
             </Link>
+            <nav className="hidden items-center gap-1 rounded-lg bg-muted p-1 text-sm font-medium md:flex">
+                <Link href="/" className="rounded-lg px-3 py-1 text-primary bg-background shadow-sm">Agents</Link>
+                <Link href="/composer" className="rounded-lg px-3 py-1 text-muted-foreground transition-colors hover:text-foreground">Composer</Link>
+                <Link href="/knowledge" className="rounded-lg px-3 py-1 text-muted-foreground transition-colors hover:text-foreground">Knowledge</Link>
+                <Link href="/tools" className="rounded-lg px-3 py-1 text-muted-foreground transition-colors hover:text-foreground">MCP Tools</Link>
+                <Link href="/analytics" className="rounded-lg px-3 py-1 text-muted-foreground transition-colors hover:text-foreground">Analytics</Link>
+            </nav>
         </div>
          <div className="flex flex-1 items-center justify-end gap-2">
-            <nav className="hidden items-center gap-2 text-sm font-medium md:flex">
-                <Link href="/composer" className="text-muted-foreground transition-colors hover:text-foreground">Composer</Link>
-                <Link href="/knowledge" className="text-muted-foreground transition-colors hover:text-foreground">Knowledge</Link>
-                <Link href="/tools" className="text-muted-foreground transition-colors hover:text-foreground">MCP Tools</Link>
-                <Link href="/analytics" className="text-muted-foreground transition-colors hover:text-foreground">Analytics</Link>
-            </nav>
             <Button onClick={handleCreateNew}>
                 <LucideIcons.PlusCircle className="mr-2 h-4 w-4" /> Create Agent
             </Button>
              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="icon" className="relative h-8 w-8 md:hidden">
-                        <LucideIcons.Settings className="h-4 w-4" />
+                        <LucideIcons.Menu className="h-4 w-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild><Link href="/">Agents</Link></DropdownMenuItem>
                     <DropdownMenuItem asChild><Link href="/composer">Composer</Link></DropdownMenuItem>
                      <DropdownMenuItem asChild><Link href="/knowledge">Knowledge</Link></DropdownMenuItem>
                      <DropdownMenuItem asChild><Link href="/tools">MCP Tools</Link></DropdownMenuItem>
                     <DropdownMenuItem asChild><Link href="/analytics">Analytics</Link></DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>
-                        <ModeToggle />
-                        <span>Toggle Theme</span>
+                        <div className="flex items-center gap-2">
+                            <ModeToggle />
+                            <span>Toggle Theme</span>
+                        </div>
                     </DropdownMenuItem>
                 </DropdownMenuContent>
              </DropdownMenu>
@@ -787,7 +791,7 @@ export default function AgentsDashboardPage() {
       <main className="flex-1 p-4 md:p-6">
         <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h2 className="text-2xl font-bold tracking-tight">Agents Overview</h2>
+                <h2 className="text-2xl font-bold tracking-tight">Agents Dashboard</h2>
                 <p className="text-muted-foreground">Create, manage, and test your AI agents.</p>
             </div>
             <Input 
@@ -799,15 +803,15 @@ export default function AgentsDashboardPage() {
         </div>
 
         {isLoading ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {[...Array(4)].map((_, i) => (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[...Array(3)].map((_, i) => (
               <Card key={i}><CardHeader><Skeleton className="h-6 w-1/2" /><Skeleton className="h-4 w-3/4" /></CardHeader><CardContent className="space-y-4"><Skeleton className="h-8 w-full" /><Skeleton className="h-8 w-full" /><Skeleton className="h-8 w-full" /></CardContent><CardFooter><Skeleton className="h-10 w-full" /></CardFooter></Card>
             ))}
           </div>
         ) : error ? (
             <div className="flex items-center justify-center rounded-lg border border-dashed p-8 text-center h-full"><div className="text-destructive">{error}</div></div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredAgents.map(agent => (
               <AgentCard 
                 key={agent.name} 
