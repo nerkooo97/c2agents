@@ -751,7 +751,7 @@ export default function AgentsDashboardPage() {
               <span className="hidden font-bold sm:inline-block">MyAgent</span>
             </Link>
             <nav className="hidden items-center gap-1 rounded-lg bg-muted p-1 text-sm font-medium md:flex">
-                <Link href="/" className="rounded-lg px-3 py-1 text-primary bg-background shadow-sm">Agents</Link>
+                <Link href="/" className="rounded-lg px-3 py-1 bg-primary text-primary-foreground shadow-sm">Agents</Link>
                 <Link href="/composer" className="rounded-lg px-3 py-1 text-muted-foreground transition-colors hover:text-foreground">Composer</Link>
                 <Link href="/knowledge" className="rounded-lg px-3 py-1 text-muted-foreground transition-colors hover:text-foreground">Knowledge</Link>
                 <Link href="/tools" className="rounded-lg px-3 py-1 text-muted-foreground transition-colors hover:text-foreground">MCP Tools</Link>
