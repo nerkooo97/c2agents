@@ -36,20 +36,11 @@ export default function VoiceChatPage() {
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const audioQueueRef = useRef<HTMLAudioElement[]>([]);
   const isPlayingRef = useRef(false);
+  const transcriptRef = useRef('');
   
   const { toast } = useToast()
   
   const agentDisplayName = agentName?.replace(/-/g, ' ') ?? 'Agent'
-
-  useEffect(() => {
-    if (agentName) {
-      const initialMessage = `Hello! I'm the ${agentDisplayName}. How can I help you today?`;
-      setMessages([{ role: 'model', content: initialMessage }]);
-      setSubtitle(initialMessage);
-      setSessionId(crypto.randomUUID());
-    }
-  }, [agentName, agentDisplayName]);
-
 
   const processQueue = () => {
     if (isPlayingRef.current || audioQueueRef.current.length === 0) {
@@ -125,39 +116,49 @@ export default function VoiceChatPage() {
       return;
     }
 
+    const initialMessage = `Hello! I'm the ${agentDisplayName}. How can I help you today?`;
+    setMessages([{ role: 'model', content: initialMessage }]);
+    setSubtitle(initialMessage);
+    setSessionId(crypto.randomUUID());
+
     const recognition = new SpeechRecognition();
     recognition.continuous = false;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
-
     recognitionRef.current = recognition;
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      let interimTranscript = '';
-      let finalTranscript = '';
+      let interim = '';
+      let final = '';
       for (let i = 0; i < event.results.length; ++i) {
         if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript;
+          final += event.results[i][0].transcript;
         } else {
-          interimTranscript += event.results[i][0].transcript;
+          interim += event.results[i][0].transcript;
         }
       }
-      setSubtitle(interimTranscript || finalTranscript || '...');
-
-       if (finalTranscript.trim()) {
-        processRequest(finalTranscript.trim());
-      }
+      const newTranscript = final || interim;
+      transcriptRef.current = newTranscript;
+      setSubtitle(newTranscript || '...');
     };
 
     recognition.onend = () => {
-      setConversationState('idle');
+      if (conversationState === 'listening') {
+        const finalTranscript = transcriptRef.current.trim();
+        if (finalTranscript) {
+          processRequest(finalTranscript);
+        } else {
+          setConversationState('idle');
+          setSubtitle("I didn't catch that. Please try again.");
+        }
+      }
     };
-
+    
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       if (event.error !== 'no-speech' && event.error !== 'aborted') {
         toast({ variant: "destructive", title: "Speech Recognition Error", description: event.error });
       }
-      setConversationState('idle');
+       setConversationState('idle');
     };
 
     return () => {
@@ -172,6 +173,7 @@ export default function VoiceChatPage() {
 
     if (conversationState === 'idle') {
       try {
+        transcriptRef.current = '';
         setConversationState('listening');
         setSubtitle('Listening...');
         recognition.start();
