@@ -53,9 +53,15 @@ async function streamAgentResponse(request: NextRequest, agent: AgentDefinition)
             const conversation = await db.conversation.findUnique({ where: { sessionId } });
             if (conversation) {
                 // Ensure messages are parsed correctly
-                const parsedMessages = JSON.parse(conversation.messages) as Message[];
-                if(Array.isArray(parsedMessages)) {
-                    conversationHistory = parsedMessages;
+                try {
+                    const parsedMessages = JSON.parse(conversation.messages) as Message[];
+                    if(Array.isArray(parsedMessages)) {
+                        conversationHistory = parsedMessages;
+                    }
+                } catch (e) {
+                    console.error("Error parsing conversation history:", e);
+                    // Handle case where history is not valid JSON
+                    conversationHistory = [];
                 }
             }
         }

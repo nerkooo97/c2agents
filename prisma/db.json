@@ -1,4 +1,3 @@
-
 {
   "workflows": [
     {
@@ -102,6 +101,26 @@
       "inputTokens": 69,
       "outputTokens": 86,
       "totalTokens": 155
+    },
+    {
+      "id": "3514afdc-ff53-4642-b66b-bb13becb5dd5",
+      "timestamp": "2025-07-13T18:45:00.622Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 3327,
+      "inputTokens": 51,
+      "outputTokens": 48,
+      "totalTokens": 99
+    },
+    {
+      "id": "dfbea1f1-ebb1-433e-a58e-bc1f698aeaa9",
+      "timestamp": "2025-07-13T18:45:29.684Z",
+      "agentName": "non-api-agent",
+      "status": "success",
+      "latency": 2161,
+      "inputTokens": 25,
+      "outputTokens": 62,
+      "totalTokens": 87
     }
   ],
   "conversations": [
@@ -188,6 +207,12 @@
           "content": "Ja sam digitalni asistent, MyAgent, i moja uloga je da pružam informacije, odgovore na pitanja i pomažem u obavljanju različitih zadataka. Ako imate neko specifično pitanje ili trebate pomoć oko nečega, slobodno mi se obratite!"
         }
       ]
+    },
+    {
+      "sessionId": "9eaba85f-398c-4380-a144-f78444f6f050",
+      "messages": "[{\"role\":\"user\",\"content\":\"koja je tovja uloga\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Moja uloga je da pružim informacije, odgovorim na pitanja, asistiram u učenju, rešavanju problema i obezbedim korisničku podršku koliko je to moguće putem teksta.\\\"}\"}]",
+      "createdAt": "2025-07-13T18:45:00.624Z",
+      "updatedAt": "2025-07-13T18:45:00.624Z"
     }
   ]
 }
