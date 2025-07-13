@@ -1,7 +1,7 @@
 
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -34,10 +34,8 @@ export default function VoiceChatPage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const audioQueueRef = useRef<string[]>([]);
+  const audioQueueRef = useRef<HTMLAudioElement[]>([]);
   const isPlayingRef = useRef(false);
-  const finalTranscriptRef = useRef('');
   
   const { toast } = useToast()
   
@@ -51,8 +49,9 @@ export default function VoiceChatPage() {
       setSessionId(crypto.randomUUID());
     }
   }, [agentName, agentDisplayName]);
-  
-  const playNextInQueue = useCallback(async () => {
+
+
+  const processQueue = () => {
     if (isPlayingRef.current || audioQueueRef.current.length === 0) {
       if (!isPlayingRef.current) {
          setConversationState('idle');
@@ -62,41 +61,21 @@ export default function VoiceChatPage() {
     
     isPlayingRef.current = true;
     setConversationState('speaking');
-    const audioDataUri = audioQueueRef.current.shift();
-
-    if (!audioContextRef.current || !audioDataUri) {
-      isPlayingRef.current = false;
-      setConversationState('idle');
-      return;
-    }
-
-    try {
-      const response = await fetch(audioDataUri);
-      const arrayBuffer = await response.arrayBuffer();
-      const decodedAudio = await audioContextRef.current.decodeAudioData(arrayBuffer);
-      
-      const source = audioContextRef.current.createBufferSource();
-      source.buffer = decodedAudio;
-      source.connect(audioContextRef.current.destination);
-      source.start();
-
-      source.onended = () => {
+    
+    const audio = audioQueueRef.current.shift();
+    if (audio) {
+      audio.play();
+      audio.onended = () => {
         isPlayingRef.current = false;
-        playNextInQueue();
+        processQueue();
       };
-    } catch (error) {
-      console.error("Audio playback error:", error);
-      toast({
-        variant: 'destructive',
-        title: 'Audio Playback Error',
-        description: error instanceof Error ? error.message : 'Could not decode or play audio.',
-      });
-      isPlayingRef.current = false;
-      playNextInQueue();
+    } else {
+        isPlayingRef.current = false;
+        processQueue();
     }
-  }, [toast]);
-
-  const processRequest = useCallback(async (text: string) => {
+  };
+  
+  const processRequest = async (text: string) => {
     if (!agentName || !sessionId || !text.trim()) {
       setConversationState('idle');
       return;
@@ -126,8 +105,9 @@ export default function VoiceChatPage() {
       const result = await speechResponse.json();
       if (!speechResponse.ok) throw new Error(result.error || `Failed to get audio stream: ${speechResponse.status}`);
       
-      audioQueueRef.current.push(result.audio);
-      playNextInQueue();
+      const audio = new Audio(result.audio);
+      audioQueueRef.current.push(audio);
+      processQueue();
 
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
@@ -137,25 +117,11 @@ export default function VoiceChatPage() {
       toast({ variant: 'destructive', title: 'Error processing request', description: errorMessage });
       setConversationState('idle');
     }
-  }, [agentName, sessionId, ttsModel, toast, playNextInQueue]);
+  };
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    // Initialize AudioContext on first user interaction
-    const initAudio = () => {
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      document.removeEventListener('click', initAudio);
-      document.removeEventListener('touchstart', initAudio);
-    };
-    document.addEventListener('click', initAudio, { once: true });
-    document.addEventListener('touchstart', initAudio, { once: true });
-
-    if (!SpeechRecognition) {
+    if (typeof window === 'undefined' || !SpeechRecognition) {
       setIsSupported(false);
-      toast({ variant: 'destructive', title: 'Browser Not Supported', description: 'Voice recognition is not supported in your browser.' });
       return;
     }
 
@@ -163,29 +129,28 @@ export default function VoiceChatPage() {
     recognition.continuous = false;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
+
     recognitionRef.current = recognition;
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let interimTranscript = '';
-      finalTranscriptRef.current = '';
+      let finalTranscript = '';
       for (let i = 0; i < event.results.length; ++i) {
         if (event.results[i].isFinal) {
-          finalTranscriptRef.current += event.results[i][0].transcript;
+          finalTranscript += event.results[i][0].transcript;
         } else {
           interimTranscript += event.results[i][0].transcript;
         }
       }
-      setSubtitle(interimTranscript || finalTranscriptRef.current || '...');
+      setSubtitle(interimTranscript || finalTranscript || '...');
+
+       if (finalTranscript.trim()) {
+        processRequest(finalTranscript.trim());
+      }
     };
-    
+
     recognition.onend = () => {
-        if (conversationState === 'listening') {
-            setConversationState('idle');
-            const transcript = finalTranscriptRef.current.trim();
-            if (transcript) {
-                processRequest(transcript);
-            }
-        }
+      setConversationState('idle');
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
@@ -198,21 +163,17 @@ export default function VoiceChatPage() {
     return () => {
         recognitionRef.current?.abort();
     };
-  }, [toast, processRequest, conversationState]); // Add conversationState to dependencies
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleToggleListening = () => {
     const recognition = recognitionRef.current;
     if (!recognition || !isSupported) return;
 
-    if (audioContextRef.current?.state === 'suspended') {
-      audioContextRef.current.resume();
-    }
-
     if (conversationState === 'idle') {
-      finalTranscriptRef.current = '';
-      setSubtitle('Listening...');
-      setConversationState('listening');
       try {
+        setConversationState('listening');
+        setSubtitle('Listening...');
         recognition.start();
       } catch(e) {
         console.error("Error starting recognition:", e);

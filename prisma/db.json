@@ -271,6 +271,76 @@
       "inputTokens": 51,
       "outputTokens": 5,
       "totalTokens": 56
+    },
+    {
+      "id": "242b472b-7ede-4b02-8471-024678a79f4b",
+      "timestamp": "2025-07-13T19:40:00.780Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1894,
+      "inputTokens": 49,
+      "outputTokens": 23,
+      "totalTokens": 72
+    },
+    {
+      "id": "b4a3e5f8-427d-433c-9dec-d8012d539269",
+      "timestamp": "2025-07-13T19:40:07.681Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1588,
+      "inputTokens": 51,
+      "outputTokens": 52,
+      "totalTokens": 103
+    },
+    {
+      "id": "8f213adf-0169-4871-aa60-a58efd78c1de",
+      "timestamp": "2025-07-13T19:40:18.162Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1089,
+      "inputTokens": 52,
+      "outputTokens": 9,
+      "totalTokens": 61
+    },
+    {
+      "id": "b7c5c68c-3d28-40c4-a1fd-6a20f7758c2e",
+      "timestamp": "2025-07-13T19:40:29.311Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 909,
+      "inputTokens": 51,
+      "outputTokens": 21,
+      "totalTokens": 72
+    },
+    {
+      "id": "8db249b4-ee96-40e4-8b94-bbd4851a42f8",
+      "timestamp": "2025-07-13T19:40:42.989Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1512,
+      "inputTokens": 50,
+      "outputTokens": 38,
+      "totalTokens": 88
+    },
+    {
+      "id": "722de9d1-6323-41b8-93b1-b2da35405f5f",
+      "timestamp": "2025-07-13T19:40:54.797Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1305,
+      "inputTokens": 51,
+      "outputTokens": 28,
+      "totalTokens": 79
+    },
+    {
+      "id": "2495727d-6c22-4cfc-925c-9bcab37f0a4c",
+      "timestamp": "2025-07-13T19:41:13.606Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 638,
+      "inputTokens": 54,
+      "outputTokens": 11,
+      "totalTokens": 65
     }
   ],
   "conversations": [
@@ -360,9 +430,9 @@
     },
     {
       "sessionId": "9eaba85f-398c-4380-a144-f78444f6f050",
-      "messages": "[{\"role\":\"user\",\"content\":\"koja je tovja uloga\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Moja uloga je da pružim informacije, odgovorim na pitanja, asistiram u učenju, rešavanju problema i obezbedim korisničku podršku koliko je to moguće putem teksta.\\\"}\"},{\"role\":\"user\",\"content\":\"pozdrav\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Pozdrav! Kako vam mogu pomoći danas?\\\"}\"},{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Učitava se...\"}]",
+      "messages": "[{\"role\":\"user\",\"content\":\"koja je tovja uloga\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Moja uloga je da pružim informacije, odgovorim na pitanja, asistiram u učenju, rešavanju problema i obezbedim korisničku podršku koliko je to moguće putem teksta.\\\"}\"},{\"role\":\"user\",\"content\":\"pozdrav\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Pozdrav! Kako vam mogu pomoći danas?\\\"}\"},{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Učitava se...\"},{\"role\":\"user\",\"content\":\"koji je danas dan\"},{\"role\":\"model\",\"content\":\"I'm sorry, but as an AI, I do not have real-time capabilities to access the current date or time.\"},{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"{\\\"role\\\": \\\"Moja uloga je da pružam informacije, odgovaram na pitanja, asistiram u rješavanju problema i pružam podršku korisnicima na temelju mojih programskih mogućnosti i raspoloživih podataka.\\\"}\"},{\"role\":\"user\",\"content\":\"kojim alatima imas pristup\"},{\"role\":\"model\",\"content\":\"I'm sorry, I can't assist with that.\"},{\"role\":\"user\",\"content\":\"mozes li mi dati jedan vic\"},{\"role\":\"model\",\"content\":\"{\\\"vic\\\": \\\"Kako plavuša ubija pticu? Baca je sa litice!\\\"}\"},{\"role\":\"user\",\"content\":\"jel imas memoriju?\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Da, imam sposobnost pamćenja konteksta razgovora unutar sesije, ali ne zadržavam trajne informacije nakon završetka sesije.\\\"}\"},{\"role\":\"user\",\"content\":\"koji si mi onda vic dao\"},{\"role\":\"model\",\"content\":\"{\\\"joke\\\": \\\"Zašto se svi mole na benzinskoj pumpi? Zato što je gorivo postalo sveto!\\\"}\"},{\"role\":\"user\",\"content\":\"o cemu smo ovdje sve razgovarali\"},{\"role\":\"model\",\"content\":\"{\\\"error\\\": \\\"No prior conversation data available.\\\"}\"}]",
       "createdAt": "2025-07-13T18:45:00.624Z",
-      "updatedAt": "2025-07-13T19:39:09.657Z"
+      "updatedAt": "2025-07-13T19:41:13.611Z"
     },
     {
       "sessionId": "1cb83376-82fe-4436-87c0-320798ce6923",
