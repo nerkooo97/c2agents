@@ -486,16 +486,17 @@ const AgentCard = ({
         </div>
       </CardContent>
       <CardFooter className="flex items-center justify-end gap-2 border-t pt-4">
-        {agent.realtime && (
-            <Button variant="outline" size="sm" onClick={onVoiceTest}>
+        {agent.realtime ? (
+             <Button variant="outline" size="sm" onClick={onVoiceTest} className="w-full">
                 <LucideIcons.Mic className="mr-2 h-4 w-4" />
                 Voice Chat
             </Button>
+        ) : (
+             <Button size="sm" onClick={onTest} className="w-full">
+                <LucideIcons.TestTube2 className="mr-2 h-4 w-4" />
+                Test Agent
+            </Button>
         )}
-        <Button size="sm" onClick={onTest}>
-            <LucideIcons.TestTube2 className="mr-2 h-4 w-4" />
-            Test Agent
-        </Button>
       </CardFooter>
     </Card>
   );
@@ -690,11 +691,15 @@ export default function AgentsDashboardPage() {
   };
   
 
-  const filteredAgents = useMemo(() => {
-    return agents.filter(agent =>
+  const { textAgents, voiceAgents } = useMemo(() => {
+    const filtered = agents.filter(agent =>
       agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       agent.description.toLowerCase().includes(searchQuery.toLowerCase())
     );
+    return {
+        textAgents: filtered.filter(a => !a.realtime),
+        voiceAgents: filtered.filter(a => a.realtime),
+    }
   }, [agents, searchQuery]);
 
   return (
@@ -743,14 +748,14 @@ export default function AgentsDashboardPage() {
             </div>
         </div>
       </header>
-      <main className="flex-1 p-4 md:p-6">
+      <main className="flex-1 p-4 md:p-6 space-y-8">
         <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h2 className="text-2xl font-bold tracking-tight">Agents Dashboard</h2>
+                <h1 className="text-3xl font-bold tracking-tight">Agents Dashboard</h1>
                 <p className="text-muted-foreground">Create, manage, and test your AI agents.</p>
             </div>
             <Input 
-                placeholder="Search agents..." 
+                placeholder="Search all agents..." 
                 className="max-w-sm"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -766,18 +771,53 @@ export default function AgentsDashboardPage() {
         ) : error ? (
             <div className="flex items-center justify-center rounded-lg border border-dashed p-8 text-center h-full"><div className="text-destructive">{error}</div></div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredAgents.map(agent => (
-              <AgentCard 
-                key={agent.name} 
-                agent={agent}
-                onEdit={() => handleEdit(agent)}
-                onTest={() => handleTest(agent)}
-                onDelete={() => handleDelete(agent)}
-                onVoiceTest={() => handleVoiceTest(agent)}
-                />
-            ))}
-          </div>
+          <>
+            {/* Voice Agents Section */}
+            {voiceAgents.length > 0 && (
+                <section>
+                    <div className="mb-4">
+                        <h2 className="text-2xl font-bold tracking-tight">Realtime Voice Agents</h2>
+                        <p className="text-muted-foreground">Agents designed for voice conversations.</p>
+                    </div>
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {voiceAgents.map(agent => (
+                            <AgentCard 
+                                key={agent.name} 
+                                agent={agent}
+                                onEdit={() => handleEdit(agent)}
+                                onTest={() => handleTest(agent)}
+                                onDelete={() => handleDelete(agent)}
+                                onVoiceTest={() => handleVoiceTest(agent)}
+                            />
+                        ))}
+                    </div>
+                </section>
+            )}
+
+            {/* Text Agents Section */}
+            <section>
+                 <div className="mb-4">
+                    <h2 className="text-2xl font-bold tracking-tight">Text Agents</h2>
+                    <p className="text-muted-foreground">Standard agents for text-based interactions and workflows.</p>
+                </div>
+                 {textAgents.length > 0 ? (
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {textAgents.map(agent => (
+                            <AgentCard 
+                                key={agent.name} 
+                                agent={agent}
+                                onEdit={() => handleEdit(agent)}
+                                onTest={() => handleTest(agent)}
+                                onDelete={() => handleDelete(agent)}
+                                onVoiceTest={() => handleVoiceTest(agent)}
+                            />
+                        ))}
+                    </div>
+                 ) : (
+                    <p className="text-muted-foreground">No text agents found.</p>
+                 )}
+            </section>
+          </>
         )}
       </main>
 

@@ -181,6 +181,36 @@
       "inputTokens": 65,
       "outputTokens": 93,
       "totalTokens": 158
+    },
+    {
+      "id": "896ba26e-2577-4bc5-be86-b24b2d45ed88",
+      "timestamp": "2025-07-13T18:53:44.940Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "latency": 3689,
+      "inputTokens": 65,
+      "outputTokens": 70,
+      "totalTokens": 135
+    },
+    {
+      "id": "03c0dd61-f10b-46c9-af60-417f91b50d44",
+      "timestamp": "2025-07-13T18:53:51.233Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "latency": 1554,
+      "inputTokens": 63,
+      "outputTokens": 41,
+      "totalTokens": 104
+    },
+    {
+      "id": "36917b96-828e-47d7-bcf6-c4f7aca8f63a",
+      "timestamp": "2025-07-13T18:54:03.912Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "latency": 1410,
+      "inputTokens": 66,
+      "outputTokens": 32,
+      "totalTokens": 98
     }
   ],
   "conversations": [
@@ -276,9 +306,9 @@
     },
     {
       "sessionId": "1cb83376-82fe-4436-87c0-320798ce6923",
-      "messages": "[{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Moja uloga je da pružam informacije, odgovaram na pitanja, pomažem u rešavanju problema i nudim podršku korisnicima. Mogu asistirati u raznim zadacima, kao što su pretraga informacija, objašnjavanje pojmova, pružanje saveta i još mnogo toga. Ako imate bilo kakvo pitanje ili zahtev, slobodno me pitajte!\"},{\"role\":\"user\",\"content\":\"koji je danas dan\"},{\"role\":\"model\",\"content\":\"Nažalost, ne mogu direktno provjeriti današnji datum. Molim te provjeri datum na svom uređaju ili kalendaru.\"},{\"role\":\"user\",\"content\":\"o cemu smo ovdje razgovarali u ovom chatu\"},{\"role\":\"model\",\"content\":\"Nažalost, nemam mogućnost pamćenja prethodnih interakcija u ovim razgovorima. Mogu vam pomoći s bilo kojim pitanjima ili zadacima na novi način. Kako mogu pomoći danas?\"},{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Moja uloga je da vam pomognem odgovarajući na pitanja, pružajući informacije i pomažući u rešavanju različitih zadataka. Možete me pitati o raznim temama, a ja ću pokušati da vam pomognem na najbolji mogući način koristeći svoje veštine i alate koji su mi na raspolaganju. Ako imate nešto konkretno na umu, slobodno pitajte!\"}]",
+      "messages": "[{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Moja uloga je da pružam informacije, odgovaram na pitanja, pomažem u rešavanju problema i nudim podršku korisnicima. Mogu asistirati u raznim zadacima, kao što su pretraga informacija, objašnjavanje pojmova, pružanje saveta i još mnogo toga. Ako imate bilo kakvo pitanje ili zahtev, slobodno me pitajte!\"},{\"role\":\"user\",\"content\":\"koji je danas dan\"},{\"role\":\"model\",\"content\":\"Nažalost, ne mogu direktno provjeriti današnji datum. Molim te provjeri datum na svom uređaju ili kalendaru.\"},{\"role\":\"user\",\"content\":\"o cemu smo ovdje razgovarali u ovom chatu\"},{\"role\":\"model\",\"content\":\"Nažalost, nemam mogućnost pamćenja prethodnih interakcija u ovim razgovorima. Mogu vam pomoći s bilo kojim pitanjima ili zadacima na novi način. Kako mogu pomoći danas?\"},{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Moja uloga je da vam pomognem odgovarajući na pitanja, pružajući informacije i pomažući u rešavanju različitih zadataka. Možete me pitati o raznim temama, a ja ću pokušati da vam pomognem na najbolji mogući način koristeći svoje veštine i alate koji su mi na raspolaganju. Ako imate nešto konkretno na umu, slobodno pitajte!\"},{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Moja uloga je da budem vaš virtualni asistent i da vam pomognem u traženju informacija, odgovaranju na pitanja, obavljanju različitih zadataka i pružanju podrške u skladu s vašim potrebama. Ako imate bilo kakva pitanja ili trebate pomoć, slobodno ih postavite!\"},{\"role\":\"user\",\"content\":\"koji je danas dan\"},{\"role\":\"model\",\"content\":\"Nažalost, nemam pristup trenutnom datumu i vremenu. Molim vas da proverite na svom uređaju ili kalendaru da biste saznali koji je danas dan.\"},{\"role\":\"user\",\"content\":\"mozes li mi napisati neki vic\"},{\"role\":\"model\",\"content\":\"Naravno! Evo jednog vica za tebe:\\n\\nZašto je računar hladan?\\n\\nZato što ima puno prozora! (Windows) 😊\"}]",
       "createdAt": "2025-07-13T18:48:08.468Z",
-      "updatedAt": "2025-07-13T18:51:12.156Z"
+      "updatedAt": "2025-07-13T18:54:03.916Z"
     }
   ]
 }
