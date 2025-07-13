@@ -11,15 +11,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Send, Eraser, ArrowLeft } from 'lucide-react'
+import { Send, Eraser, ArrowLeft, Bot, Mic, TestTube2, ChevronsUpDown } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import AgentExecutionGraph from '@/components/agent-execution-graph'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
+import { useRouter } from 'next/navigation'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+
 
 export default function AgentTestPage() {
   const params = useParams()
+  const router = useRouter()
   const agentName = decodeURIComponent(Array.isArray(params.agentName) ? params.agentName[0] : (params.agentName as string));
 
   const [messages, setMessages] = useState<Message[]>([])
@@ -131,7 +135,7 @@ export default function AgentTestPage() {
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
+            const errorData = await response.json().catch(() => ({error: "The server returned an error without a message."}));
             throw new Error(errorData.error || 'The server returned an error.');
         }
 
@@ -194,10 +198,13 @@ export default function AgentTestPage() {
         setMessages(prev => {
           const newMessages = [...prev];
           const lastMessage = newMessages[newMessages.length - 1];
-          if (lastMessage.role === 'model' && lastMessage.content === '') {
-            lastMessage.content = "Sorry, I encountered an error. Please try again.";
+          // If the last message is an empty model message, populate it with an error.
+          if (lastMessage && lastMessage.role === 'model' && lastMessage.content === '') {
+            lastMessage.content = "Sorry, I couldn't connect to the agent. Please check the console and try again.";
+             return newMessages;
           }
-          return newMessages;
+          // Otherwise, add a new error message.
+          return [...newMessages, { role: 'model', content: "Sorry, I couldn't connect to the agent. Please check the console and try again." }];
         });
       }
     } finally {
@@ -227,14 +234,23 @@ export default function AgentTestPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+           <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm"><ChevronsUpDown className="mr-2 h-4 w-4" /> Test Mode</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                  <DropdownMenuItem disabled>
+                    <TestTube2 className="mr-2 h-4 w-4" /> Text Chat
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push(`/voice/${agentName}`)}>
+                    <Mic className="mr-2 h-4 w-4" /> Voice Chat
+                  </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           <Button variant="outline" size="sm" onClick={startNewSession}>
             <Eraser className="mr-2 h-4 w-4" />
             New Session
           </Button>
-          <Avatar className="hidden sm:flex">
-            <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="person" />
-            <AvatarFallback>U</AvatarFallback>
-          </Avatar>
         </div>
       </header>
       <main className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 lg:p-6">
@@ -266,7 +282,7 @@ export default function AgentTestPage() {
                       )}
                     </div>
                   ))}
-                   {isLoading && messages.at(-1)?.role === 'user' && (
+                   {isLoading && (
                      <div className="flex items-start gap-4">
                         <Avatar className="h-9 w-9 border">
                           <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="robot logo" alt={agentDisplayName} />

@@ -66,6 +66,7 @@ async function streamAgentResponse(request: NextRequest, agent: AgentDefinition)
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
+      const startTime = Date.now();
       try {
         let conversationHistory: Message[] = [];
         if (agent.enableMemory && sessionId) {
@@ -115,6 +116,20 @@ async function streamAgentResponse(request: NextRequest, agent: AgentDefinition)
 
         // Wait for the final response to get usage data and save history
         const finalResponse = await responsePromise;
+        const endTime = Date.now();
+
+        // Log successful execution
+        const usage = finalResponse.usage;
+        await db.agentExecutionLog.create({
+            data: {
+                agentName: agent.name,
+                status: 'success',
+                latency: endTime - startTime,
+                inputTokens: usage?.inputTokens,
+                outputTokens: usage?.outputTokens,
+                totalTokens: usage?.totalTokens,
+            },
+        });
 
         // Save history if memory is enabled
         if (agent.enableMemory && sessionId) {
@@ -135,7 +150,16 @@ async function streamAgentResponse(request: NextRequest, agent: AgentDefinition)
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'usage', usage: finalResponse.usage })}\n\n`));
 
       } catch (e) {
+        const endTime = Date.now();
         const errorMessage = e instanceof Error ? e.message : 'An internal server error occurred.';
+         await db.agentExecutionLog.create({
+            data: {
+                agentName: agent.name,
+                status: 'error',
+                latency: endTime - startTime,
+                errorDetails: errorMessage,
+            },
+        });
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: errorMessage })}\n\n`));
       } finally {
         controller.close();
@@ -161,16 +185,16 @@ export async function POST(
     const agent = await getAgent(agentName);
 
     if (!agent) {
-      return new Response(JSON.stringify({ error: 'Agent not found' }), { status: 404 });
+      return new Response(JSON.stringify({ error: `Agent '${agentName}' not found` }), { status: 404, headers: { 'Content-Type': 'application/json' } });
     }
     if (!agent.enableApiAccess) {
-      return new Response(JSON.stringify({ error: 'API access is not enabled for this agent' }), { status: 403 });
+      return new Response(JSON.stringify({ error: 'API access is not enabled for this agent' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
     }
 
     return streamAgentResponse(request, agent);
 
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : 'An internal server error occurred.';
-    return new Response(JSON.stringify({ error: errorMessage }), { status: 500 });
+    return new Response(JSON.stringify({ error: errorMessage }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
