@@ -1,7 +1,7 @@
 
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -42,7 +42,7 @@ export default function VoiceChatPage() {
   
   const agentDisplayName = agentName?.replace(/-/g, ' ') ?? 'Agent'
 
-  const processQueue = () => {
+  const processQueue = useCallback(() => {
     if (isPlayingRef.current || audioQueueRef.current.length === 0) {
       if (!isPlayingRef.current) {
          setConversationState('idle');
@@ -60,13 +60,18 @@ export default function VoiceChatPage() {
         isPlayingRef.current = false;
         processQueue();
       };
-    } else {
+      audio.onerror = () => {
+        console.error("Error playing audio.");
         isPlayingRef.current = false;
         processQueue();
+      }
+    } else {
+        isPlayingRef.current = false;
+        setConversationState('idle');
     }
-  };
-  
-  const processRequest = async (text: string) => {
+  }, []);
+
+  const processRequest = useCallback(async (text: string) => {
     if (!agentName || !sessionId || !text.trim()) {
       setConversationState('idle');
       return;
@@ -108,7 +113,8 @@ export default function VoiceChatPage() {
       toast({ variant: 'destructive', title: 'Error processing request', description: errorMessage });
       setConversationState('idle');
     }
-  };
+  }, [agentName, sessionId, ttsModel, toast, processQueue]);
+
 
   useEffect(() => {
     if (typeof window === 'undefined' || !SpeechRecognition) {
@@ -119,53 +125,64 @@ export default function VoiceChatPage() {
     const initialMessage = `Hello! I'm the ${agentDisplayName}. How can I help you today?`;
     setMessages([{ role: 'model', content: initialMessage }]);
     setSubtitle(initialMessage);
-    setSessionId(crypto.randomUUID());
+    if (!sessionId) {
+      setSessionId(crypto.randomUUID());
+    }
 
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
-    recognitionRef.current = recognition;
+    if (!recognitionRef.current) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+        recognitionRef.current = recognition;
+    }
+    
+    const recognition = recognitionRef.current;
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    const handleResult = (event: SpeechRecognitionEvent) => {
       let interim = '';
-      let final = '';
       for (let i = 0; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) {
-          final += event.results[i][0].transcript;
-        } else {
           interim += event.results[i][0].transcript;
-        }
       }
-      const newTranscript = final || interim;
-      transcriptRef.current = newTranscript;
-      setSubtitle(newTranscript || '...');
+      transcriptRef.current = interim;
+      setSubtitle(interim || '...');
     };
 
-    recognition.onend = () => {
-      if (conversationState === 'listening') {
-        const finalTranscript = transcriptRef.current.trim();
-        if (finalTranscript) {
-          processRequest(finalTranscript);
-        } else {
-          setConversationState('idle');
-          setSubtitle("I didn't catch that. Please try again.");
+    const handleEnd = () => {
+        if (conversationStateRef.current === 'listening') {
+            const finalTranscript = transcriptRef.current.trim();
+            if (finalTranscript) {
+              processRequest(finalTranscript);
+            } else {
+              setConversationState('idle');
+              setSubtitle("I didn't catch that. Please try again.");
+            }
         }
-      }
     };
     
-    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+    const handleError = (event: SpeechRecognitionErrorEvent) => {
       if (event.error !== 'no-speech' && event.error !== 'aborted') {
         toast({ variant: "destructive", title: "Speech Recognition Error", description: event.error });
       }
        setConversationState('idle');
     };
 
+    recognition.addEventListener('result', handleResult);
+    recognition.addEventListener('end', handleEnd);
+    recognition.addEventListener('error', handleError);
+
+    // This part is crucial for making sure event handlers have the latest state
+    const conversationStateRef = useRef(conversationState);
+    useEffect(() => {
+        conversationStateRef.current = conversationState;
+    }, [conversationState]);
+
     return () => {
-        recognitionRef.current?.abort();
+        recognition.removeEventListener('result', handleResult);
+        recognition.removeEventListener('end', handleEnd);
+        recognition.removeEventListener('error', handleError);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [sessionId, agentDisplayName, toast, processRequest]);
 
   const handleToggleListening = () => {
     const recognition = recognitionRef.current;
