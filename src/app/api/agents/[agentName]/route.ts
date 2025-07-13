@@ -137,7 +137,7 @@ async function streamAgentResponse(request: NextRequest, agent: AgentDefinition)
             ];
             await db.conversation.upsert({
                 where: { sessionId },
-                create: { sessionId, messages: JSON.stringify(newHistory) },
+                create: { sessionId, JSON.stringify(newHistory) },
                 update: { messages: JSON.stringify(newHistory) },
             });
              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'log', content: 'History saved.' })}\n\n`));
