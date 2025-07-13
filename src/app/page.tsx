@@ -488,12 +488,12 @@ const AgentCard = ({
       <CardFooter className="flex items-center justify-end gap-2 border-t pt-4">
         {agent.realtime ? (
              <Button variant="outline" size="sm" onClick={onVoiceTest} className="w-full">
-                <LucideIcons.Mic className="mr-2 h-4 w-4" />
+                <LucideIcons.Mic />
                 Voice Chat
             </Button>
         ) : (
              <Button size="sm" onClick={onTest} className="w-full">
-                <LucideIcons.TestTube2 className="mr-2 h-4 w-4" />
+                <LucideIcons.TestTube2 />
                 Test Agent
             </Button>
         )}
@@ -720,7 +720,7 @@ export default function AgentsDashboardPage() {
         </div>
          <div className="flex flex-1 items-center justify-end gap-2">
             <Button onClick={handleCreateNew}>
-                <LucideIcons.PlusCircle className="mr-2 h-4 w-4" /> Create Agent
+                <LucideIcons.PlusCircle /> Create Agent
             </Button>
              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -772,28 +772,6 @@ export default function AgentsDashboardPage() {
             <div className="flex items-center justify-center rounded-lg border border-dashed p-8 text-center h-full"><div className="text-destructive">{error}</div></div>
         ) : (
           <>
-            {/* Voice Agents Section */}
-            {voiceAgents.length > 0 && (
-                <section>
-                    <div className="mb-4">
-                        <h2 className="text-2xl font-bold tracking-tight">Realtime Voice Agents</h2>
-                        <p className="text-muted-foreground">Agents designed for voice conversations.</p>
-                    </div>
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {voiceAgents.map(agent => (
-                            <AgentCard 
-                                key={agent.name} 
-                                agent={agent}
-                                onEdit={() => handleEdit(agent)}
-                                onTest={() => handleTest(agent)}
-                                onDelete={() => handleDelete(agent)}
-                                onVoiceTest={() => handleVoiceTest(agent)}
-                            />
-                        ))}
-                    </div>
-                </section>
-            )}
-
             {/* Text Agents Section */}
             <section>
                  <div className="mb-4">
@@ -817,6 +795,29 @@ export default function AgentsDashboardPage() {
                     <p className="text-muted-foreground">No text agents found.</p>
                  )}
             </section>
+
+            {/* Voice Agents Section */}
+            {voiceAgents.length > 0 && (
+                <section>
+                    <div className="mb-4">
+                        <h2 className="text-2xl font-bold tracking-tight">Realtime Voice Agents</h2>
+                        <p className="text-muted-foreground">Agents designed for voice conversations.</p>
+                    </div>
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {voiceAgents.map(agent => (
+                            <AgentCard 
+                                key={agent.name} 
+                                agent={agent}
+                                onEdit={() => handleEdit(agent)}
+                                onTest={() => handleTest(agent)}
+                                onDelete={() => handleDelete(agent)}
+                                onVoiceTest={() => handleVoiceTest(agent)}
+                            />
+                        ))}
+                    </div>
+                </section>
+            )}
+
           </>
         )}
       </main>
@@ -855,3 +856,5 @@ export default function AgentsDashboardPage() {
     </div>
   );
 }
+
+    
