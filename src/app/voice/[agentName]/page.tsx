@@ -16,7 +16,15 @@ import { Label } from '@/components/ui/label'
 import { runAgent } from '@/lib/actions';
 
 type ConversationState = 'idle' | 'listening' | 'processing' | 'speaking';
-type SpeechRecognition = typeof window.SpeechRecognition
+
+// Adjust for browser compatibility
+const SpeechRecognition =
+  typeof window !== 'undefined'
+    ? window.SpeechRecognition || window.webkitSpeechRecognition
+    : null;
+
+type SpeechRecognitionInstance = InstanceType<typeof SpeechRecognition>
+
 
 export default function VoiceChatPage() {
   const params = useParams()
@@ -29,7 +37,7 @@ export default function VoiceChatPage() {
   const [subtitle, setSubtitle] = useState("I'm ready to help.");
   const [sessionId, setSessionId] = useState<string | null>(null);
 
-  const recognitionRef = useRef<InstanceType<SpeechRecognition> | null>(null)
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioQueueRef = useRef<string[]>([]);
   const isPlayingRef = useRef(false);
@@ -143,14 +151,13 @@ export default function VoiceChatPage() {
     };
     document.addEventListener('click', initAudio);
 
-    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognitionAPI) {
+    if (!SpeechRecognition) {
       setIsSupported(false);
       toast({ variant: 'destructive', title: 'Browser Not Supported', description: 'Voice recognition is not supported in your browser.' });
       return;
     }
 
-    const recognition = new SpeechRecognitionAPI();
+    const recognition = new SpeechRecognition();
     recognition.continuous = false;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
@@ -163,22 +170,24 @@ export default function VoiceChatPage() {
 
       transcriptRef.current = transcript;
       setSubtitle(transcript || '...');
-
-      if (event.results[0].isFinal) {
-        processRequest(transcript);
-      }
     };
 
     const handleError = (event: SpeechRecognitionErrorEvent) => {
-      if (event.error !== 'no-speech') {
+      if (event.error !== 'no-speech' && event.error !== 'aborted') {
         toast({ variant: "destructive", title: "Speech Recognition Error", description: event.error });
       }
-      setConversationState('idle');
+       setConversationState('idle');
     };
     
     const handleEnd = () => {
         if (conversationState === 'listening') {
-             setConversationState('idle');
+             // If we were listening, it means the user stopped talking.
+             // We now process the final transcript.
+             if (transcriptRef.current.trim()) {
+                 processRequest(transcriptRef.current.trim());
+             } else {
+                 setConversationState('idle');
+             }
         }
     };
 
@@ -293,3 +302,5 @@ export default function VoiceChatPage() {
     </div>
   )
 }
+
+    
