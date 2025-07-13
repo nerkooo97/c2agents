@@ -9,22 +9,6 @@ import type { ModelReference } from 'genkit/model';
 
 // Agent loading logic must be here because this is a server-only module.
 async function getAgent(name: string): Promise<AgentDefinition | undefined> {
-    const agentFolderName = name.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    const agentPath = path.join(process.cwd(), 'src', 'agents', agentFolderName, 'index.ts');
-
-    try {
-        if (fs.existsSync(agentPath)) {
-            // Use a dynamic import with a cache-busting query to ensure the latest file is loaded
-            const { default: agent } = await import(`@/agents/${agentFolderName}?update=${Date.now()}`);
-            if (agent && agent.name === name) {
-                return agent;
-            }
-        }
-    } catch (e) {
-        console.error(`[getAgent] Failed to load agent '${name}':`, e);
-    }
-
-    // Fallback to searching all agents if direct load fails (e.g., folder name mismatch)
     const agentsDir = path.join(process.cwd(), 'src', 'agents');
     const agentFolders = fs.readdirSync(agentsDir, { withFileTypes: true })
         .filter(dirent => dirent.isDirectory())
@@ -34,13 +18,13 @@ async function getAgent(name: string): Promise<AgentDefinition | undefined> {
         const indexPath = path.join(agentsDir, folderName, 'index.ts');
         if (fs.existsSync(indexPath)) {
             try {
-                // Use a dynamic import with a cache-busting query here as well for consistency
+                // Use a dynamic import with a cache-busting query to ensure we get the latest file
                 const { default: agent } = await import(`@/agents/${folderName}?update=${Date.now()}`);
                 if (agent && agent.name === name) {
                     return agent;
                 }
             } catch (e) {
-                // Ignore errors for individual agent loads in this loop
+                console.error(`[getAgent] Failed to load or match agent from '${folderName}':`, e);
             }
         }
     }

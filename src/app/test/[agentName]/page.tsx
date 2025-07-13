@@ -136,8 +136,8 @@ export default function AgentTestPage() {
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({error: "The server returned an error without a message."}));
-            throw new Error(errorData.error || 'The server returned an error.');
+            const errorData = await response.json().catch(() => ({error: "The server returned an unreadable error."}));
+            throw new Error(errorData.error || `Request failed with status ${response.status}`);
         }
 
         if (!response.body) {
