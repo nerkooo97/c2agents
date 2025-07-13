@@ -4,16 +4,16 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { runAgent } from '@/lib/actions'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Home, Mic, MicOff, Settings, ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Mic, MicOff, Settings } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import type { Message } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
+import { runAgent } from '@/lib/actions';
 
 type ConversationState = 'idle' | 'listening' | 'processing' | 'speaking';
 type SpeechRecognition = typeof window.SpeechRecognition
@@ -90,12 +90,6 @@ export default function VoiceChatPage() {
     }
   }, [toast]);
 
-  useEffect(() => {
-    if (audioQueueRef.current.length > 0 && !isPlayingRef.current) {
-      playNextInQueue();
-    }
-  }, [playNextInQueue]);
-
   const processRequest = useCallback(async (text: string) => {
     if (!agentName || !sessionId) return;
     
@@ -103,8 +97,7 @@ export default function VoiceChatPage() {
     setSubtitle('Agent is thinking...');
 
     const userMessage: Message = { role: 'user', content: text };
-    const currentMessages = [...messages, userMessage];
-    setMessages(currentMessages);
+    setMessages(prev => [...prev, userMessage]);
     setTranscript('');
 
     try {
@@ -136,9 +129,11 @@ export default function VoiceChatPage() {
       toast({ variant: 'destructive', title: 'Error processing request', description: errorMessage });
       setConversationState('idle');
     }
-  }, [agentName, sessionId, messages, ttsModel, toast, playNextInQueue]);
+  }, [agentName, sessionId, ttsModel, toast, playNextInQueue]);
+
 
   useEffect(() => {
+    // This effect runs only once to initialize audio context and speech recognition.
     const initAudio = () => {
       if (!audioContextRef.current) {
         audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
@@ -158,8 +153,20 @@ export default function VoiceChatPage() {
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
+    recognitionRef.current = recognition;
 
-    recognition.onresult = (event) => {
+    return () => {
+        document.removeEventListener('click', initAudio);
+        recognitionRef.current?.abort();
+    };
+  }, [toast]);
+
+  useEffect(() => {
+    // This effect manages the speech recognition event listeners.
+    const recognition = recognitionRef.current;
+    if (!recognition) return;
+
+    const handleResult = (event: SpeechRecognitionEvent) => {
       const currentTranscript = Array.from(event.results)
         .map(result => result[0].transcript)
         .join('');
@@ -167,26 +174,41 @@ export default function VoiceChatPage() {
       setSubtitle(currentTranscript || '...');
     };
 
-    recognition.onend = () => {
-      if (conversationState === 'listening') {
-        if (transcript.trim()) {
-            processRequest(transcript);
-        } else {
-             setConversationState('idle');
-             setSubtitle("I didn't catch that. Please try again.");
-        }
-      }
+    const handleEnd = () => {
+      // Check the state when recognition ends.
+      // We use a state function here to get the latest state value.
+      setConversationState(currentState => {
+          if (currentState === 'listening') {
+              if (transcript.trim()) {
+                  processRequest(transcript);
+                  // The state will be set to 'processing' inside processRequest
+                  return 'processing';
+              } else {
+                  setSubtitle("I didn't catch that. Please try again.");
+                  return 'idle';
+              }
+          }
+          // If the state is not 'listening' (e.g., user clicked stop), do nothing.
+          return currentState;
+      });
     };
     
-    recognition.onerror = (event) => {
+    const handleError = (event: SpeechRecognitionErrorEvent) => {
       toast({ variant: "destructive", title: "Speech Recognition Error", description: event.error });
-      if (conversationState === 'listening') setConversationState('idle');
+      setConversationState('idle');
     };
 
-    recognitionRef.current = recognition;
+    recognition.addEventListener('result', handleResult);
+    recognition.addEventListener('end', handleEnd);
+    recognition.addEventListener('error', handleError);
 
-    return () => document.removeEventListener('click', initAudio);
-  }, [toast, processRequest, transcript, conversationState]);
+    return () => {
+        recognition.removeEventListener('result', handleResult);
+        recognition.removeEventListener('end', handleEnd);
+        recognition.removeEventListener('error', handleError);
+    };
+  }, [toast, processRequest, transcript]);
+
 
   const handleToggleListening = () => {
     const recognition = recognitionRef.current;
@@ -197,13 +219,13 @@ export default function VoiceChatPage() {
     }
 
     if (conversationState === 'listening') {
+      setConversationState('idle'); // Manually stop listening
       recognition.stop();
-      // onend will handle the transition
     } else if (conversationState === 'idle') {
       setTranscript('');
       setSubtitle('Listening...');
-      recognition.start();
       setConversationState('listening');
+      recognition.start();
     }
   };
   
@@ -277,7 +299,7 @@ export default function VoiceChatPage() {
                     {conversationState === 'listening' ? <MicOff className="h-10 w-10"/> : <Mic className="h-10 w-10"/>}
                 </Button>
                 <p className="text-muted-foreground text-sm h-5 font-medium">
-                  {conversationState === 'listening' ? 'Listening...' : (conversationState === 'processing' || conversationState === 'speaking' ? "Speaking..." : 'Tap to speak')}
+                  {conversationState === 'listening' ? 'Listening...' : (conversationState === 'processing' || conversationState === 'speaking' ? "Agent is responding..." : 'Tap to speak')}
                 </p>
             </div>
           </CardContent>
