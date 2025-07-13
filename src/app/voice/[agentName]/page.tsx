@@ -17,7 +17,6 @@ import { runAgent } from '@/lib/actions';
 
 type ConversationState = 'idle' | 'listening' | 'processing' | 'speaking';
 
-// Adjust for browser compatibility
 const SpeechRecognition =
   typeof window !== 'undefined'
     ? window.SpeechRecognition || window.webkitSpeechRecognition
@@ -41,7 +40,7 @@ export default function VoiceChatPage() {
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioQueueRef = useRef<string[]>([]);
   const isPlayingRef = useRef(false);
-  const transcriptRef = useRef('');
+  const finalTranscriptRef = useRef('');
   
   const { toast } = useToast()
   
@@ -55,48 +54,6 @@ export default function VoiceChatPage() {
     }
   }, [agentName, agentDisplayName]);
   
-  const playNextInQueue = useCallback(async () => {
-    if (isPlayingRef.current || audioQueueRef.current.length === 0) {
-      if (!isPlayingRef.current) {
-         setConversationState('idle');
-      }
-      return;
-    }
-    
-    isPlayingRef.current = true;
-    setConversationState('speaking');
-    const audioDataUri = audioQueueRef.current.shift();
-
-    if (!audioContextRef.current || !audioDataUri) {
-      isPlayingRef.current = false;
-      setConversationState('idle');
-      return;
-    }
-
-    try {
-      const response = await fetch(audioDataUri);
-      const arrayBuffer = await response.arrayBuffer();
-      const decodedAudio = await audioContextRef.current.decodeAudioData(arrayBuffer);
-      
-      const source = audioContextRef.current.createBufferSource();
-      source.buffer = decodedAudio;
-      source.connect(audioContextRef.current.destination);
-      source.start();
-
-      source.onended = () => {
-        isPlayingRef.current = false;
-        playNextInQueue();
-      };
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Audio Playback Error',
-        description: 'Could not decode or play audio.',
-      });
-      isPlayingRef.current = false;
-      playNextInQueue();
-    }
-  }, [toast]);
 
   const processRequest = useCallback(async (text: string) => {
     if (!agentName || !sessionId || !text.trim()) {
@@ -142,7 +99,53 @@ export default function VoiceChatPage() {
   }, [agentName, sessionId, ttsModel, toast, playNextInQueue]);
 
 
+   const playNextInQueue = useCallback(async () => {
+    if (isPlayingRef.current || audioQueueRef.current.length === 0) {
+      if (!isPlayingRef.current) {
+         setConversationState('idle');
+      }
+      return;
+    }
+    
+    isPlayingRef.current = true;
+    setConversationState('speaking');
+    const audioDataUri = audioQueueRef.current.shift();
+
+    if (!audioContextRef.current || !audioDataUri) {
+      isPlayingRef.current = false;
+      setConversationState('idle');
+      return;
+    }
+
+    try {
+      const response = await fetch(audioDataUri);
+      const arrayBuffer = await response.arrayBuffer();
+      const decodedAudio = await audioContextRef.current.decodeAudioData(arrayBuffer);
+      
+      const source = audioContextRef.current.createBufferSource();
+      source.buffer = decodedAudio;
+      source.connect(audioContextRef.current.destination);
+      source.start();
+
+      source.onended = () => {
+        isPlayingRef.current = false;
+        playNextInQueue();
+      };
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Audio Playback Error',
+        description: 'Could not decode or play audio.',
+      });
+      isPlayingRef.current = false;
+      playNextInQueue();
+    }
+  }, [toast]);
+
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+     // Initialize AudioContext on first user interaction
     const initAudio = () => {
       if (!audioContextRef.current) {
         audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
@@ -158,27 +161,29 @@ export default function VoiceChatPage() {
     }
 
     const recognition = new SpeechRecognition();
-    recognition.continuous = false;
+    recognition.continuous = false; // Important: Stop after a pause
     recognition.interimResults = true;
     recognition.lang = 'en-US';
     recognitionRef.current = recognition;
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = Array.from(event.results)
-        .map(result => result[0].transcript)
-        .join('');
-
-      transcriptRef.current = transcript;
-      setSubtitle(transcript || '...');
+        let interimTranscript = '';
+        let finalTranscript = '';
+        for (let i = 0; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+                finalTranscript += event.results[i][0].transcript;
+            } else {
+                interimTranscript += event.results[i][0].transcript;
+            }
+        }
+        finalTranscriptRef.current = finalTranscript;
+        setSubtitle(interimTranscript || finalTranscript || '...');
     };
     
     recognition.onend = () => {
-        if (conversationState === 'listening') {
-            if (transcriptRef.current.trim()) {
-                processRequest(transcriptRef.current.trim());
-            } else {
-                setConversationState('idle');
-            }
+        setConversationState('idle'); // Always return to idle when recognition stops
+        if (finalTranscriptRef.current.trim()) {
+            processRequest(finalTranscriptRef.current.trim());
         }
     };
 
@@ -186,15 +191,14 @@ export default function VoiceChatPage() {
       if (event.error !== 'no-speech' && event.error !== 'aborted') {
         toast({ variant: "destructive", title: "Speech Recognition Error", description: event.error });
       }
-       setConversationState('idle');
+      setConversationState('idle');
     };
 
     return () => {
         document.removeEventListener('click', initAudio);
         recognitionRef.current?.abort();
     };
-  }, [toast, processRequest, conversationState]);
-
+  }, [toast, processRequest]);
 
   const handleToggleListening = () => {
     const recognition = recognitionRef.current;
@@ -204,13 +208,13 @@ export default function VoiceChatPage() {
       audioContextRef.current.resume();
     }
 
-    if (conversationState === 'listening') {
-      recognition.stop();
-    } else if (conversationState === 'idle') {
-      transcriptRef.current = '';
+    if (conversationState === 'idle') {
+      finalTranscriptRef.current = '';
       setSubtitle('Listening...');
       setConversationState('listening');
       recognition.start();
+    } else if (conversationState === 'listening') {
+       recognition.stop();
     }
   };
   
