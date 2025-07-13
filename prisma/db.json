@@ -391,6 +391,36 @@
       "inputTokens": 25,
       "outputTokens": 68,
       "totalTokens": 93
+    },
+    {
+      "id": "d2c943f8-8af8-4ab6-b652-86c8c573a552",
+      "timestamp": "2025-07-13T20:23:30.769Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 2165,
+      "inputTokens": 51,
+      "outputTokens": 40,
+      "totalTokens": 91
+    },
+    {
+      "id": "8075dce3-47a5-46ff-b529-f784bb9bf4d3",
+      "timestamp": "2025-07-13T20:23:46.326Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 2029,
+      "inputTokens": 52,
+      "outputTokens": 32,
+      "totalTokens": 84
+    },
+    {
+      "id": "2457b0c1-0c56-4660-93ad-e2399c713d63",
+      "timestamp": "2025-07-13T20:24:23.033Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 4210,
+      "inputTokens": 68,
+      "outputTokens": 303,
+      "totalTokens": 371
     }
   ],
   "conversations": [
@@ -480,9 +510,9 @@
     },
     {
       "sessionId": "9eaba85f-398c-4380-a144-f78444f6f050",
-      "messages": "[{\"role\":\"user\",\"content\":\"koja je tovja uloga\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Moja uloga je da pružim informacije, odgovorim na pitanja, asistiram u učenju, rešavanju problema i obezbedim korisničku podršku koliko je to moguće putem teksta.\\\"}\"},{\"role\":\"user\",\"content\":\"pozdrav\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Pozdrav! Kako vam mogu pomoći danas?\\\"}\"},{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Učitava se...\"},{\"role\":\"user\",\"content\":\"koji je danas dan\"},{\"role\":\"model\",\"content\":\"I'm sorry, but as an AI, I do not have real-time capabilities to access the current date or time.\"},{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"{\\\"role\\\": \\\"Moja uloga je da pružam informacije, odgovaram na pitanja, asistiram u rješavanju problema i pružam podršku korisnicima na temelju mojih programskih mogućnosti i raspoloživih podataka.\\\"}\"},{\"role\":\"user\",\"content\":\"kojim alatima imas pristup\"},{\"role\":\"model\",\"content\":\"I'm sorry, I can't assist with that.\"},{\"role\":\"user\",\"content\":\"mozes li mi dati jedan vic\"},{\"role\":\"model\",\"content\":\"{\\\"vic\\\": \\\"Kako plavuša ubija pticu? Baca je sa litice!\\\"}\"},{\"role\":\"user\",\"content\":\"jel imas memoriju?\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Da, imam sposobnost pamćenja konteksta razgovora unutar sesije, ali ne zadržavam trajne informacije nakon završetka sesije.\\\"}\"},{\"role\":\"user\",\"content\":\"koji si mi onda vic dao\"},{\"role\":\"model\",\"content\":\"{\\\"joke\\\": \\\"Zašto se svi mole na benzinskoj pumpi? Zato što je gorivo postalo sveto!\\\"}\"},{\"role\":\"user\",\"content\":\"o cemu smo ovdje sve razgovarali\"},{\"role\":\"model\",\"content\":\"{\\\"error\\\": \\\"No prior conversation data available.\\\"}\"}]",
+      "messages": "[{\"role\":\"user\",\"content\":\"koja je tovja uloga\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Moja uloga je da pružim informacije, odgovorim na pitanja, asistiram u učenju, rešavanju problema i obezbedim korisničku podršku koliko je to moguće putem teksta.\\\"}\"},{\"role\":\"user\",\"content\":\"pozdrav\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Pozdrav! Kako vam mogu pomoći danas?\\\"}\"},{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Učitava se...\"},{\"role\":\"user\",\"content\":\"koji je danas dan\"},{\"role\":\"model\",\"content\":\"I'm sorry, but as an AI, I do not have real-time capabilities to access the current date or time.\"},{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"{\\\"role\\\": \\\"Moja uloga je da pružam informacije, odgovaram na pitanja, asistiram u rješavanju problema i pružam podršku korisnicima na temelju mojih programskih mogućnosti i raspoloživih podataka.\\\"}\"},{\"role\":\"user\",\"content\":\"kojim alatima imas pristup\"},{\"role\":\"model\",\"content\":\"I'm sorry, I can't assist with that.\"},{\"role\":\"user\",\"content\":\"mozes li mi dati jedan vic\"},{\"role\":\"model\",\"content\":\"{\\\"vic\\\": \\\"Kako plavuša ubija pticu? Baca je sa litice!\\\"}\"},{\"role\":\"user\",\"content\":\"jel imas memoriju?\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Da, imam sposobnost pamćenja konteksta razgovora unutar sesije, ali ne zadržavam trajne informacije nakon završetka sesije.\\\"}\"},{\"role\":\"user\",\"content\":\"koji si mi onda vic dao\"},{\"role\":\"model\",\"content\":\"{\\\"joke\\\": \\\"Zašto se svi mole na benzinskoj pumpi? Zato što je gorivo postalo sveto!\\\"}\"},{\"role\":\"user\",\"content\":\"o cemu smo ovdje sve razgovarali\"},{\"role\":\"model\",\"content\":\"{\\\"error\\\": \\\"No prior conversation data available.\\\"}\"},{\"role\":\"user\",\"content\":\"koaj je tvoja uloga\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Moja uloga je da odgovorim na pitanja, pružim informacije i pomognem korisnicima u rešavanju problema koristeći podatke i veštine koje imam.\\\"}\"},{\"role\":\"user\",\"content\":\"mozes li mi napisati jedan vic\"},{\"role\":\"model\",\"content\":\"{\\\"vic\\\": \\\"Zašto Eiffelov toranj ne može da se oženi? \\\\nZato što je zaljubljen u Ajfel!\\\"}\"},{\"role\":\"user\",\"content\":\"posto ti vracas odogovre u jsonu, vrati mi jedan komplekas pimjer jsona kao primjer\"},{\"role\":\"model\",\"content\":\"{\\n    \\\"name\\\": \\\"John Doe\\\",\\n    \\\"age\\\": 30,\\n    \\\"email\\\": \\\"johndoe@example.com\\\",\\n    \\\"isActive\\\": true,\\n    \\\"roles\\\": [\\\"admin\\\", \\\"editor\\\"],\\n    \\\"address\\\": {\\n        \\\"street\\\": \\\"123 Main St\\\",\\n        \\\"city\\\": \\\"Anytown\\\",\\n        \\\"zipCode\\\": \\\"12345\\\",\\n        \\\"country\\\": \\\"USA\\\"\\n    },\\n    \\\"preferences\\\": {\\n        \\\"newsletter\\\": false,\\n        \\\"notifications\\\": {\\n            \\\"email\\\": true,\\n            \\\"sms\\\": false\\n        },\\n        \\\"language\\\": \\\"en\\\"\\n    },\\n    \\\"previousOrders\\\": [\\n        {\\n            \\\"orderId\\\": \\\"A123\\\",\\n            \\\"date\\\": \\\"2023-01-15\\\",\\n            \\\"total\\\": 150.75,\\n            \\\"items\\\": [\\n                {\\n                    \\\"productId\\\": \\\"P1\\\",\\n                    \\\"quantity\\\": 2,\\n                    \\\"price\\\": 45.00\\n                },\\n                {\\n                    \\\"productId\\\": \\\"P2\\\",\\n                    \\\"quantity\\\": 1,\\n                    \\\"price\\\": 60.75\\n                }\\n            ]\\n        },\\n        {\\n            \\\"orderId\\\": \\\"A124\\\",\\n            \\\"date\\\": \\\"2023-02-20\\\",\\n            \\\"total\\\": 80.50,\\n            \\\"items\\\": [\\n                {\\n                    \\\"productId\\\": \\\"P3\\\",\\n                    \\\"quantity\\\": 1,\\n                    \\\"price\\\": 80.50\\n                }\\n            ]\\n        }\\n    ]\\n}\"}]",
       "createdAt": "2025-07-13T18:45:00.624Z",
-      "updatedAt": "2025-07-13T19:41:13.611Z"
+      "updatedAt": "2025-07-13T20:24:23.035Z"
     },
     {
       "sessionId": "1cb83376-82fe-4436-87c0-320798ce6923",

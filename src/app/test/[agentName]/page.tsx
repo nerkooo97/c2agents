@@ -355,24 +355,13 @@ export default function AgentTestPage() {
           </Card>
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
-           <Card>
-            <CardHeader>
-              <CardTitle>Agent Execution Graph</CardTitle>
-              <CardDescription>A visual representation of the agent&apos;s process.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[250px] pr-4">
-                <AgentExecutionGraph steps={executionSteps} isLoading={isLoading} />
-              </ScrollArea>
-            </CardContent>
-          </Card>
           <Card>
             <CardHeader>
                 <CardTitle>Agent Analytics</CardTitle>
                 <CardDescription>A log of recent agent executions and performance.</CardDescription>
             </CardHeader>
             <CardContent>
-                <ScrollArea className="h-[200px]">
+                <ScrollArea className="h-[calc(100vh-250px)]">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -383,7 +372,7 @@ export default function AgentTestPage() {
                         </TableHeader>
                         <TableBody>
                             {isLogsLoading ? (
-                                [...Array(3)].map((_, i) => (
+                                [...Array(5)].map((_, i) => (
                                 <TableRow key={i}>
                                     <TableCell colSpan={3}>
                                         <Skeleton className="h-8 w-full" />
