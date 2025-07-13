@@ -5,23 +5,22 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import type { Message, ExecutionStep, AgentExecutionLog } from '@/lib/types'
-import { runAgent } from '@/lib/actions'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Send, Eraser, ArrowLeft, Bot } from 'lucide-react'
+import { Send, Eraser, ArrowLeft } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import AgentExecutionGraph from '@/components/agent-execution-graph'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 
 export default function AgentTestPage() {
   const params = useParams()
-  const agentName = Array.isArray(params.agentName) ? params.agentName[0] : params.agentName
+  const agentName = decodeURIComponent(Array.isArray(params.agentName) ? params.agentName[0] : (params.agentName as string));
 
   const [messages, setMessages] = useState<Message[]>([])
   const [executionSteps, setExecutionSteps] = useState<ExecutionStep[]>([])
@@ -34,6 +33,7 @@ export default function AgentTestPage() {
 
   const { toast } = useToast()
   const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchLogs = useCallback(async () => {
     if (!agentName) return;
@@ -57,10 +57,12 @@ export default function AgentTestPage() {
   }, [agentName, toast]);
 
   const startNewSession = useCallback(() => {
+    if (!agentName) return;
     const newSessionId = crypto.randomUUID();
     localStorage.setItem(`agent-session-${agentName}`, newSessionId);
     setSessionId(newSessionId);
     setMessages([{ role: 'model', content: `Hello! I'm ready to help. Send a message to start testing the "${agentName}" agent.` }])
+    setExecutionSteps([]);
     toast({
       title: "New Session Started",
       description: "The conversation history has been cleared.",
@@ -84,7 +86,7 @@ export default function AgentTestPage() {
                          setMessages([{ role: 'model', content: `Welcome back! Continue your conversation with "${agentName}".` }])
                     }
                 } else {
-                   startNewSession(); // Start new if session not found on server
+                   startNewSession();
                 }
             } catch (e) {
                 console.error("Failed to fetch session", e);
@@ -106,7 +108,7 @@ export default function AgentTestPage() {
         behavior: 'smooth',
       })
     }
-  }, [messages])
+  }, [messages]);
 
   const handleSendMessage = async () => {
     if (!input.trim() || isLoading || !agentName || !sessionId) return
@@ -118,30 +120,89 @@ export default function AgentTestPage() {
     setInput('')
     setIsLoading(true)
     setExecutionSteps([])
+    abortControllerRef.current = new AbortController();
 
     try {
-      const result = await runAgent(agentName, currentInput, sessionId)
+        const response = await fetch(`/api/agents/${agentName}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ input: currentInput, sessionId }),
+            signal: abortControllerRef.current.signal,
+        });
 
-      if (result.error) {
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'The server returned an error.');
+        }
+
+        if (!response.body) {
+            throw new Error('The response body is empty.');
+        }
+
+        setMessages(prev => [...prev, { role: 'model', content: '' }]);
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    const data = JSON.parse(line.substring(6));
+                    
+                    if (data.type === 'chunk') {
+                        setMessages(prev => {
+                            const newMessages = [...prev];
+                            const lastMessage = newMessages[newMessages.length - 1];
+                            if (lastMessage.role === 'model') {
+                                lastMessage.content += data.content;
+                            }
+                            return newMessages;
+                        });
+                    } else if (data.type === 'tool') {
+                        const { toolRequest, toolResponse } = data;
+                        if (toolRequest) {
+                            setExecutionSteps(prev => [...prev, { type: 'tool', title: `Tool Call: ${toolRequest.name}`, content: `Input: ${JSON.stringify(toolRequest.input)}` }]);
+                        }
+                        if (toolResponse) {
+                            setExecutionSteps(prev => [...prev, { type: 'tool', title: `Tool Result: ${toolResponse.name}`, content: `Output: ${JSON.stringify(toolResponse.output)}` }]);
+                        }
+                    } else if (data.type === 'error') {
+                         throw new Error(data.error);
+                    } else if (data.type === 'usage') {
+                        // Optionally handle usage data
+                        console.log('Usage:', data.usage);
+                    }
+                }
+            }
+        }
+
+    } catch (e) {
+      if (e instanceof Error && e.name !== 'AbortError') {
         toast({
           variant: "destructive",
           title: "An error occurred",
-          description: result.error,
+          description: e.message,
         })
-        setMessages(prev => [...prev, { role: 'model', content: "Sorry, I encountered an error. Please try again." }])
-      } else {
-        setMessages(prev => [...prev, { role: 'model', content: result.response as string }])
-        setExecutionSteps(result.steps as ExecutionStep[])
+        setMessages(prev => {
+          const newMessages = [...prev];
+          const lastMessage = newMessages[newMessages.length - 1];
+          if (lastMessage.role === 'model' && lastMessage.content === '') {
+            lastMessage.content = "Sorry, I encountered an error. Please try again.";
+          }
+          return newMessages;
+        });
       }
-    } catch (e) {
-      toast({
-        variant: "destructive",
-        title: "An error occurred",
-        description: "Could not connect to the agent.",
-      })
-       setMessages(prev => [...prev, { role: 'model', content: "Sorry, I couldn't connect to the agent. Please check the console and try again." }])
     } finally {
       setIsLoading(false)
+      abortControllerRef.current = null;
       fetchLogs();
     }
   }

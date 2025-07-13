@@ -7,7 +7,7 @@ export async function GET(
   request: Request,
   { params }: { params: { agentName: string } }
 ) {
-  const { agentName } = params;
+  const agentName = decodeURIComponent(params.agentName);
   const url = new URL(request.url);
   const allAgents = url.searchParams.get('all') === 'true';
 
