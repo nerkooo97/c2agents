@@ -14,7 +14,8 @@ async function getAgent(name: string): Promise<AgentDefinition | undefined> {
 
     try {
         if (fs.existsSync(agentPath)) {
-            const { default: agent } = await import(`@/agents/${agentFolderName}`);
+            // Use a dynamic import with a cache-busting query to ensure the latest file is loaded
+            const { default: agent } = await import(`@/agents/${agentFolderName}?update=${Date.now()}`);
             if (agent && agent.name === name) {
                 return agent;
             }
@@ -33,7 +34,8 @@ async function getAgent(name: string): Promise<AgentDefinition | undefined> {
         const indexPath = path.join(agentsDir, folderName, 'index.ts');
         if (fs.existsSync(indexPath)) {
             try {
-                const { default: agent } = await import(`@/agents/${folderName}`);
+                // Use a dynamic import with a cache-busting query here as well for consistency
+                const { default: agent } = await import(`@/agents/${folderName}?update=${Date.now()}`);
                 if (agent && agent.name === name) {
                     return agent;
                 }
@@ -87,7 +89,7 @@ export async function runAgent(
       content: prompt,
     });
     
-    const agentTools = await getToolsForAgent(agent);
+    const agentTools = getToolsForAgent(agent);
 
     const genkitResponse = await runAgentWithConfig({
       systemPrompt: agent.systemPrompt,

@@ -191,21 +191,22 @@ export default function AgentTestPage() {
 
     } catch (e) {
       if (e instanceof Error && e.name !== 'AbortError') {
+        const errorMessage = e.message || "An unexpected error occurred.";
         toast({
           variant: "destructive",
           title: "An error occurred",
-          description: e.message,
+          description: errorMessage,
         })
         setMessages(prev => {
           const newMessages = [...prev];
           const lastMessage = newMessages[newMessages.length - 1];
           // If the last message is an empty model message, populate it with an error.
           if (lastMessage && lastMessage.role === 'model' && lastMessage.content === '') {
-            lastMessage.content = "Sorry, I couldn't connect to the agent. Please check the console and try again.";
+            lastMessage.content = `Sorry, an error occurred: ${errorMessage}`;
              return newMessages;
           }
           // Otherwise, add a new error message.
-          return [...newMessages, { role: 'model', content: "Sorry, I couldn't connect to the agent. Please check the console and try again." }];
+          return [...newMessages, { role: 'model', content: `Sorry, an error occurred: ${errorMessage}` }];
         });
       }
     } finally {

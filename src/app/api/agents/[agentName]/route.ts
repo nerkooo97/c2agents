@@ -85,7 +85,7 @@ async function streamAgentResponse(request: NextRequest, agent: AgentDefinition)
             fullSystemPrompt += `\n\n## RESPONSE FORMAT\nYou MUST provide your final response in a valid JSON format. Do not include any explanatory text before or after the JSON object.`;
         }
 
-        const agentTools = await getToolsForAgent(agent);
+        const agentTools = getToolsForAgent(agent);
         
         // Use generateStream
         const { stream: responseStream, response: responsePromise } = ai.generateStream({
