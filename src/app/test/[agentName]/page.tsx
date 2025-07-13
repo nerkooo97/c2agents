@@ -14,7 +14,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Send, Eraser, ArrowLeft, Bot, Mic, TestTube2, ChevronsUpDown } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import AgentExecutionGraph from '@/components/agent-execution-graph'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
@@ -24,7 +23,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 const ChatMessageContent = ({ content }: { content: string }) => {
     try {
         const parsedJson = JSON.parse(content);
-        // Check if it's an actual object or array, not just a string or number
         if (typeof parsedJson === 'object' && parsedJson !== null) {
             const formattedJson = JSON.stringify(parsedJson, null, 2);
             return (
@@ -34,7 +32,6 @@ const ChatMessageContent = ({ content }: { content: string }) => {
             );
         }
     } catch (e) {
-        // Not a valid JSON, fall through to render as plain text
     }
 
     return <p className="text-sm whitespace-pre-wrap">{content}</p>;
@@ -47,7 +44,6 @@ export default function AgentTestPage() {
   const agentName = decodeURIComponent(Array.isArray(params.agentName) ? params.agentName[0] : (params.agentName as string));
 
   const [messages, setMessages] = useState<Message[]>([])
-  const [executionSteps, setExecutionSteps] = useState<ExecutionStep[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   
@@ -87,7 +83,6 @@ export default function AgentTestPage() {
     localStorage.setItem(`agent-session-${agentName}`, newSessionId);
     setSessionId(newSessionId);
     setMessages([{ role: 'model', content: `Hello! I'm ready to help. Send a message to start testing the "${agentName}" agent.` }])
-    setExecutionSteps([]);
     toast({
       title: "New Session Started",
       description: "The conversation history has been cleared.",
@@ -144,7 +139,6 @@ export default function AgentTestPage() {
     const currentInput = input;
     setInput('')
     setIsLoading(true)
-    setExecutionSteps([])
     abortControllerRef.current = new AbortController();
 
     try {
@@ -188,20 +182,13 @@ export default function AgentTestPage() {
                             const newMessages = [...prev];
                             const lastMessage = newMessages[newMessages.length - 1];
                             if (lastMessage && lastMessage.role === 'model') {
-                                // Create a new object for the last message to ensure React re-renders correctly.
                                 const updatedLastMessage = { ...lastMessage, content: lastMessage.content + data.content };
                                 newMessages[newMessages.length - 1] = updatedLastMessage;
                             }
                             return newMessages;
                         });
                     } else if (data.type === 'tool') {
-                        const { toolRequest, toolResponse } = data;
-                        if (toolRequest) {
-                            setExecutionSteps(prev => [...prev, { type: 'tool', title: `Tool Call: ${toolRequest.name}`, content: `Input: ${JSON.stringify(toolRequest.input)}` }]);
-                        }
-                        if (toolResponse) {
-                            setExecutionSteps(prev => [...prev, { type: 'tool', title: `Tool Result: ${toolResponse.name}`, content: `Output: ${JSON.stringify(toolResponse.output)}` }]);
-                        }
+                        // This logic is for workflows, can be adapted if needed
                     } else if (data.type === 'error') {
                          throw new Error(data.error);
                     } else if (data.type === 'usage') {
@@ -242,8 +229,8 @@ export default function AgentTestPage() {
   const agentDisplayName = agentName?.replace(/-/g, ' ') ?? 'Agent';
 
   return (
-    <div className="min-h-screen w-full bg-background flex flex-col">
-       <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur-sm sm:h-16 sm:px-6">
+    <div className="h-screen w-full bg-background flex flex-col">
+       <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur-sm sm:h-16 shrink-0">
         <div className="flex items-center gap-3">
           <Link href="/" passHref>
              <Button variant="outline" size="icon" className="h-8 w-8">
@@ -278,9 +265,9 @@ export default function AgentTestPage() {
           </Button>
         </div>
       </header>
-      <main className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 lg:p-6">
-        <div className="lg:col-span-2 flex flex-col gap-6">
-          <Card className="flex-1 flex flex-col">
+      <main className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 lg:p-6 overflow-hidden">
+        <div className="lg:col-span-2 flex flex-col gap-6 h-full">
+          <Card className="flex-1 flex flex-col h-full">
             <CardHeader>
               <CardTitle>Conversation</CardTitle>
               <CardDescription>Interact with the AI agent to test its responses.</CardDescription>
@@ -327,7 +314,7 @@ export default function AgentTestPage() {
                    )}
                 </div>
               </ScrollArea>
-              <div className="relative">
+              <div className="relative mt-auto">
                 <Textarea
                   placeholder={`Ask ${agentDisplayName} to do something...`}
                   className="pr-20 min-h-[60px]"
@@ -354,7 +341,7 @@ export default function AgentTestPage() {
             </CardContent>
           </Card>
         </div>
-        <div className="lg:col-span-1 flex flex-col gap-6">
+        <div className="lg:col-span-1 flex flex-col gap-6 h-full overflow-y-auto">
           <Card>
             <CardHeader>
                 <CardTitle>Agent Analytics</CardTitle>
