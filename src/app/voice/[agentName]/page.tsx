@@ -23,7 +23,7 @@ const SpeechRecognition =
     ? window.SpeechRecognition || window.webkitSpeechRecognition
     : null;
 
-type SpeechRecognitionInstance = InstanceType<typeof SpeechRecognition>
+type SpeechRecognitionInstance = SpeechRecognition;
 
 
 export default function VoiceChatPage() {
@@ -163,7 +163,7 @@ export default function VoiceChatPage() {
     recognition.lang = 'en-US';
     recognitionRef.current = recognition;
 
-    const handleResult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = Array.from(event.results)
         .map(result => result[0].transcript)
         .join('');
@@ -171,35 +171,26 @@ export default function VoiceChatPage() {
       transcriptRef.current = transcript;
       setSubtitle(transcript || '...');
     };
+    
+    recognition.onend = () => {
+        if (conversationState === 'listening') {
+            if (transcriptRef.current.trim()) {
+                processRequest(transcriptRef.current.trim());
+            } else {
+                setConversationState('idle');
+            }
+        }
+    };
 
-    const handleError = (event: SpeechRecognitionErrorEvent) => {
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       if (event.error !== 'no-speech' && event.error !== 'aborted') {
         toast({ variant: "destructive", title: "Speech Recognition Error", description: event.error });
       }
        setConversationState('idle');
     };
-    
-    const handleEnd = () => {
-        if (conversationState === 'listening') {
-             // If we were listening, it means the user stopped talking.
-             // We now process the final transcript.
-             if (transcriptRef.current.trim()) {
-                 processRequest(transcriptRef.current.trim());
-             } else {
-                 setConversationState('idle');
-             }
-        }
-    };
-
-    recognition.addEventListener('result', handleResult);
-    recognition.addEventListener('error', handleError);
-    recognition.addEventListener('end', handleEnd);
 
     return () => {
         document.removeEventListener('click', initAudio);
-        recognition.removeEventListener('result', handleResult);
-        recognition.removeEventListener('error', handleError);
-        recognition.removeEventListener('end', handleEnd);
         recognitionRef.current?.abort();
     };
   }, [toast, processRequest, conversationState]);
@@ -302,5 +293,3 @@ export default function VoiceChatPage() {
     </div>
   )
 }
-
-    
