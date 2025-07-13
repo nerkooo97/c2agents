@@ -121,6 +121,56 @@
       "inputTokens": 25,
       "outputTokens": 62,
       "totalTokens": 87
+    },
+    {
+      "id": "0f481457-232b-499c-8caf-5effa93a09dd",
+      "timestamp": "2025-07-13T18:47:23.282Z",
+      "agentName": "non-api-agent",
+      "status": "success",
+      "latency": 4524,
+      "inputTokens": 25,
+      "outputTokens": 65,
+      "totalTokens": 90
+    },
+    {
+      "id": "e2316839-d306-4469-8abb-2a534df8a237",
+      "timestamp": "2025-07-13T18:47:45.867Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1734,
+      "inputTokens": 46,
+      "outputTokens": 14,
+      "totalTokens": 60
+    },
+    {
+      "id": "f1be4b9b-0396-44ab-a6f1-f748aa5c08c3",
+      "timestamp": "2025-07-13T18:48:08.309Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "latency": 3847,
+      "inputTokens": 65,
+      "outputTokens": 84,
+      "totalTokens": 149
+    },
+    {
+      "id": "042cdb95-c4b4-43e4-9f9f-781b37efeae8",
+      "timestamp": "2025-07-13T18:48:29.810Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "latency": 1807,
+      "inputTokens": 63,
+      "outputTokens": 31,
+      "totalTokens": 94
+    },
+    {
+      "id": "68ec4eb5-4288-42d9-b4f6-5ab0fba32fce",
+      "timestamp": "2025-07-13T18:48:45.807Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "latency": 1355,
+      "inputTokens": 71,
+      "outputTokens": 47,
+      "totalTokens": 118
     }
   ],
   "conversations": [
@@ -210,9 +260,15 @@
     },
     {
       "sessionId": "9eaba85f-398c-4380-a144-f78444f6f050",
-      "messages": "[{\"role\":\"user\",\"content\":\"koja je tovja uloga\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Moja uloga je da pružim informacije, odgovorim na pitanja, asistiram u učenju, rešavanju problema i obezbedim korisničku podršku koliko je to moguće putem teksta.\\\"}\"}]",
+      "messages": "[{\"role\":\"user\",\"content\":\"koja je tovja uloga\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Moja uloga je da pružim informacije, odgovorim na pitanja, asistiram u učenju, rešavanju problema i obezbedim korisničku podršku koliko je to moguće putem teksta.\\\"}\"},{\"role\":\"user\",\"content\":\"pozdrav\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Pozdrav! Kako vam mogu pomoći danas?\\\"}\"}]",
       "createdAt": "2025-07-13T18:45:00.624Z",
-      "updatedAt": "2025-07-13T18:45:00.624Z"
+      "updatedAt": "2025-07-13T18:47:45.871Z"
+    },
+    {
+      "sessionId": "1cb83376-82fe-4436-87c0-320798ce6923",
+      "messages": "[{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Moja uloga je da pružam informacije, odgovaram na pitanja, pomažem u rešavanju problema i nudim podršku korisnicima. Mogu asistirati u raznim zadacima, kao što su pretraga informacija, objašnjavanje pojmova, pružanje saveta i još mnogo toga. Ako imate bilo kakvo pitanje ili zahtev, slobodno me pitajte!\"},{\"role\":\"user\",\"content\":\"koji je danas dan\"},{\"role\":\"model\",\"content\":\"Nažalost, ne mogu direktno provjeriti današnji datum. Molim te provjeri datum na svom uređaju ili kalendaru.\"},{\"role\":\"user\",\"content\":\"o cemu smo ovdje razgovarali u ovom chatu\"},{\"role\":\"model\",\"content\":\"Nažalost, nemam mogućnost pamćenja prethodnih interakcija u ovim razgovorima. Mogu vam pomoći s bilo kojim pitanjima ili zadacima na novi način. Kako mogu pomoći danas?\"}]",
+      "createdAt": "2025-07-13T18:48:08.468Z",
+      "updatedAt": "2025-07-13T18:48:45.812Z"
     }
   ]
 }

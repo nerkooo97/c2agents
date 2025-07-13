@@ -87,11 +87,9 @@ async function streamAgentResponse(request: NextRequest, agent: AgentDefinition)
             }
         });
 
-        let fullTextResponse = "";
         for await (const chunk of responseStream) {
             const text = chunk.text;
             if (text) {
-                fullTextResponse += text;
                 controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'chunk', content: text })}\n\n`));
             }
             if (chunk.toolRequest) {
@@ -104,6 +102,7 @@ async function streamAgentResponse(request: NextRequest, agent: AgentDefinition)
 
         const finalResponse = await responsePromise;
         const endTime = Date.now();
+        const fullTextResponse = finalResponse.text ?? "";
 
         const usage = finalResponse.usage;
         await db.agentExecutionLog.create({
