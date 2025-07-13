@@ -37,6 +37,7 @@ export default function VoiceChatPage() {
   const audioQueueRef = useRef<HTMLAudioElement[]>([]);
   const isPlayingRef = useRef(false);
   const transcriptRef = useRef('');
+  const processRequestRef = useRef<(text: string) => Promise<void>>(async () => {});
   
   const { toast } = useToast();
   
@@ -115,17 +116,22 @@ export default function VoiceChatPage() {
     }
   }, [agentName, sessionId, ttsModel, toast, processQueue]);
 
+  processRequestRef.current = processRequest;
+
   useEffect(() => {
     if (typeof window === 'undefined' || !SpeechRecognition) {
       setIsSupported(false);
       return;
     }
+
+    if (!sessionId) {
+      setSessionId(crypto.randomUUID());
+    }
     
     const initialMessage = `Hello! I'm the ${agentDisplayName}. How can I help you today?`;
     setMessages([{ role: 'model', content: initialMessage }]);
     setSubtitle(initialMessage);
-    setSessionId(crypto.randomUUID());
-
+    
     const recognition = new SpeechRecognition();
     recognition.continuous = false;
     recognition.interimResults = true;
@@ -134,8 +140,8 @@ export default function VoiceChatPage() {
 
     const handleResult = (event: SpeechRecognitionEvent) => {
       let interim = '';
-      for (let i = 0; i < event.results.length; ++i) {
-          interim += event.results[i][0].transcript;
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        interim += event.results[i][0].transcript;
       }
       transcriptRef.current = interim;
       setSubtitle(interim || '...');
@@ -143,8 +149,8 @@ export default function VoiceChatPage() {
 
     const handleEnd = () => {
       const finalTranscript = transcriptRef.current.trim();
-      if (finalTranscript) {
-        processRequest(finalTranscript);
+      if (conversationState === 'listening' && finalTranscript) {
+        processRequestRef.current(finalTranscript);
       } else {
         setConversationState('idle');
       }
@@ -167,7 +173,8 @@ export default function VoiceChatPage() {
       recognition.removeEventListener('end', handleEnd);
       recognition.removeEventListener('error', handleError);
     };
-  }, [agentDisplayName, toast, processRequest]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
 
   const handleToggleListening = () => {
