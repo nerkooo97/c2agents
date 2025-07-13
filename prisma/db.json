@@ -351,6 +351,46 @@
       "inputTokens": 60,
       "outputTokens": 33,
       "totalTokens": 93
+    },
+    {
+      "id": "434897e9-e6e9-49e1-9896-f569f50141d1",
+      "timestamp": "2025-07-13T20:21:18.650Z",
+      "agentName": "non-api-agent",
+      "status": "success",
+      "latency": 3190,
+      "inputTokens": 25,
+      "outputTokens": 61,
+      "totalTokens": 86
+    },
+    {
+      "id": "255f3cc5-1254-48f4-8ccf-13698dfe1cb6",
+      "timestamp": "2025-07-13T20:21:27.663Z",
+      "agentName": "non-api-agent",
+      "status": "success",
+      "latency": 1819,
+      "inputTokens": 26,
+      "outputTokens": 55,
+      "totalTokens": 81
+    },
+    {
+      "id": "991facfc-f698-4757-a91b-1e5d44a8c8ee",
+      "timestamp": "2025-07-13T20:21:37.179Z",
+      "agentName": "non-api-agent",
+      "status": "success",
+      "latency": 1281,
+      "inputTokens": 26,
+      "outputTokens": 29,
+      "totalTokens": 55
+    },
+    {
+      "id": "71897e64-92f5-47e8-a86c-8493e67d039e",
+      "timestamp": "2025-07-13T20:22:04.939Z",
+      "agentName": "non-api-agent",
+      "status": "success",
+      "latency": 1858,
+      "inputTokens": 25,
+      "outputTokens": 68,
+      "totalTokens": 93
     }
   ],
   "conversations": [

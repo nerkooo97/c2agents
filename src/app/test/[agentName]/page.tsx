@@ -1,4 +1,5 @@
 
+
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
@@ -19,6 +20,25 @@ import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { useRouter } from 'next/navigation'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+
+const ChatMessageContent = ({ content }: { content: string }) => {
+    try {
+        const parsedJson = JSON.parse(content);
+        // Check if it's an actual object or array, not just a string or number
+        if (typeof parsedJson === 'object' && parsedJson !== null) {
+            const formattedJson = JSON.stringify(parsedJson, null, 2);
+            return (
+                <pre className="text-sm bg-background/50 p-3 rounded-md overflow-x-auto">
+                    <code className="font-code">{formattedJson}</code>
+                </pre>
+            );
+        }
+    } catch (e) {
+        // Not a valid JSON, fall through to render as plain text
+    }
+
+    return <p className="text-sm whitespace-pre-wrap">{content}</p>;
+};
 
 
 export default function AgentTestPage() {
@@ -282,7 +302,7 @@ export default function AgentTestPage() {
                         </Avatar>
                       )}
                       <div className={`rounded-lg p-3 max-w-[80%] ${message.role === 'model' ? 'bg-muted' : 'bg-primary text-primary-foreground'}`}>
-                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                        <ChatMessageContent content={message.content} />
                       </div>
                       {message.role === 'user' && (
                         <Avatar className="h-9 w-9 border">
@@ -410,5 +430,3 @@ export default function AgentTestPage() {
     </div>
   )
 }
-
-    
