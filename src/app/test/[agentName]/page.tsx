@@ -43,7 +43,8 @@ export default function AgentTestPage() {
     if (!agentName) return;
     setIsLogsLoading(true);
     try {
-        const response = await fetch(`/api/agents/${agentName}/logs`);
+        const encodedAgentName = encodeURIComponent(agentName);
+        const response = await fetch(`/api/agents/${encodedAgentName}/logs`);
         if (!response.ok) {
             throw new Error('Failed to fetch logs');
         }
@@ -127,7 +128,7 @@ export default function AgentTestPage() {
     abortControllerRef.current = new AbortController();
 
     try {
-        const response = await fetch(`/api/agents/${agentName}`, {
+        const response = await fetch(`/api/agents/${encodeURIComponent(agentName)}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ input: currentInput, sessionId }),

@@ -10,7 +10,7 @@ const agent: AgentDefinition = {
   defaultTask: ``,
   responseFormat: 'text',
   tools: [],
-  enableApiAccess: false,
+  enableApiAccess: true,
   realtime: false,
   enableMemory: false,
   icon: 'Book',
