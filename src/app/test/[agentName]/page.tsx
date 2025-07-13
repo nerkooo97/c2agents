@@ -11,9 +11,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
-import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Send, Home, LineChart, Eraser, ArrowLeft, Bot } from 'lucide-react'
+import { Send, Eraser, ArrowLeft, Bot } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import AgentExecutionGraph from '@/components/agent-execution-graph'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -59,6 +58,7 @@ export default function AgentTestPage() {
 
   const startNewSession = useCallback(() => {
     const newSessionId = crypto.randomUUID();
+    localStorage.setItem(`agent-session-${agentName}`, newSessionId);
     setSessionId(newSessionId);
     setMessages([{ role: 'model', content: `Hello! I'm ready to help. Send a message to start testing the "${agentName}" agent.` }])
     toast({
@@ -68,11 +68,36 @@ export default function AgentTestPage() {
   }, [agentName, toast]);
 
   useEffect(() => {
-    if (agentName) {
-        startNewSession();
-        fetchLogs();
-    }
-  }, [agentName, fetchLogs, startNewSession])
+    if (!agentName) return;
+
+    const loadSession = async () => {
+        const storedSessionId = localStorage.getItem(`agent-session-${agentName}`);
+        if (storedSessionId) {
+            setSessionId(storedSessionId);
+            try {
+                const res = await fetch(`/api/conversations/${storedSessionId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.messages && data.messages.length > 0) {
+                        setMessages(data.messages);
+                    } else {
+                         setMessages([{ role: 'model', content: `Welcome back! Continue your conversation with "${agentName}".` }])
+                    }
+                } else {
+                   startNewSession(); // Start new if session not found on server
+                }
+            } catch (e) {
+                console.error("Failed to fetch session", e);
+                startNewSession();
+            }
+        } else {
+            startNewSession();
+        }
+    };
+
+    loadSession();
+    fetchLogs();
+  }, [agentName, fetchLogs, startNewSession]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -95,7 +120,6 @@ export default function AgentTestPage() {
     setExecutionSteps([])
 
     try {
-      // We only send the new prompt and the session ID. The server will handle the history.
       const result = await runAgent(agentName, currentInput, sessionId)
 
       if (result.error) {
@@ -299,5 +323,3 @@ export default function AgentTestPage() {
     </div>
   )
 }
-
-    
