@@ -137,6 +137,8 @@ export default function AgentTestPage() {
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({error: "The server returned an unreadable error."}));
+            // Log the detailed error to the console
+            console.error("Agent API Error:", errorData);
             throw new Error(errorData.error || `Request failed with status ${response.status}`);
         }
 
@@ -192,6 +194,10 @@ export default function AgentTestPage() {
     } catch (e) {
       if (e instanceof Error && e.name !== 'AbortError') {
         const errorMessage = e.message || "An unexpected error occurred.";
+        
+        // Log the full error object for debugging
+        console.error("handleSendMessage Error:", e);
+
         toast({
           variant: "destructive",
           title: "An error occurred",

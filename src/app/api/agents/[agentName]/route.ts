@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getToolsForAgent } from '@/ai/tools';
 import { ai } from '@/ai/genkit';
 import type { AgentDefinition, Message } from '@/lib/types';
@@ -7,29 +7,38 @@ import fs from 'fs';
 import path from 'path';
 import type { ModelReference } from 'genkit/model';
 
-// Agent loading logic must be here because this is a server-only module.
-async function getAgent(name: string): Promise<AgentDefinition | undefined> {
+async function loadAgents(): Promise<AgentDefinition[]> {
+    const agents: AgentDefinition[] = [];
     const agentsDir = path.join(process.cwd(), 'src', 'agents');
-    const agentFolders = fs.readdirSync(agentsDir, { withFileTypes: true })
-        .filter(dirent => dirent.isDirectory())
-        .map(dirent => dirent.name);
+    
+    try {
+        const agentFolders = fs.readdirSync(agentsDir, { withFileTypes: true })
+            .filter(dirent => dirent.isDirectory())
+            .map(dirent => dirent.name);
 
-    for (const folderName of agentFolders) {
-        const indexPath = path.join(agentsDir, folderName, 'index.ts');
-        if (fs.existsSync(indexPath)) {
-            try {
-                // Use a dynamic import with a cache-busting query to ensure we get the latest file
-                const { default: agent } = await import(`@/agents/${folderName}?update=${Date.now()}`);
-                if (agent && agent.name === name) {
-                    return agent;
+        for (const folderName of agentFolders) {
+            const indexPath = path.join(agentsDir, folderName, 'index.ts');
+            if (fs.existsSync(indexPath)) {
+                try {
+                    const { default: agent } = await import(`@/agents/${folderName}?update=${Date.now()}`);
+                    if (agent) {
+                        agents.push(agent);
+                    }
+                } catch (e) {
+                    console.error(`[Agent Loader] Failed to load agent from ${folderName}:`, e);
                 }
-            } catch (e) {
-                console.error(`[getAgent] Failed to load or match agent from '${folderName}':`, e);
             }
         }
+    } catch (error) {
+        console.error(`[Agent Loader] Could not read agents directory:`, error);
     }
     
-    return undefined;
+    return agents;
+}
+
+async function getAgent(name: string): Promise<AgentDefinition | undefined> {
+    const allAgents = await loadAgents();
+    return allAgents.find(agent => agent.name === name);
 }
 
 // Helper to construct the full model reference string
@@ -140,6 +149,7 @@ async function streamAgentResponse(request: NextRequest, agent: AgentDefinition)
       } catch (e) {
         const endTime = Date.now();
         const errorMessage = e instanceof Error ? e.message : 'An internal server error occurred.';
+        console.error(`[Agent Execution Error] in agent '${agent.name}':`, e);
          await db.agentExecutionLog.create({
             data: {
                 agentName: agent.name,
@@ -173,6 +183,7 @@ export async function POST(
     const agent = await getAgent(agentName);
 
     if (!agent) {
+      console.error(`[API POST] Agent '${agentName}' not found.`);
       return new Response(JSON.stringify({ error: `Agent '${agentName}' not found` }), { status: 404, headers: { 'Content-Type': 'application/json' } });
     }
     if (!agent.enableApiAccess) {
@@ -183,6 +194,7 @@ export async function POST(
 
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : 'An internal server error occurred.';
+    console.error(`[API POST] General error for agent '${params.agentName}':`, e);
     return new Response(JSON.stringify({ error: errorMessage }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
