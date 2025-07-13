@@ -23,7 +23,6 @@ export default function VoiceChatPage() {
   const agentName = decodeURIComponent(Array.isArray(params.agentName) ? params.agentName[0] : (params.agentName as string) || '')
   
   const [conversationState, setConversationState] = useState<ConversationState>('idle');
-  const [transcript, setTranscript] = useState('')
   const [isSupported, setIsSupported] = useState(true)
   const [messages, setMessages] = useState<Message[]>([])
   const [ttsModel, setTtsModel] = useState('gpt-4o');
@@ -91,14 +90,16 @@ export default function VoiceChatPage() {
   }, [toast]);
 
   const processRequest = useCallback(async (text: string) => {
-    if (!agentName || !sessionId) return;
+    if (!agentName || !sessionId || !text.trim()) {
+      setConversationState('idle');
+      return;
+    }
     
     setConversationState('processing');
     setSubtitle('Agent is thinking...');
 
     const userMessage: Message = { role: 'user', content: text };
     setMessages(prev => [...prev, userMessage]);
-    setTranscript('');
 
     try {
       const agentResult = await runAgent(agentName, text, sessionId);
@@ -133,7 +134,6 @@ export default function VoiceChatPage() {
 
 
   useEffect(() => {
-    // This effect runs only once to initialize audio context and speech recognition.
     const initAudio = () => {
       if (!audioContextRef.current) {
         audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
@@ -150,64 +150,51 @@ export default function VoiceChatPage() {
     }
 
     const recognition = new SpeechRecognitionAPI();
-    recognition.continuous = true;
+    recognition.continuous = false; // <<< THIS IS THE KEY FIX
     recognition.interimResults = true;
     recognition.lang = 'en-US';
     recognitionRef.current = recognition;
 
-    return () => {
-        document.removeEventListener('click', initAudio);
-        recognitionRef.current?.abort();
-    };
-  }, [toast]);
-
-  useEffect(() => {
-    // This effect manages the speech recognition event listeners.
-    const recognition = recognitionRef.current;
-    if (!recognition) return;
-
     const handleResult = (event: SpeechRecognitionEvent) => {
-      const currentTranscript = Array.from(event.results)
+      const transcript = Array.from(event.results)
         .map(result => result[0].transcript)
         .join('');
-      setTranscript(currentTranscript);
-      setSubtitle(currentTranscript || '...');
+
+      setSubtitle(transcript || '...');
+
+      if (event.results[0].isFinal) {
+        processRequest(transcript);
+      }
     };
 
+    const handleError = (event: SpeechRecognitionErrorEvent) => {
+      if (event.error !== 'no-speech') {
+        toast({ variant: "destructive", title: "Speech Recognition Error", description: event.error });
+      }
+      setConversationState('idle');
+    };
+    
     const handleEnd = () => {
-      // Check the state when recognition ends.
-      // We use a state function here to get the latest state value.
       setConversationState(currentState => {
           if (currentState === 'listening') {
-              if (transcript.trim()) {
-                  processRequest(transcript);
-                  // The state will be set to 'processing' inside processRequest
-                  return 'processing';
-              } else {
-                  setSubtitle("I didn't catch that. Please try again.");
-                  return 'idle';
-              }
+              return 'idle';
           }
-          // If the state is not 'listening' (e.g., user clicked stop), do nothing.
           return currentState;
       });
     };
-    
-    const handleError = (event: SpeechRecognitionErrorEvent) => {
-      toast({ variant: "destructive", title: "Speech Recognition Error", description: event.error });
-      setConversationState('idle');
-    };
 
     recognition.addEventListener('result', handleResult);
-    recognition.addEventListener('end', handleEnd);
     recognition.addEventListener('error', handleError);
+    recognition.addEventListener('end', handleEnd);
 
     return () => {
+        document.removeEventListener('click', initAudio);
         recognition.removeEventListener('result', handleResult);
-        recognition.removeEventListener('end', handleEnd);
         recognition.removeEventListener('error', handleError);
+        recognition.removeEventListener('end', handleEnd);
+        recognitionRef.current?.abort();
     };
-  }, [toast, processRequest, transcript]);
+  }, [toast, processRequest]);
 
 
   const handleToggleListening = () => {
@@ -219,10 +206,9 @@ export default function VoiceChatPage() {
     }
 
     if (conversationState === 'listening') {
-      setConversationState('idle'); // Manually stop listening
       recognition.stop();
+      setConversationState('idle');
     } else if (conversationState === 'idle') {
-      setTranscript('');
       setSubtitle('Listening...');
       setConversationState('listening');
       recognition.start();
