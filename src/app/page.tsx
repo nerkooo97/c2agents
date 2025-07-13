@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { AgentDefinition, AgentFormData, McpServerConfig } from '@/lib/types';
+import type { AgentDefinition, AgentFormData } from '@/lib/types';
 import { AgentDefinitionSchema } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -418,89 +418,89 @@ const AgentCard = ({
     agent, 
     onEdit, 
     onDelete, 
-    onTest, 
-    onToggleApi 
+    onTest,
+    onVoiceTest,
 }: { 
     agent: AgentDefinition;
     onEdit: () => void;
     onTest: () => void;
     onDelete: () => void;
-    onToggleApi: (name: string, enabled: boolean) => void;
+    onVoiceTest: () => void;
 }) => {
   return (
     <Card className="flex flex-col group transition-all duration-300 hover:border-primary/50 hover:shadow-lg">
-        <CardHeader className="flex flex-row items-start gap-4 space-y-0 pb-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: `${agent.iconColor}1A` }}>
-             <AgentIcon iconName={agent.icon} className="h-6 w-6" style={{ color: agent.iconColor }} />
-          </div>
-          <div className="flex-1">
-            <CardTitle>{agent.name}</CardTitle>
-            <CardDescription className="line-clamp-2">{agent.description}</CardDescription>
-          </div>
-          <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"><LucideIcons.MoreVertical className="h-4 w-4" /></Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                  <DropdownMenuItem onSelect={onEdit}><LucideIcons.Pencil className="mr-2 h-4 w-4"/>Edit</DropdownMenuItem>
-                  <DropdownMenuItem onSelect={onTest}><LucideIcons.TestTube2 className="mr-2 h-4 w-4"/>Test</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onSelect={onDelete} className="text-destructive focus:text-destructive"><LucideIcons.Trash2 className="mr-2 h-4 w-4"/>Delete</DropdownMenuItem>
-              </DropdownMenuContent>
-          </DropdownMenu>
-        </CardHeader>
-        <CardContent className="flex-1 space-y-4 text-sm">
-          <Separator />
-           <div className="space-y-2 pt-2">
+      <CardHeader className="flex flex-row items-start gap-4 space-y-0 pb-4">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: `${agent.iconColor}1A` }}>
+          <AgentIcon iconName={agent.icon} className="h-6 w-6" style={{ color: agent.iconColor }} />
+        </div>
+        <div className="flex-1">
+          <CardTitle>{agent.name}</CardTitle>
+          <CardDescription className="line-clamp-2">{agent.description}</CardDescription>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"><LucideIcons.MoreVertical className="h-4 w-4" /></Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={onEdit}><LucideIcons.Pencil className="mr-2 h-4 w-4"/>Edit</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={onDelete} className="text-destructive focus:text-destructive"><LucideIcons.Trash2 className="mr-2 h-4 w-4"/>Delete</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </CardHeader>
+      <CardContent className="flex-1 space-y-4 text-sm">
+        <Separator />
+        <div className="grid grid-cols-2 gap-4 pt-2">
+            <div className="space-y-2">
                 <Label className="text-xs font-semibold uppercase text-muted-foreground">Capabilities</Label>
                 <div className="flex flex-wrap gap-2">
                     <Badge variant="secondary">{agent.model}</Badge>
                     {agent.tools.length > 0 && <Badge variant="outline">{agent.tools.length} Tools</Badge>}
-                    {agent.enableMemory && <Badge variant="outline">Memory</Badge>}
-                    {agent.realtime && <Badge variant="outline">Voice</Badge>}
                 </div>
-           </div>
-
-          {agent.tags && agent.tags.length > 0 && (
-            <div>
-              <Label className="text-xs font-semibold uppercase text-muted-foreground">Tags</Label>
-              <div className="flex flex-wrap gap-1 pt-2">
-                  {agent.tags.map(tag => (
-                    <Badge key={tag} variant="outline" className="font-normal">{tag}</Badge>
-                  ))}
-              </div>
             </div>
-          )}
-        </CardContent>
-      <CardFooter className="flex-col items-stretch gap-2 border-t pt-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor={`api-toggle-${agent.name}`} className="flex cursor-pointer items-center gap-2 font-medium">
-              <LucideIcons.Code className="h-4 w-4" />
-              <span>API Access</span>
-            </Label>
-            <Switch id={`api-toggle-${agent.name}`} checked={agent.enableApiAccess} onCheckedChange={(checked) => onToggleApi(agent.name, checked)} />
-          </div>
-           {agent.enableApiAccess && (
-                  <Accordion type="single" collapsible className="w-full">
-                      <AccordionItem value="api-details" className="border-none">
-                          <AccordionTrigger className="py-1 text-xs justify-start gap-1 text-muted-foreground hover:no-underline">
-                              <span>Show API Details</span>
-                          </AccordionTrigger>
-                          <AccordionContent className="pt-2 pb-0 text-xs">
-                              <div className="space-y-2 rounded-md bg-muted p-3 font-code">
-                                  <p><span className="font-semibold text-green-500">POST</span> /api/agents/{agent.name}</p>
-                                  <Separator className="bg-border/50"/>
-                                  <p className="font-semibold">Body:</p>
-                                  <pre><code>{JSON.stringify({ input: "<user_prompt>", sessionId: "<optional>" }, null, 2)}</code></pre>
-                              </div>
-                          </AccordionContent>
-                      </AccordionItem>
-                  </Accordion>
-              )}
+             {agent.tags && agent.tags.length > 0 && (
+                <div className="space-y-2">
+                    <Label className="text-xs font-semibold uppercase text-muted-foreground">Tags</Label>
+                    <div className="flex flex-wrap gap-1">
+                        {agent.tags.map(tag => (
+                            <Badge key={tag} variant="outline" className="font-normal">{tag}</Badge>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+        <Separator />
+        <div className="grid grid-cols-3 gap-2 text-center pt-2">
+            <div className="flex flex-col items-center gap-1">
+                <Label className="text-xs font-semibold uppercase text-muted-foreground">API</Label>
+                <Switch checked={agent.enableApiAccess} disabled />
+            </div>
+             <div className="flex flex-col items-center gap-1">
+                <Label className="text-xs font-semibold uppercase text-muted-foreground">Memory</Label>
+                <Switch checked={agent.enableMemory} disabled />
+            </div>
+             <div className="flex flex-col items-center gap-1">
+                <Label className="text-xs font-semibold uppercase text-muted-foreground">Voice</Label>
+                <Switch checked={agent.realtime} disabled />
+            </div>
+        </div>
+      </CardContent>
+      <CardFooter className="flex items-center justify-end gap-2 border-t pt-4">
+        {agent.realtime && (
+            <Button variant="outline" size="sm" onClick={onVoiceTest}>
+                <LucideIcons.Mic className="mr-2 h-4 w-4" />
+                Voice Chat
+            </Button>
+        )}
+        <Button size="sm" onClick={onTest}>
+            <LucideIcons.TestTube2 className="mr-2 h-4 w-4" />
+            Test Agent
+        </Button>
       </CardFooter>
     </Card>
   );
 };
+
 
 function ModeToggle() {
   const { setTheme, theme } = useTheme();
@@ -609,6 +609,10 @@ export default function AgentsDashboardPage() {
     router.push(`/test/${agent.name}`);
   };
 
+  const handleVoiceTest = (agent: AgentDefinition) => {
+    router.push(`/voice/${agent.name}`);
+  }
+
   const handleDelete = (agent: AgentDefinition) => {
     setDeletingAgent(agent);
   };
@@ -683,16 +687,6 @@ export default function AgentsDashboardPage() {
       setIsSheetOpen(false);
       setEditingAgent(undefined);
     }
-  };
-
-
-  const handleToggleApi = (name: string, enabled: boolean) => {
-    const agentToUpdate = agents.find(a => a.name === name);
-    if (!agentToUpdate) return;
-    
-    const updatedAgentData = { ...agentToUpdate, enableApiAccess: enabled };
-    
-    handleSaveAgent(updatedAgentData as AgentFormData);
   };
   
 
@@ -780,7 +774,7 @@ export default function AgentsDashboardPage() {
                 onEdit={() => handleEdit(agent)}
                 onTest={() => handleTest(agent)}
                 onDelete={() => handleDelete(agent)}
-                onToggleApi={handleToggleApi}
+                onVoiceTest={() => handleVoiceTest(agent)}
                 />
             ))}
           </div>
@@ -821,4 +815,3 @@ export default function AgentsDashboardPage() {
     </div>
   );
 }
-
