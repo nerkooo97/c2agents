@@ -241,6 +241,36 @@
       "inputTokens": 58,
       "outputTokens": 25,
       "totalTokens": 83
+    },
+    {
+      "id": "1bc8be97-f3f1-4f0a-a5a9-d2e76e0566ef",
+      "timestamp": "2025-07-13T19:37:20.878Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "latency": 1653,
+      "inputTokens": 63,
+      "outputTokens": 25,
+      "totalTokens": 88
+    },
+    {
+      "id": "2bda90bf-597c-4fb0-a2f5-d98fbe0cb08b",
+      "timestamp": "2025-07-13T19:37:32.654Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "latency": 1803,
+      "inputTokens": 69,
+      "outputTokens": 47,
+      "totalTokens": 116
+    },
+    {
+      "id": "bdfd6d94-4a5c-48f7-86ef-6f5f345627e6",
+      "timestamp": "2025-07-13T19:39:09.630Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 2353,
+      "inputTokens": 51,
+      "outputTokens": 5,
+      "totalTokens": 56
     }
   ],
   "conversations": [
@@ -330,15 +360,15 @@
     },
     {
       "sessionId": "9eaba85f-398c-4380-a144-f78444f6f050",
-      "messages": "[{\"role\":\"user\",\"content\":\"koja je tovja uloga\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Moja uloga je da pružim informacije, odgovorim na pitanja, asistiram u učenju, rešavanju problema i obezbedim korisničku podršku koliko je to moguće putem teksta.\\\"}\"},{\"role\":\"user\",\"content\":\"pozdrav\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Pozdrav! Kako vam mogu pomoći danas?\\\"}\"}]",
+      "messages": "[{\"role\":\"user\",\"content\":\"koja je tovja uloga\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Moja uloga je da pružim informacije, odgovorim na pitanja, asistiram u učenju, rešavanju problema i obezbedim korisničku podršku koliko je to moguće putem teksta.\\\"}\"},{\"role\":\"user\",\"content\":\"pozdrav\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Pozdrav! Kako vam mogu pomoći danas?\\\"}\"},{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Učitava se...\"}]",
       "createdAt": "2025-07-13T18:45:00.624Z",
-      "updatedAt": "2025-07-13T18:47:45.871Z"
+      "updatedAt": "2025-07-13T19:39:09.657Z"
     },
     {
       "sessionId": "1cb83376-82fe-4436-87c0-320798ce6923",
-      "messages": "[{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Moja uloga je da pružam informacije, odgovaram na pitanja, pomažem u rešavanju problema i nudim podršku korisnicima. Mogu asistirati u raznim zadacima, kao što su pretraga informacija, objašnjavanje pojmova, pružanje saveta i još mnogo toga. Ako imate bilo kakvo pitanje ili zahtev, slobodno me pitajte!\"},{\"role\":\"user\",\"content\":\"koji je danas dan\"},{\"role\":\"model\",\"content\":\"Nažalost, ne mogu direktno provjeriti današnji datum. Molim te provjeri datum na svom uređaju ili kalendaru.\"},{\"role\":\"user\",\"content\":\"o cemu smo ovdje razgovarali u ovom chatu\"},{\"role\":\"model\",\"content\":\"Nažalost, nemam mogućnost pamćenja prethodnih interakcija u ovim razgovorima. Mogu vam pomoći s bilo kojim pitanjima ili zadacima na novi način. Kako mogu pomoći danas?\"},{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Moja uloga je da vam pomognem odgovarajući na pitanja, pružajući informacije i pomažući u rešavanju različitih zadataka. Možete me pitati o raznim temama, a ja ću pokušati da vam pomognem na najbolji mogući način koristeći svoje veštine i alate koji su mi na raspolaganju. Ako imate nešto konkretno na umu, slobodno pitajte!\"},{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Moja uloga je da budem vaš virtualni asistent i da vam pomognem u traženju informacija, odgovaranju na pitanja, obavljanju različitih zadataka i pružanju podrške u skladu s vašim potrebama. Ako imate bilo kakva pitanja ili trebate pomoć, slobodno ih postavite!\"},{\"role\":\"user\",\"content\":\"koji je danas dan\"},{\"role\":\"model\",\"content\":\"Nažalost, nemam pristup trenutnom datumu i vremenu. Molim vas da proverite na svom uređaju ili kalendaru da biste saznali koji je danas dan.\"},{\"role\":\"user\",\"content\":\"mozes li mi napisati neki vic\"},{\"role\":\"model\",\"content\":\"Naravno! Evo jednog vica za tebe:\\n\\nZašto je računar hladan?\\n\\nZato što ima puno prozora! (Windows) 😊\"}]",
+      "messages": "[{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Moja uloga je da pružam informacije, odgovaram na pitanja, pomažem u rešavanju problema i nudim podršku korisnicima. Mogu asistirati u raznim zadacima, kao što su pretraga informacija, objašnjavanje pojmova, pružanje saveta i još mnogo toga. Ako imate bilo kakvo pitanje ili zahtev, slobodno me pitajte!\"},{\"role\":\"user\",\"content\":\"koji je danas dan\"},{\"role\":\"model\",\"content\":\"Nažalost, ne mogu direktno provjeriti današnji datum. Molim te provjeri datum na svom uređaju ili kalendaru.\"},{\"role\":\"user\",\"content\":\"o cemu smo ovdje razgovarali u ovom chatu\"},{\"role\":\"model\",\"content\":\"Nažalost, nemam mogućnost pamćenja prethodnih interakcija u ovim razgovorima. Mogu vam pomoći s bilo kojim pitanjima ili zadacima na novi način. Kako mogu pomoći danas?\"},{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Moja uloga je da vam pomognem odgovarajući na pitanja, pružajući informacije i pomažući u rešavanju različitih zadataka. Možete me pitati o raznim temama, a ja ću pokušati da vam pomognem na najbolji mogući način koristeći svoje veštine i alate koji su mi na raspolaganju. Ako imate nešto konkretno na umu, slobodno pitajte!\"},{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Moja uloga je da budem vaš virtualni asistent i da vam pomognem u traženju informacija, odgovaranju na pitanja, obavljanju različitih zadataka i pružanju podrške u skladu s vašim potrebama. Ako imate bilo kakva pitanja ili trebate pomoć, slobodno ih postavite!\"},{\"role\":\"user\",\"content\":\"koji je danas dan\"},{\"role\":\"model\",\"content\":\"Nažalost, nemam pristup trenutnom datumu i vremenu. Molim vas da proverite na svom uređaju ili kalendaru da biste saznali koji je danas dan.\"},{\"role\":\"user\",\"content\":\"mozes li mi napisati neki vic\"},{\"role\":\"model\",\"content\":\"Naravno! Evo jednog vica za tebe:\\n\\nZašto je računar hladan?\\n\\nZato što ima puno prozora! (Windows) 😊\"},{\"role\":\"user\",\"content\":\"daj mi jos neki vic\"},{\"role\":\"model\",\"content\":\"Naravno! Evo jednog:\\n\\nZašto skeleti nikad ne lažu?\\n\\nJer nemaju šta da sakriju!\"},{\"role\":\"user\",\"content\":\"koje viceve si mi do sada napisao?\"},{\"role\":\"model\",\"content\":\"Nažalost, nemam mogućnost da pamtim prethodne razgovore ili šale koje sam s tobom delio. Ako bi želeo da čuješ neku novu šalu, slobodno mi reci!\"}]",
       "createdAt": "2025-07-13T18:48:08.468Z",
-      "updatedAt": "2025-07-13T18:54:03.916Z"
+      "updatedAt": "2025-07-13T19:37:32.657Z"
     },
     {
       "sessionId": "65ed5955-61bb-413b-8a35-309ef733715f",

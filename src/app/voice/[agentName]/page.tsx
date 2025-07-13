@@ -22,9 +22,6 @@ const SpeechRecognition =
     ? window.SpeechRecognition || window.webkitSpeechRecognition
     : null;
 
-type SpeechRecognitionInstance = SpeechRecognition;
-
-
 export default function VoiceChatPage() {
   const params = useParams()
   const agentName = decodeURIComponent(Array.isArray(params.agentName) ? params.agentName[0] : (params.agentName as string) || '')
@@ -36,7 +33,7 @@ export default function VoiceChatPage() {
   const [subtitle, setSubtitle] = useState("I'm ready to help.");
   const [sessionId, setSessionId] = useState<string | null>(null);
 
-  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null)
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioQueueRef = useRef<string[]>([]);
   const isPlayingRef = useRef(false);
@@ -48,12 +45,56 @@ export default function VoiceChatPage() {
 
   useEffect(() => {
     if (agentName) {
-      setMessages([{ role: 'model', content: `Hello! I'm the ${agentDisplayName}. How can I help you today?` }]);
-      setSubtitle(`Hello! I'm the ${agentDisplayName}. How can I help you today?`);
+      const initialMessage = `Hello! I'm the ${agentDisplayName}. How can I help you today?`;
+      setMessages([{ role: 'model', content: initialMessage }]);
+      setSubtitle(initialMessage);
       setSessionId(crypto.randomUUID());
     }
   }, [agentName, agentDisplayName]);
   
+  const playNextInQueue = useCallback(async () => {
+    if (isPlayingRef.current || audioQueueRef.current.length === 0) {
+      if (!isPlayingRef.current) {
+         setConversationState('idle');
+      }
+      return;
+    }
+    
+    isPlayingRef.current = true;
+    setConversationState('speaking');
+    const audioDataUri = audioQueueRef.current.shift();
+
+    if (!audioContextRef.current || !audioDataUri) {
+      isPlayingRef.current = false;
+      setConversationState('idle');
+      return;
+    }
+
+    try {
+      const response = await fetch(audioDataUri);
+      const arrayBuffer = await response.arrayBuffer();
+      const decodedAudio = await audioContextRef.current.decodeAudioData(arrayBuffer);
+      
+      const source = audioContextRef.current.createBufferSource();
+      source.buffer = decodedAudio;
+      source.connect(audioContextRef.current.destination);
+      source.start();
+
+      source.onended = () => {
+        isPlayingRef.current = false;
+        playNextInQueue();
+      };
+    } catch (error) {
+      console.error("Audio playback error:", error);
+      toast({
+        variant: 'destructive',
+        title: 'Audio Playback Error',
+        description: error instanceof Error ? error.message : 'Could not decode or play audio.',
+      });
+      isPlayingRef.current = false;
+      playNextInQueue();
+    }
+  }, [toast]);
 
   const processRequest = useCallback(async (text: string) => {
     if (!agentName || !sessionId || !text.trim()) {
@@ -98,61 +139,19 @@ export default function VoiceChatPage() {
     }
   }, [agentName, sessionId, ttsModel, toast, playNextInQueue]);
 
-
-   const playNextInQueue = useCallback(async () => {
-    if (isPlayingRef.current || audioQueueRef.current.length === 0) {
-      if (!isPlayingRef.current) {
-         setConversationState('idle');
-      }
-      return;
-    }
-    
-    isPlayingRef.current = true;
-    setConversationState('speaking');
-    const audioDataUri = audioQueueRef.current.shift();
-
-    if (!audioContextRef.current || !audioDataUri) {
-      isPlayingRef.current = false;
-      setConversationState('idle');
-      return;
-    }
-
-    try {
-      const response = await fetch(audioDataUri);
-      const arrayBuffer = await response.arrayBuffer();
-      const decodedAudio = await audioContextRef.current.decodeAudioData(arrayBuffer);
-      
-      const source = audioContextRef.current.createBufferSource();
-      source.buffer = decodedAudio;
-      source.connect(audioContextRef.current.destination);
-      source.start();
-
-      source.onended = () => {
-        isPlayingRef.current = false;
-        playNextInQueue();
-      };
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Audio Playback Error',
-        description: 'Could not decode or play audio.',
-      });
-      isPlayingRef.current = false;
-      playNextInQueue();
-    }
-  }, [toast]);
-
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-     // Initialize AudioContext on first user interaction
+    // Initialize AudioContext on first user interaction
     const initAudio = () => {
       if (!audioContextRef.current) {
         audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
       }
       document.removeEventListener('click', initAudio);
+      document.removeEventListener('touchstart', initAudio);
     };
-    document.addEventListener('click', initAudio);
+    document.addEventListener('click', initAudio, { once: true });
+    document.addEventListener('touchstart', initAudio, { once: true });
 
     if (!SpeechRecognition) {
       setIsSupported(false);
@@ -161,29 +160,31 @@ export default function VoiceChatPage() {
     }
 
     const recognition = new SpeechRecognition();
-    recognition.continuous = false; // Important: Stop after a pause
+    recognition.continuous = false;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
     recognitionRef.current = recognition;
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-        let interimTranscript = '';
-        let finalTranscript = '';
-        for (let i = 0; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-                finalTranscript += event.results[i][0].transcript;
-            } else {
-                interimTranscript += event.results[i][0].transcript;
-            }
+      let interimTranscript = '';
+      finalTranscriptRef.current = '';
+      for (let i = 0; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscriptRef.current += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
         }
-        finalTranscriptRef.current = finalTranscript;
-        setSubtitle(interimTranscript || finalTranscript || '...');
+      }
+      setSubtitle(interimTranscript || finalTranscriptRef.current || '...');
     };
     
     recognition.onend = () => {
-        setConversationState('idle'); // Always return to idle when recognition stops
-        if (finalTranscriptRef.current.trim()) {
-            processRequest(finalTranscriptRef.current.trim());
+        if (conversationState === 'listening') {
+            setConversationState('idle');
+            const transcript = finalTranscriptRef.current.trim();
+            if (transcript) {
+                processRequest(transcript);
+            }
         }
     };
 
@@ -195,14 +196,13 @@ export default function VoiceChatPage() {
     };
 
     return () => {
-        document.removeEventListener('click', initAudio);
         recognitionRef.current?.abort();
     };
-  }, [toast, processRequest]);
+  }, [toast, processRequest, conversationState]); // Add conversationState to dependencies
 
   const handleToggleListening = () => {
     const recognition = recognitionRef.current;
-    if (!recognition) return;
+    if (!recognition || !isSupported) return;
 
     if (audioContextRef.current?.state === 'suspended') {
       audioContextRef.current.resume();
@@ -212,7 +212,12 @@ export default function VoiceChatPage() {
       finalTranscriptRef.current = '';
       setSubtitle('Listening...');
       setConversationState('listening');
-      recognition.start();
+      try {
+        recognition.start();
+      } catch(e) {
+        console.error("Error starting recognition:", e);
+        setConversationState('idle');
+      }
     } else if (conversationState === 'listening') {
        recognition.stop();
     }
