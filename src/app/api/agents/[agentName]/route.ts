@@ -3,41 +3,24 @@ import { getToolsForAgent } from '@/ai/tools';
 import { ai } from '@/ai/genkit';
 import type { AgentDefinition, Message } from '@/lib/types';
 import db from '@/lib/db';
-import fs from 'fs';
-import path from 'path';
 import type { ModelReference } from 'genkit/model';
 
-async function loadAgents(): Promise<AgentDefinition[]> {
-    const agents: AgentDefinition[] = [];
-    const agentsDir = path.join(process.cwd(), 'src', 'agents');
-    
-    try {
-        const agentFolders = fs.readdirSync(agentsDir, { withFileTypes: true })
-            .filter(dirent => dirent.isDirectory())
-            .map(dirent => dirent.name);
+// Explicitly import all agent definitions for reliability
+import myAgent from '@/agents/my-agent';
+import nonApiAgent from '@/agents/non-api-agent';
+import openaiAgent from '@/agents/openai';
+import realtimeVoiceAgent from '@/agents/realtime-voice-agent';
+import testAgent1 from '@/agents/test-agent-1';
 
-        for (const folderName of agentFolders) {
-            const indexPath = path.join(agentsDir, folderName, 'index.ts');
-            if (fs.existsSync(indexPath)) {
-                try {
-                    const { default: agent } = await import(`@/agents/${folderName}?update=${Date.now()}`);
-                    if (agent) {
-                        agents.push(agent);
-                    }
-                } catch (e) {
-                    console.error(`[Agent Loader] Failed to load agent from ${folderName}:`, e);
-                }
-            }
-        }
-    } catch (error) {
-        console.error(`[Agent Loader] Could not read agents directory:`, error);
-    }
-    
-    return agents;
-}
+const allAgents: AgentDefinition[] = [
+    myAgent,
+    nonApiAgent,
+    openaiAgent,
+    realtimeVoiceAgent,
+    testAgent1
+];
 
-async function getAgent(name: string): Promise<AgentDefinition | undefined> {
-    const allAgents = await loadAgents();
+function getAgent(name: string): AgentDefinition | undefined {
     return allAgents.find(agent => agent.name === name);
 }
 
@@ -69,7 +52,11 @@ async function streamAgentResponse(request: NextRequest, agent: AgentDefinition)
         if (agent.enableMemory && sessionId) {
             const conversation = await db.conversation.findUnique({ where: { sessionId } });
             if (conversation) {
-                conversationHistory = JSON.parse(conversation.messages) as Message[];
+                // Ensure messages are parsed correctly
+                const parsedMessages = JSON.parse(conversation.messages) as Message[];
+                if(Array.isArray(parsedMessages)) {
+                    conversationHistory = parsedMessages;
+                }
             }
         }
 
@@ -83,7 +70,6 @@ async function streamAgentResponse(request: NextRequest, agent: AgentDefinition)
 
         const agentTools = getToolsForAgent(agent);
         
-        // Use generateStream
         const { stream: responseStream, response: responsePromise } = ai.generateStream({
             model: getModelReference(agent.model) as ModelReference<any>,
             system: fullSystemPrompt,
@@ -95,7 +81,6 @@ async function streamAgentResponse(request: NextRequest, agent: AgentDefinition)
             }
         });
 
-        // Stream chunks to the client
         let fullTextResponse = "";
         for await (const chunk of responseStream) {
             const text = chunk.text;
@@ -111,11 +96,9 @@ async function streamAgentResponse(request: NextRequest, agent: AgentDefinition)
             }
         }
 
-        // Wait for the final response to get usage data and save history
         const finalResponse = await responsePromise;
         const endTime = Date.now();
 
-        // Log successful execution
         const usage = finalResponse.usage;
         await db.agentExecutionLog.create({
             data: {
@@ -128,7 +111,6 @@ async function streamAgentResponse(request: NextRequest, agent: AgentDefinition)
             },
         });
 
-        // Save history if memory is enabled
         if (agent.enableMemory && sessionId) {
             const newHistory = [
                 ...conversationHistory,
@@ -143,7 +125,6 @@ async function streamAgentResponse(request: NextRequest, agent: AgentDefinition)
              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'log', content: 'History saved.' })}\n\n`));
         }
         
-        // Send usage data
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'usage', usage: finalResponse.usage })}\n\n`));
 
       } catch (e) {
@@ -180,7 +161,7 @@ export async function POST(
 ) {
   try {
     const agentName = decodeURIComponent(params.agentName);
-    const agent = await getAgent(agentName);
+    const agent = getAgent(agentName);
 
     if (!agent) {
       console.error(`[API POST] Agent '${agentName}' not found.`);

@@ -1,44 +1,32 @@
 import { NextResponse } from 'next/server';
 import type { AgentDefinition } from '@/lib/types';
-import fs from 'fs';
-import path from 'path';
 
-// This function is now defined directly in the API route
-// to avoid bundling server-side 'fs' module in client components.
-async function loadAgents(): Promise<AgentDefinition[]> {
-    const agents: AgentDefinition[] = [];
-    const agentsDir = path.join(process.cwd(), 'src', 'agents');
-    
-    try {
-        const agentFolders = fs.readdirSync(agentsDir, { withFileTypes: true })
-            .filter(dirent => dirent.isDirectory())
-            .map(dirent => dirent.name);
+// Explicitly import all agent definitions
+import myAgent from '@/agents/my-agent';
+import nonApiAgent from '@/agents/non-api-agent';
+import openaiAgent from '@/agents/openai';
+import realtimeVoiceAgent from '@/agents/realtime-voice-agent';
+import testAgent1 from '@/agents/test-agent-1';
 
-        for (const folderName of agentFolders) {
-            const indexPath = path.join(agentsDir, folderName, 'index.ts');
-            if (fs.existsSync(indexPath)) {
-                try {
-                    // Dynamically importing is necessary here for the server to pick up new files.
-                    const { default: agent } = await import(`@/agents/${folderName}`);
-                    if (agent) {
-                        agents.push(agent);
-                    }
-                } catch (e) {
-                    console.error(`[Agent Loader] Failed to load agent from ${folderName}:`, e);
-                }
-            }
-        }
-    } catch (error) {
-        console.error(`[Agent Loader] Could not read agents directory:`, error);
-    }
-    
-    agents.sort((a, b) => a.name.localeCompare(b.name));
-    return agents;
+
+// Create a static list of all agents
+const allAgents: AgentDefinition[] = [
+    myAgent,
+    nonApiAgent,
+    openaiAgent,
+    realtimeVoiceAgent,
+    testAgent1
+];
+
+function loadAgents(): AgentDefinition[] {
+    // Sort agents by name for consistent ordering
+    allAgents.sort((a, b) => a.name.localeCompare(b.name));
+    return allAgents;
 }
 
 
 export async function GET() {
-  const agents = await loadAgents();
+  const agents = loadAgents();
   // We map to AgentDefinition to send the full agent data to the dashboard
   // In a real app with sensitive data, this would be a different, public type.
   const agentInfos: AgentDefinition[] = agents.map(agent => ({

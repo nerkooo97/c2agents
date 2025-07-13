@@ -4,34 +4,25 @@ import { getToolsForAgent } from '@/ai/tools';
 import { runAgentWithConfig } from '@/ai/flows/run-agent';
 import type { AgentDefinition, ExecutionStep, Message } from '@/lib/types';
 import db from '@/lib/db';
-import fs from 'fs';
-import path from 'path';
 
-// Agent loading logic must be here because this is a server-only module.
-async function getAgent(name: string): Promise<AgentDefinition | undefined> {
-    const agentsDir = path.join(process.cwd(), 'src', 'agents');
-    const agentFolders = fs.readdirSync(agentsDir, { withFileTypes: true })
-        .filter(dirent => dirent.isDirectory())
-        .map(dirent => dirent.name);
+// Explicitly import all agent definitions for reliability
+import myAgent from '@/agents/my-agent';
+import nonApiAgent from '@/agents/non-api-agent';
+import openaiAgent from '@/agents/openai';
+import realtimeVoiceAgent from '@/agents/realtime-voice-agent';
+import testAgent1 from '@/agents/test-agent-1';
 
-    for (const folderName of agentFolders) {
-        const indexPath = path.join(agentsDir, folderName, 'index.ts');
-        if (fs.existsSync(indexPath)) {
-            try {
-                 // Use a dynamic import with a cache-busting query to ensure we get the latest file
-                const { default: agent } = await import(`@/agents/${folderName}?update=${Date.now()}`);
-                if (agent && agent.name === name) {
-                    return agent;
-                }
-            } catch (e) {
-                 console.error(`[getAgent] Failed to load or match agent from '${folderName}':`, e);
-            }
-        }
-    }
-    
-    return undefined;
+const allAgents: AgentDefinition[] = [
+    myAgent,
+    nonApiAgent,
+    openaiAgent,
+    realtimeVoiceAgent,
+    testAgent1
+];
+
+function getAgent(name: string): AgentDefinition | undefined {
+    return allAgents.find(agent => agent.name === name);
 }
-
 
 // Helper to construct the full model reference string
 const getModelReference = (modelName: string): string => {
@@ -44,7 +35,6 @@ const getModelReference = (modelName: string): string => {
     if (modelName.startsWith('gpt')) {
         return `openai/${modelName}`;
     }
-    // This handles cases where the full path might already be stored, or for other providers in the future.
     return modelName;
 };
 
@@ -55,7 +45,7 @@ export async function runAgent(
 ): Promise<{ response?: string; steps?: ExecutionStep[]; error?: string }> {
   const startTime = Date.now();
   try {
-    const agent = await getAgent(agentName);
+    const agent = getAgent(agentName);
     if (!agent) {
       throw new Error(`Agent '${agentName}' not found.`);
     }
@@ -64,7 +54,11 @@ export async function runAgent(
     if (agent.enableMemory && sessionId) {
         const conversation = await db.conversation.findUnique({ where: { sessionId } });
         if (conversation) {
-            conversationHistory = JSON.parse(conversation.messages) as Message[];
+            // Ensure messages are parsed correctly
+            const parsedMessages = JSON.parse(conversation.messages) as Message[];
+            if(Array.isArray(parsedMessages)) {
+                conversationHistory = parsedMessages;
+            }
         }
     }
     
@@ -91,7 +85,6 @@ export async function runAgent(
     const endTime = Date.now();
     const latency = endTime - startTime;
 
-    // Log successful execution
     const usage = genkitResponse.usage;
     await db.agentExecutionLog.create({
         data: {
@@ -137,7 +130,6 @@ export async function runAgent(
       content: finalResponse,
     });
 
-    // Update conversation history in DB if memory is enabled
     if (agent.enableMemory && sessionId) {
         const newHistory = [
             ...conversationHistory,
@@ -162,7 +154,6 @@ export async function runAgent(
     console.error('Error running agent:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
     
-    // Log error execution
     await db.agentExecutionLog.create({
         data: {
             agentName,
