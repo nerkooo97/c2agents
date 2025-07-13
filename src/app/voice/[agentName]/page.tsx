@@ -23,12 +23,12 @@ const SpeechRecognition =
     : null;
 
 export default function VoiceChatPage() {
-  const params = useParams()
-  const agentName = decodeURIComponent(Array.isArray(params.agentName) ? params.agentName[0] : (params.agentName as string) || '')
+  const params = useParams();
+  const agentName = decodeURIComponent(Array.isArray(params.agentName) ? params.agentName[0] : (params.agentName as string) || '');
   
   const [conversationState, setConversationState] = useState<ConversationState>('idle');
-  const [isSupported, setIsSupported] = useState(true)
-  const [messages, setMessages] = useState<Message[]>([])
+  const [isSupported, setIsSupported] = useState(true);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [ttsModel, setTtsModel] = useState('gpt-4o');
   const [subtitle, setSubtitle] = useState("I'm ready to help.");
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -38,9 +38,9 @@ export default function VoiceChatPage() {
   const isPlayingRef = useRef(false);
   const transcriptRef = useRef('');
   
-  const { toast } = useToast()
+  const { toast } = useToast();
   
-  const agentDisplayName = agentName?.replace(/-/g, ' ') ?? 'Agent'
+  const agentDisplayName = agentName?.replace(/-/g, ' ') ?? 'Agent';
 
   const processQueue = useCallback(() => {
     if (isPlayingRef.current || audioQueueRef.current.length === 0) {
@@ -115,29 +115,22 @@ export default function VoiceChatPage() {
     }
   }, [agentName, sessionId, ttsModel, toast, processQueue]);
 
-
   useEffect(() => {
     if (typeof window === 'undefined' || !SpeechRecognition) {
       setIsSupported(false);
       return;
     }
-
+    
     const initialMessage = `Hello! I'm the ${agentDisplayName}. How can I help you today?`;
     setMessages([{ role: 'model', content: initialMessage }]);
     setSubtitle(initialMessage);
-    if (!sessionId) {
-      setSessionId(crypto.randomUUID());
-    }
+    setSessionId(crypto.randomUUID());
 
-    if (!recognitionRef.current) {
-        const recognition = new SpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = true;
-        recognition.lang = 'en-US';
-        recognitionRef.current = recognition;
-    }
-    
-    const recognition = recognitionRef.current;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+    recognitionRef.current = recognition;
 
     const handleResult = (event: SpeechRecognitionEvent) => {
       let interim = '';
@@ -149,40 +142,33 @@ export default function VoiceChatPage() {
     };
 
     const handleEnd = () => {
-        if (conversationStateRef.current === 'listening') {
-            const finalTranscript = transcriptRef.current.trim();
-            if (finalTranscript) {
-              processRequest(finalTranscript);
-            } else {
-              setConversationState('idle');
-              setSubtitle("I didn't catch that. Please try again.");
-            }
-        }
+      const finalTranscript = transcriptRef.current.trim();
+      if (finalTranscript) {
+        processRequest(finalTranscript);
+      } else {
+        setConversationState('idle');
+      }
     };
     
     const handleError = (event: SpeechRecognitionErrorEvent) => {
       if (event.error !== 'no-speech' && event.error !== 'aborted') {
         toast({ variant: "destructive", title: "Speech Recognition Error", description: event.error });
       }
-       setConversationState('idle');
+      setConversationState('idle');
     };
 
     recognition.addEventListener('result', handleResult);
     recognition.addEventListener('end', handleEnd);
     recognition.addEventListener('error', handleError);
 
-    // This part is crucial for making sure event handlers have the latest state
-    const conversationStateRef = useRef(conversationState);
-    useEffect(() => {
-        conversationStateRef.current = conversationState;
-    }, [conversationState]);
-
     return () => {
-        recognition.removeEventListener('result', handleResult);
-        recognition.removeEventListener('end', handleEnd);
-        recognition.removeEventListener('error', handleError);
+      recognition.stop();
+      recognition.removeEventListener('result', handleResult);
+      recognition.removeEventListener('end', handleEnd);
+      recognition.removeEventListener('error', handleError);
     };
-  }, [sessionId, agentDisplayName, toast, processRequest]);
+  }, [agentDisplayName, toast, processRequest]);
+
 
   const handleToggleListening = () => {
     const recognition = recognitionRef.current;
