@@ -14,6 +14,12 @@ import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 type ConversationState = 'idle' | 'listening' | 'processing' | 'speaking';
 
@@ -119,16 +125,16 @@ export default function VoiceChatPage() {
     }
   }, [agentName, sessionId, ttsModel, toast, processQueue]);
 
-  useEffect(() => {
+   useEffect(() => {
     if (!SpeechRecognitionAPI) {
       setIsSupported(false);
       toast({ variant: 'destructive', title: 'Unsupported Browser', description: "Speech recognition is not supported in this browser." });
       return;
     }
-    
+
     const newSessionId = crypto.randomUUID();
     setSessionId(newSessionId);
-    
+
     const initialMessage = `Hello! I'm the ${agentDisplayName}. How can I help you today?`;
     setMessages([{ role: 'model', content: initialMessage }]);
     setSubtitle(initialMessage);
@@ -149,17 +155,14 @@ export default function VoiceChatPage() {
     };
 
     recognition.onend = () => {
-      if (conversationState === 'listening') {
         const finalTranscript = transcriptRef.current.trim();
-        if (finalTranscript) {
+        if (conversationState === 'listening' && finalTranscript) {
           processRequest(finalTranscript);
         } else {
           setConversationState('idle');
-          setSubtitle("Didn't catch that. Please try again.");
         }
-      }
     };
-
+    
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error('Speech recognition error', event.error);
       if (event.error !== 'no-speech' && event.error !== 'aborted') {
@@ -171,7 +174,7 @@ export default function VoiceChatPage() {
     return () => {
       recognition.stop();
     };
-  }, [agentDisplayName, toast, processRequest, conversationState]);
+  }, [agentDisplayName, toast]);
 
   const handleToggleListening = () => {
     const recognition = recognitionRef.current;
@@ -287,5 +290,3 @@ export default function VoiceChatPage() {
     </div>
   )
 }
-
-    
