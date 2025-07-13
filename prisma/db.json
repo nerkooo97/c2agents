@@ -171,6 +171,16 @@
       "inputTokens": 71,
       "outputTokens": 47,
       "totalTokens": 118
+    },
+    {
+      "id": "f6d2b010-ffb3-426a-9599-c5dbef2cfd15",
+      "timestamp": "2025-07-13T18:51:12.153Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "latency": 3126,
+      "inputTokens": 65,
+      "outputTokens": 93,
+      "totalTokens": 158
     }
   ],
   "conversations": [
@@ -266,9 +276,9 @@
     },
     {
       "sessionId": "1cb83376-82fe-4436-87c0-320798ce6923",
-      "messages": "[{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Moja uloga je da pružam informacije, odgovaram na pitanja, pomažem u rešavanju problema i nudim podršku korisnicima. Mogu asistirati u raznim zadacima, kao što su pretraga informacija, objašnjavanje pojmova, pružanje saveta i još mnogo toga. Ako imate bilo kakvo pitanje ili zahtev, slobodno me pitajte!\"},{\"role\":\"user\",\"content\":\"koji je danas dan\"},{\"role\":\"model\",\"content\":\"Nažalost, ne mogu direktno provjeriti današnji datum. Molim te provjeri datum na svom uređaju ili kalendaru.\"},{\"role\":\"user\",\"content\":\"o cemu smo ovdje razgovarali u ovom chatu\"},{\"role\":\"model\",\"content\":\"Nažalost, nemam mogućnost pamćenja prethodnih interakcija u ovim razgovorima. Mogu vam pomoći s bilo kojim pitanjima ili zadacima na novi način. Kako mogu pomoći danas?\"}]",
+      "messages": "[{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Moja uloga je da pružam informacije, odgovaram na pitanja, pomažem u rešavanju problema i nudim podršku korisnicima. Mogu asistirati u raznim zadacima, kao što su pretraga informacija, objašnjavanje pojmova, pružanje saveta i još mnogo toga. Ako imate bilo kakvo pitanje ili zahtev, slobodno me pitajte!\"},{\"role\":\"user\",\"content\":\"koji je danas dan\"},{\"role\":\"model\",\"content\":\"Nažalost, ne mogu direktno provjeriti današnji datum. Molim te provjeri datum na svom uređaju ili kalendaru.\"},{\"role\":\"user\",\"content\":\"o cemu smo ovdje razgovarali u ovom chatu\"},{\"role\":\"model\",\"content\":\"Nažalost, nemam mogućnost pamćenja prethodnih interakcija u ovim razgovorima. Mogu vam pomoći s bilo kojim pitanjima ili zadacima na novi način. Kako mogu pomoći danas?\"},{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Moja uloga je da vam pomognem odgovarajući na pitanja, pružajući informacije i pomažući u rešavanju različitih zadataka. Možete me pitati o raznim temama, a ja ću pokušati da vam pomognem na najbolji mogući način koristeći svoje veštine i alate koji su mi na raspolaganju. Ako imate nešto konkretno na umu, slobodno pitajte!\"}]",
       "createdAt": "2025-07-13T18:48:08.468Z",
-      "updatedAt": "2025-07-13T18:48:45.812Z"
+      "updatedAt": "2025-07-13T18:51:12.156Z"
     }
   ]
 }

@@ -137,7 +137,6 @@ export default function AgentTestPage() {
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({error: "The server returned an unreadable error."}));
-            // Log the detailed error to the console
             console.error("Agent API Error:", errorData);
             throw new Error(errorData.error || `Request failed with status ${response.status}`);
         }
@@ -168,8 +167,10 @@ export default function AgentTestPage() {
                         setMessages(prev => {
                             const newMessages = [...prev];
                             const lastMessage = newMessages[newMessages.length - 1];
-                            if (lastMessage.role === 'model') {
-                                lastMessage.content += data.content;
+                            if (lastMessage && lastMessage.role === 'model') {
+                                // Create a new object for the last message to ensure React re-renders correctly.
+                                const updatedLastMessage = { ...lastMessage, content: lastMessage.content + data.content };
+                                newMessages[newMessages.length - 1] = updatedLastMessage;
                             }
                             return newMessages;
                         });
@@ -184,7 +185,6 @@ export default function AgentTestPage() {
                     } else if (data.type === 'error') {
                          throw new Error(data.error);
                     } else if (data.type === 'usage') {
-                        // Optionally handle usage data
                         console.log('Usage:', data.usage);
                     }
                 }
@@ -195,7 +195,6 @@ export default function AgentTestPage() {
       if (e instanceof Error && e.name !== 'AbortError') {
         const errorMessage = e.message || "An unexpected error occurred.";
         
-        // Log the full error object for debugging
         console.error("handleSendMessage Error:", e);
 
         toast({
@@ -206,12 +205,10 @@ export default function AgentTestPage() {
         setMessages(prev => {
           const newMessages = [...prev];
           const lastMessage = newMessages[newMessages.length - 1];
-          // If the last message is an empty model message, populate it with an error.
           if (lastMessage && lastMessage.role === 'model' && lastMessage.content === '') {
             lastMessage.content = `Sorry, an error occurred: ${errorMessage}`;
              return newMessages;
           }
-          // Otherwise, add a new error message.
           return [...newMessages, { role: 'model', content: `Sorry, an error occurred: ${errorMessage}` }];
         });
       }
@@ -271,6 +268,11 @@ export default function AgentTestPage() {
             <CardContent className="flex-1 flex flex-col gap-4 overflow-hidden">
               <ScrollArea className="flex-1 pr-4" ref={scrollAreaRef}>
                 <div className="space-y-6">
+                  {messages.length === 0 && !isLoading && (
+                     <div className="flex justify-center items-center h-full text-muted-foreground">
+                        Send a message to start the conversation.
+                      </div>
+                  )}
                   {messages.map((message, index) => (
                     <div key={index} className={`flex items-start gap-4 ${message.role === 'user' ? 'justify-end' : ''}`}>
                       {message.role === 'model' && (
@@ -408,3 +410,5 @@ export default function AgentTestPage() {
     </div>
   )
 }
+
+    
