@@ -29,10 +29,13 @@ async function toWav(pcmData: Buffer): Promise<Buffer> {
 
 // This function now directly handles API calls for simplicity and stability.
 export async function generateSpeech(text: string, model: string): Promise<string> {
-    if (model.startsWith('tts-') || model.startsWith('gpt-')) {
+    if (model.startsWith('tts-') || model === 'gpt-4o') {
         const openaiClient = new OpenAI();
+        // The gpt-4o model option for TTS uses tts-1-hd internally for the audio.speech API.
+        const speechModel = model === 'gpt-4o' ? 'tts-1-hd' : model;
+
         const mp3 = await openaiClient.audio.speech.create({
-            model: model as any, // e.g., 'tts-1', 'tts-1-hd', 'gpt-4o'
+            model: speechModel as any,
             voice: "alloy",
             input: text,
             response_format: 'mp3',

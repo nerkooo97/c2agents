@@ -33,6 +33,7 @@ export default function VoiceChatPage() {
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioQueueRef = useRef<string[]>([]);
   const isPlayingRef = useRef(false);
+  const transcriptRef = useRef('');
   
   const { toast } = useToast()
   
@@ -150,7 +151,7 @@ export default function VoiceChatPage() {
     }
 
     const recognition = new SpeechRecognitionAPI();
-    recognition.continuous = false; // <<< THIS IS THE KEY FIX
+    recognition.continuous = false;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
     recognitionRef.current = recognition;
@@ -160,6 +161,7 @@ export default function VoiceChatPage() {
         .map(result => result[0].transcript)
         .join('');
 
+      transcriptRef.current = transcript;
       setSubtitle(transcript || '...');
 
       if (event.results[0].isFinal) {
@@ -175,12 +177,9 @@ export default function VoiceChatPage() {
     };
     
     const handleEnd = () => {
-      setConversationState(currentState => {
-          if (currentState === 'listening') {
-              return 'idle';
-          }
-          return currentState;
-      });
+        if (conversationState === 'listening') {
+             setConversationState('idle');
+        }
     };
 
     recognition.addEventListener('result', handleResult);
@@ -194,7 +193,7 @@ export default function VoiceChatPage() {
         recognition.removeEventListener('end', handleEnd);
         recognitionRef.current?.abort();
     };
-  }, [toast, processRequest]);
+  }, [toast, processRequest, conversationState]);
 
 
   const handleToggleListening = () => {
@@ -207,8 +206,8 @@ export default function VoiceChatPage() {
 
     if (conversationState === 'listening') {
       recognition.stop();
-      setConversationState('idle');
     } else if (conversationState === 'idle') {
+      transcriptRef.current = '';
       setSubtitle('Listening...');
       setConversationState('listening');
       recognition.start();
