@@ -49,6 +49,9 @@ export default function VoiceChatPage() {
   
   const playNextInQueue = useCallback(async () => {
     if (isPlayingRef.current || audioQueueRef.current.length === 0) {
+      if (!isPlayingRef.current) {
+         setConversationState('idle');
+      }
       return;
     }
     
@@ -166,9 +169,11 @@ export default function VoiceChatPage() {
 
     recognition.onend = () => {
       if (conversationState === 'listening') {
-        setConversationState('idle');
         if (transcript.trim()) {
             processRequest(transcript);
+        } else {
+             setConversationState('idle');
+             setSubtitle("I didn't catch that. Please try again.");
         }
       }
     };
@@ -193,6 +198,7 @@ export default function VoiceChatPage() {
 
     if (conversationState === 'listening') {
       recognition.stop();
+      // onend will handle the transition
     } else if (conversationState === 'idle') {
       setTranscript('');
       setSubtitle('Listening...');
@@ -271,7 +277,7 @@ export default function VoiceChatPage() {
                     {conversationState === 'listening' ? <MicOff className="h-10 w-10"/> : <Mic className="h-10 w-10"/>}
                 </Button>
                 <p className="text-muted-foreground text-sm h-5 font-medium">
-                  {conversationState === 'listening' ? 'Listening...' : (conversationState === 'processing' || conversationState === 'speaking' ? subtitle : 'Tap to speak')}
+                  {conversationState === 'listening' ? 'Listening...' : (conversationState === 'processing' || conversationState === 'speaking' ? "Speaking..." : 'Tap to speak')}
                 </p>
             </div>
           </CardContent>

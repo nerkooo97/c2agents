@@ -54,10 +54,16 @@ export async function runAgent(
     if (agent.enableMemory && sessionId) {
         const conversation = await db.conversation.findUnique({ where: { sessionId } });
         if (conversation) {
-            // Ensure messages are parsed correctly
-            const parsedMessages = JSON.parse(conversation.messages) as Message[];
-            if(Array.isArray(parsedMessages)) {
-                conversationHistory = parsedMessages;
+            // Ensure messages are parsed correctly, even if it's already an object (which it shouldn't be but good to be safe)
+            if (typeof conversation.messages === 'string') {
+                try {
+                    const parsedMessages = JSON.parse(conversation.messages) as Message[];
+                    if(Array.isArray(parsedMessages)) {
+                        conversationHistory = parsedMessages;
+                    }
+                } catch (e) {
+                     console.error("Error parsing conversation history from DB:", e);
+                }
             }
         }
     }
