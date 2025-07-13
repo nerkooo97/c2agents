@@ -37,7 +37,7 @@ export interface AgentDefinition {
   systemPrompt: string;
   constraints?: string;
   defaultTask?: string;
-  tools: string[]; // Array of tool names provided by MCP servers
+  tools: string[]; // Array of tool names
   tags?: string[]; // Optional tags for agent capabilities
   responseFormat: 'text' | 'json';
   enableApiAccess: boolean;
@@ -172,8 +172,6 @@ export interface AppSettings {
         apiKey?: string;
     }>;
 }
-
-// ================== FILE-BASED TOOL MANAGEMENT TYPES ==================
 
 // This is the definition of a tool as it is stored in its `index.ts` file.
 export interface ToolDefinition {

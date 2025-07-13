@@ -3,20 +3,17 @@
 import type { AgentDefinition } from '@/lib/types';
 import type { Tool } from 'genkit/tool';
 import { ai } from '@/ai/genkit';
+import { calculator, webSearch } from './definitions';
 
-// This function now dynamically gets all tools registered with Genkit,
-// including those from MCP plugins.
-export async function getAllTools(): Promise<Tool<any, any>[]> {
-    // Note: This is a simplification. In a real complex app, you might need
-    // a more robust way to manage tools if they aren't all globally registered
-    // on the main `ai` object. For this project, this works perfectly.
-    const registeredTools = (await (ai as any).__tools);
-    return registeredTools || [];
+const allDefinedTools: Tool<any, any>[] = [calculator, webSearch];
+
+export function getAllTools(): Tool<any, any>[] {
+    return allDefinedTools;
 }
 
-export async function getToolMap(): Promise<Record<string, Tool<any, any>>> {
+export function getToolMap(): Record<string, Tool<any, any>> {
     const toolMap: Record<string, Tool<any, any>> = {};
-    const allTools = await getAllTools();
+    const allTools = getAllTools();
     allTools.forEach(tool => {
         if (tool.name) {
             toolMap[tool.name] = tool;
@@ -25,9 +22,9 @@ export async function getToolMap(): Promise<Record<string, Tool<any, any>>> {
     return toolMap;
 }
 
-export async function getToolsForAgent(agent: AgentDefinition): Promise<Tool<any, any>[]> {
+export function getToolsForAgent(agent: AgentDefinition): Tool<any, any>[] {
   if (!agent.tools || agent.tools.length === 0) return [];
-  const availableTools = await getToolMap();
+  const availableTools = getToolMap();
   
   return agent.tools
     .map(toolName => availableTools[toolName])

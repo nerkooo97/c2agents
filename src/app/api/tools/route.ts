@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server';
 import { getAllTools } from '@/ai/tools';
+import { z } from 'zod';
 
 export async function GET() {
   try {
-    const allTools = await getAllTools();
+    const allTools = getAllTools();
     const toolInfo = allTools.map(tool => ({
       name: tool.name || 'Unknown Tool',
       description: tool.info?.description ?? 'No description available.',
+      // We can also include input/output schemas if needed for the UI
+      inputSchema: z.ZodTypeAny.is(tool.info.inputSchema) ? (tool.info.inputSchema as z.ZodTypeAny).description : null,
+      outputSchema: z.ZodTypeAny.is(tool.info.outputSchema) ? (tool.info.outputSchema as z.ZodTypeAny).description : null,
     }));
     return NextResponse.json(toolInfo);
   } catch (error) {
