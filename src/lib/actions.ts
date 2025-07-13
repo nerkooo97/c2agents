@@ -45,37 +45,33 @@ export async function runAgent(
   sessionId?: string
 ): Promise<{ response?: string; steps?: ExecutionStep[]; error?: string }> {
   const startTime = Date.now();
+  const agent = getAgent(agentName);
+  
+  if (!agent) {
+    return { error: `Agent '${agentName}' not found.` };
+  }
+  
   try {
-    const agent = getAgent(agentName);
-    if (!agent) {
-      throw new Error(`Agent '${agentName}' not found.`);
-    }
-
     let conversationHistory: Message[] = [];
     if (agent.enableMemory && sessionId) {
         const conversation = await db.conversation.findUnique({ where: { sessionId } });
         if (conversation) {
-            // Ensure messages are parsed correctly, even if it's already an object (which it shouldn't be but good to be safe)
-            if (typeof conversation.messages === 'string') {
-                try {
-                    const parsedMessages = JSON.parse(conversation.messages) as Message[];
-                    if(Array.isArray(parsedMessages)) {
-                        conversationHistory = parsedMessages;
-                    }
-                } catch (e) {
-                     console.error("Error parsing conversation history from DB:", e);
+            try {
+                const parsedMessages = JSON.parse(conversation.messages) as Message[];
+                if (Array.isArray(parsedMessages)) {
+                    conversationHistory = parsedMessages;
                 }
+            } catch (e) {
+                 console.error("Error parsing conversation history from DB:", e);
             }
         }
     }
     
-    const steps: ExecutionStep[] = [];
-
-    steps.push({
+    const steps: ExecutionStep[] = [{
       type: 'prompt',
       title: 'User Prompt',
       content: prompt,
-    });
+    }];
     
     const agentTools = getToolsForAgent(agent);
 
@@ -88,11 +84,11 @@ export async function runAgent(
       model: getModelReference(agent.model),
       history: conversationHistory,
     });
-
+    
     const endTime = Date.now();
     const latency = endTime - startTime;
-
     const usage = genkitResponse.usage;
+
     await db.agentExecutionLog.create({
         data: {
             agentName,
@@ -150,15 +146,15 @@ export async function runAgent(
         });
     }
 
-
     return {
       response: finalResponse,
       steps: steps,
     };
+
   } catch (error) {
     const endTime = Date.now();
     const latency = endTime - startTime;
-    console.error('Error running agent:', error);
+    console.error(`[runAgent Error] for agent '${agentName}':`, error);
     const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
     
     await db.agentExecutionLog.create({
