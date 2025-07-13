@@ -34,6 +34,7 @@ async function getAgent(name: string): Promise<AgentDefinition | undefined> {
         const indexPath = path.join(agentsDir, folderName, 'index.ts');
         if (fs.existsSync(indexPath)) {
             try {
+                // Use a dynamic import with a cache-busting query here as well for consistency
                 const { default: agent } = await import(`@/agents/${folderName}?update=${Date.now()}`);
                 if (agent && agent.name === name) {
                     return agent;
