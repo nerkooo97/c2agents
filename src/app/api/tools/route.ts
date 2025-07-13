@@ -8,8 +8,10 @@ export async function GET() {
     const toolInfo = allTools.map(tool => ({
       name: tool.name || 'Unknown Tool',
       description: tool.description ?? 'No description available.',
-      inputSchema: z.ZodTypeAny.is(tool.inputSchema) ? (tool.inputSchema as z.ZodTypeAny).description : null,
-      outputSchema: z.ZodTypeAny.is(tool.outputSchema) ? (tool.outputSchema as z.ZodTypeAny).description : null,
+      // The following lines were causing a crash if a schema was undefined.
+      // The UI can function with just the name and description.
+      inputSchema: (tool.inputSchema as z.ZodTypeAny)?.description,
+      outputSchema: (tool.outputSchema as z.ZodTypeAny)?.description,
     }));
     return NextResponse.json(toolInfo);
   } catch (error) {
