@@ -749,7 +749,7 @@ export default function AgentsDashboardPage() {
         </div>
       </header>
       <main className="flex-1 p-4 md:p-6 space-y-8">
-        <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b pb-6">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">Agents Dashboard</h1>
                 <p className="text-muted-foreground">Create, manage, and test your AI agents.</p>
