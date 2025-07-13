@@ -51,6 +51,9 @@ async function getAgent(name: string): Promise<AgentDefinition | undefined> {
 
 // Helper to construct the full model reference string
 const getModelReference = (modelName: string): string => {
+    if (modelName.includes('/')) {
+        return modelName; // Already a full path
+    }
     if (modelName.startsWith('gemini')) {
         return `googleai/${modelName}`;
     }
