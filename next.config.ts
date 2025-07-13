@@ -34,6 +34,8 @@ const nextConfig: NextConfig = {
         // Genkit MCP and its dependencies are server-only
         'genkitx-mcp': false,
         'node-pty': false,
+        // Genkit core tries to load this optional dependency.
+        '@genkit-ai/firebase': false,
       };
     }
     return config;
