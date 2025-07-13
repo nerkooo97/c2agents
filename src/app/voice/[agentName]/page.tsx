@@ -38,7 +38,7 @@ export default function VoiceChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [ttsModel, setTtsModel] = useState('gpt-4o');
   const [subtitle, setSubtitle] = useState("I'm ready to help.");
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string>('');
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const audioQueueRef = useRef<HTMLAudioElement[]>([]);
@@ -81,8 +81,8 @@ export default function VoiceChatPage() {
     }
   }, [toast]);
 
-  const processRequest = useCallback(async (text: string) => {
-    if (!agentName || !sessionId || !text.trim()) {
+  const processRequest = useCallback(async (text: string, currentSessionId: string) => {
+    if (!agentName || !currentSessionId || !text.trim()) {
       setConversationState('idle');
       return;
     }
@@ -94,7 +94,7 @@ export default function VoiceChatPage() {
     setMessages(prev => [...prev, userMessage]);
 
     try {
-      const agentResult = await runAgent(agentName, text, sessionId);
+      const agentResult = await runAgent(agentName, text, currentSessionId);
       if (agentResult.error) throw new Error(agentResult.error);
       
       const responseText = agentResult.response ?? "I didn't get a response.";
@@ -123,7 +123,7 @@ export default function VoiceChatPage() {
       toast({ variant: 'destructive', title: 'Error processing request', description: errorMessage });
       setConversationState('idle');
     }
-  }, [agentName, sessionId, ttsModel, toast, processQueue]);
+  }, [agentName, ttsModel, toast, processQueue]);
 
    useEffect(() => {
     if (!SpeechRecognitionAPI) {
@@ -131,7 +131,7 @@ export default function VoiceChatPage() {
       toast({ variant: 'destructive', title: 'Unsupported Browser', description: "Speech recognition is not supported in this browser." });
       return;
     }
-
+    
     const newSessionId = crypto.randomUUID();
     setSessionId(newSessionId);
 
@@ -156,8 +156,9 @@ export default function VoiceChatPage() {
 
     recognition.onend = () => {
         const finalTranscript = transcriptRef.current.trim();
+        // Check conversation state to avoid processing on abort
         if (conversationState === 'listening' && finalTranscript) {
-          processRequest(finalTranscript);
+          processRequest(finalTranscript, newSessionId);
         } else {
           setConversationState('idle');
         }
@@ -174,7 +175,8 @@ export default function VoiceChatPage() {
     return () => {
       recognition.stop();
     };
-  }, [agentDisplayName, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleToggleListening = () => {
     const recognition = recognitionRef.current;
@@ -193,6 +195,7 @@ export default function VoiceChatPage() {
       }
     } else if (conversationState === 'listening') {
       recognition.stop();
+      // onend will handle the state transition
     }
   };
   

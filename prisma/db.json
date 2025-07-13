@@ -341,6 +341,16 @@
       "inputTokens": 54,
       "outputTokens": 11,
       "totalTokens": 65
+    },
+    {
+      "id": "c7531296-88fc-4039-8632-7fff2410ad5d",
+      "timestamp": "2025-07-13T20:11:33.228Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 3002,
+      "inputTokens": 60,
+      "outputTokens": 33,
+      "totalTokens": 93
     }
   ],
   "conversations": [
@@ -457,6 +467,12 @@
       "messages": "[{\"role\":\"user\",\"content\":\"hey what is your role\"},{\"role\":\"model\",\"content\":\"Hey! I'm here to provide information, answer questions, and help with anything you need. How can I assist you today?\"}]",
       "createdAt": "2025-07-13T19:24:16.688Z",
       "updatedAt": "2025-07-13T19:24:16.688Z"
+    },
+    {
+      "sessionId": "ad8b4cd6-4bdf-49ff-a15f-b4b04f463f2b",
+      "messages": "[{\"role\":\"user\",\"content\":\"koaj je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Moja uloga je da ti pomognem s informacijama, odgovorim na pitanja i pružim podršku u razgovoru. Kako ti mogu pomoći danas?\"}]",
+      "createdAt": "2025-07-13T20:11:33.235Z",
+      "updatedAt": "2025-07-13T20:11:33.235Z"
     }
   ]
 }
