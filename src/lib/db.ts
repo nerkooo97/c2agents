@@ -13,7 +13,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import type { WorkflowDefinition, AgentExecutionLog, Conversation, Message, PlanStep } from '@/lib/types';
+import type { WorkflowDefinition, AgentExecutionLog, Conversation, Message, PlanStep, KnowledgeDocument } from '@/lib/types';
 
 const dbPath = path.join(process.cwd(), 'prisma', 'db.json');
 
@@ -21,6 +21,7 @@ interface DbData {
     workflows: WorkflowDefinition[];
     agentExecutionLogs: AgentExecutionLog[];
     conversations: Conversation[];
+    knowledge: KnowledgeDocument[];
 }
 
 // Helper to read the database file
@@ -31,7 +32,9 @@ async function readDb(): Promise<DbData> {
     } catch (error) {
         // If the file doesn't exist, return a default structure
         if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-            return { workflows: [], agentExecutionLogs: [], conversations: [] };
+            const defaultData = { workflows: [], agentExecutionLogs: [], conversations: [], knowledge: [] };
+            await writeDb(defaultData);
+            return defaultData;
         }
         throw error;
     }
@@ -159,27 +162,28 @@ const db = {
         },
     },
     knowledge: {
-        async findMany(query?: { orderBy?: { createdAt: 'desc' } }): Promise<any[]> {
+        async findMany(query?: { orderBy?: { createdAt: 'desc' } }): Promise<KnowledgeDocument[]> {
              const data = await readDb();
-             let docs = (data as any).knowledge || [];
+             let docs = data.knowledge || [];
              if (query?.orderBy?.createdAt === 'desc') {
-                docs.sort((a:any,b:any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                docs.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
             }
             return docs;
         },
-        async create(query: { data: { filename: string, content: string } }): Promise<void> {
-             let data = await readDb() as any;
+        async create(query: { data: { filename: string, content: string } }): Promise<KnowledgeDocument> {
+             let data = await readDb();
              if (!data.knowledge) data.knowledge = [];
-             const newDoc = {
+             const newDoc: KnowledgeDocument = {
                 id: crypto.randomUUID(),
+                ...query.data,
                 createdAt: new Date(),
-                ...query.data
              };
              data.knowledge.push(newDoc);
              await writeDb(data);
+             return newDoc;
         },
         async delete(query: { where: { id: string } }): Promise<void> {
-             let data = await readDb() as any;
+             let data = await readDb();
              if (!data.knowledge) return;
              
              const initialLength = data.knowledge.length;

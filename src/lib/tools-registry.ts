@@ -24,7 +24,7 @@ export async function loadTools(): Promise<ToolDefinition[]> {
             const indexPath = path.join(toolsDir, folderName, 'index.ts');
             try {
                 // Dynamically import to get the latest version of the file
-                const { default: tool } = await import(`@/tools/${folderName}`);
+                const { default: tool } = await import(`@/tools/${folderName}?update=${Date.now()}`);
                 if (tool) {
                     tools.push(tool);
                 }

@@ -207,7 +207,7 @@ export const ToolFormSchema = z.object({
       }
   }).refine(data => ToolEnvSchema.safeParse(data).success, {
       message: "Invalid environment variable format."
-  }),
+  }).optional(),
   enabled: z.boolean().default(true),
 });
 
