@@ -3,27 +3,28 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
+import type { Message } from '@/lib/types'
+import { runAgent } from '@/lib/actions'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, Mic, MicOff, Settings } from 'lucide-react'
+import { ArrowLeft, Mic, MicOff, Settings, TestTube2, ChevronsUpDown } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import type { Message } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
-import { runAgent } from '@/lib/actions';
 
 type ConversationState = 'idle' | 'listening' | 'processing' | 'speaking';
 
-const SpeechRecognition =
+const SpeechRecognitionAPI =
   typeof window !== 'undefined'
     ? window.SpeechRecognition || window.webkitSpeechRecognition
     : null;
 
 export default function VoiceChatPage() {
   const params = useParams();
+  const router = useRouter();
   const agentName = decodeURIComponent(Array.isArray(params.agentName) ? params.agentName[0] : (params.agentName as string) || '');
   
   const [conversationState, setConversationState] = useState<ConversationState>('idle');
@@ -37,7 +38,6 @@ export default function VoiceChatPage() {
   const audioQueueRef = useRef<HTMLAudioElement[]>([]);
   const isPlayingRef = useRef(false);
   const transcriptRef = useRef('');
-  const processRequestRef = useRef<(text: string) => Promise<void>>(async () => {});
   
   const { toast } = useToast();
   
@@ -47,6 +47,7 @@ export default function VoiceChatPage() {
     if (isPlayingRef.current || audioQueueRef.current.length === 0) {
       if (!isPlayingRef.current) {
          setConversationState('idle');
+         setSubtitle("Tap the mic to speak.");
       }
       return;
     }
@@ -61,16 +62,18 @@ export default function VoiceChatPage() {
         isPlayingRef.current = false;
         processQueue();
       };
-      audio.onerror = () => {
-        console.error("Error playing audio.");
+      audio.onerror = (e) => {
+        console.error("Error playing audio.", e);
+        toast({ variant: 'destructive', title: 'Audio Error', description: "Could not play the agent's response." });
         isPlayingRef.current = false;
         processQueue();
       }
     } else {
         isPlayingRef.current = false;
         setConversationState('idle');
+        setSubtitle("Tap the mic to speak.");
     }
-  }, []);
+  }, [toast]);
 
   const processRequest = useCallback(async (text: string) => {
     if (!agentName || !sessionId || !text.trim()) {
@@ -116,66 +119,59 @@ export default function VoiceChatPage() {
     }
   }, [agentName, sessionId, ttsModel, toast, processQueue]);
 
-  processRequestRef.current = processRequest;
-
   useEffect(() => {
-    if (typeof window === 'undefined' || !SpeechRecognition) {
+    if (!SpeechRecognitionAPI) {
       setIsSupported(false);
+      toast({ variant: 'destructive', title: 'Unsupported Browser', description: "Speech recognition is not supported in this browser." });
       return;
     }
-
-    if (!sessionId) {
-      setSessionId(crypto.randomUUID());
-    }
+    
+    const newSessionId = crypto.randomUUID();
+    setSessionId(newSessionId);
     
     const initialMessage = `Hello! I'm the ${agentDisplayName}. How can I help you today?`;
     setMessages([{ role: 'model', content: initialMessage }]);
     setSubtitle(initialMessage);
-    
-    const recognition = new SpeechRecognition();
+
+    const recognition = new SpeechRecognitionAPI();
     recognition.continuous = false;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
     recognitionRef.current = recognition;
 
-    const handleResult = (event: SpeechRecognitionEvent) => {
-      let interim = '';
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      let interimTranscript = '';
       for (let i = event.resultIndex; i < event.results.length; ++i) {
-        interim += event.results[i][0].transcript;
+        interimTranscript += event.results[i][0].transcript;
       }
-      transcriptRef.current = interim;
-      setSubtitle(interim || '...');
+      transcriptRef.current = interimTranscript;
+      setSubtitle(interimTranscript || '...');
     };
 
-    const handleEnd = () => {
-      const finalTranscript = transcriptRef.current.trim();
-      if (conversationState === 'listening' && finalTranscript) {
-        processRequestRef.current(finalTranscript);
-      } else {
-        setConversationState('idle');
+    recognition.onend = () => {
+      if (conversationState === 'listening') {
+        const finalTranscript = transcriptRef.current.trim();
+        if (finalTranscript) {
+          processRequest(finalTranscript);
+        } else {
+          setConversationState('idle');
+          setSubtitle("Didn't catch that. Please try again.");
+        }
       }
     };
-    
-    const handleError = (event: SpeechRecognitionErrorEvent) => {
+
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+      console.error('Speech recognition error', event.error);
       if (event.error !== 'no-speech' && event.error !== 'aborted') {
-        toast({ variant: "destructive", title: "Speech Recognition Error", description: event.error });
+        toast({ variant: 'destructive', title: 'Speech Recognition Error', description: event.error });
       }
       setConversationState('idle');
     };
 
-    recognition.addEventListener('result', handleResult);
-    recognition.addEventListener('end', handleEnd);
-    recognition.addEventListener('error', handleError);
-
     return () => {
       recognition.stop();
-      recognition.removeEventListener('result', handleResult);
-      recognition.removeEventListener('end', handleEnd);
-      recognition.removeEventListener('error', handleError);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+  }, [agentDisplayName, toast, processRequest, conversationState]);
 
   const handleToggleListening = () => {
     const recognition = recognitionRef.current;
@@ -187,12 +183,13 @@ export default function VoiceChatPage() {
         setConversationState('listening');
         setSubtitle('Listening...');
         recognition.start();
-      } catch(e) {
+      } catch (e) {
         console.error("Error starting recognition:", e);
+        toast({ variant: 'destructive', title: 'Recognition Error', description: "Could not start listening." });
         setConversationState('idle');
       }
     } else if (conversationState === 'listening') {
-       recognition.stop();
+      recognition.stop();
     }
   };
   
@@ -206,6 +203,21 @@ export default function VoiceChatPage() {
              </Button>
           </Link>
           <h1 className="text-lg font-semibold capitalize">{agentDisplayName}</h1>
+        </div>
+        <div className="flex items-center gap-2">
+           <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm"><ChevronsUpDown className="mr-2 h-4 w-4" /> Voice Chat</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => router.push(`/test/${agentName}`)}>
+                    <TestTube2 className="mr-2 h-4 w-4" /> Text Chat
+                  </DropdownMenuItem>
+                   <DropdownMenuItem disabled>
+                    <Mic className="mr-2 h-4 w-4" /> Voice Chat
+                  </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
         </div>
       </header>
       <main className="flex-1 flex items-center justify-center p-4 lg:p-6">
@@ -275,3 +287,5 @@ export default function VoiceChatPage() {
     </div>
   )
 }
+
+    
