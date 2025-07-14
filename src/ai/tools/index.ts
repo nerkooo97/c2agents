@@ -3,9 +3,16 @@
 import type { AgentDefinition } from '@/lib/types';
 import type { Tool } from 'genkit/tool';
 import { ai } from '@/ai/genkit';
-import { calculator, webSearch } from './definitions';
+import { calculator, webSearch, navigateToUrlTool, clickElementTool, typeTextTool, readPageContentTool } from './definitions';
 
-const allDefinedTools: Tool<any, any>[] = [calculator, webSearch];
+const allDefinedTools: Tool<any, any>[] = [
+    calculator, 
+    webSearch,
+    navigateToUrlTool,
+    clickElementTool,
+    typeTextTool,
+    readPageContentTool,
+];
 
 export function getAllTools(): Tool<any, any>[] {
     return allDefinedTools;

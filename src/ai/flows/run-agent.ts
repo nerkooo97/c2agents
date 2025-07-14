@@ -6,6 +6,7 @@ import { ai } from '@/ai/genkit';
 import type { Tool } from 'genkit/tool';
 import type { GenerateResponse, MessageData, ModelReference } from 'genkit';
 import type { Message } from '@/lib/types';
+import { runInAction } from 'genkit';
 
 interface RunAgentConfig {
     systemPrompt: string;
@@ -15,9 +16,20 @@ interface RunAgentConfig {
     tools: Tool<any, any>[];
     model: string;
     history?: Message[];
+    traceId?: string; // Add traceId to manage stateful tools like the browser
 }
 
-export async function runAgentWithConfig({ systemPrompt, constraints, responseFormat, userInput, tools, model, history }: RunAgentConfig): Promise<GenerateResponse> {
+export async function runAgentWithConfig({ 
+    systemPrompt, 
+    constraints, 
+    responseFormat, 
+    userInput, 
+    tools, 
+    model, 
+    history,
+    traceId,
+}: RunAgentConfig): Promise<GenerateResponse> {
+
   const genkitHistory: MessageData[] | undefined = history?.map((msg) => ({
     role: msg.role,
     content: [{ text: msg.content }],
@@ -40,7 +52,9 @@ export async function runAgentWithConfig({ systemPrompt, constraints, responseFo
     history: genkitHistory,
     config: {
         responseFormat: responseFormat,
-    }
+    },
+    // Pass the traceId to the context of the tool execution environment
+    context: traceId ? { traceId } : undefined,
   });
 
   return response;

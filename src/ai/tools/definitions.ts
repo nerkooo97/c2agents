@@ -6,6 +6,13 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import { 
+    navigateToUrlTool,
+    typeTextTool,
+    clickElementTool,
+    readPageContentTool,
+} from './browser';
+
 
 // Calculator Tool
 export const calculator = ai.defineTool(
@@ -73,3 +80,11 @@ export const webSearch = ai.defineTool(
         };
     }
 );
+
+// Export all browser tools as well
+export {
+    navigateToUrlTool,
+    typeTextTool,
+    clickElementTool,
+    readPageContentTool,
+};

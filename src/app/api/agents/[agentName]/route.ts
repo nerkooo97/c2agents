@@ -4,6 +4,7 @@ import { ai } from '@/ai/genkit';
 import type { AgentDefinition, Message } from '@/lib/types';
 import db from '@/lib/db';
 import type { ModelReference } from 'genkit/model';
+import { closeBrowser } from '@/ai/tools/browser';
 
 // Explicitly import all agent definitions for reliability
 import myAgent from '@/agents/my-agent';
@@ -11,13 +12,15 @@ import nonApiAgent from '@/agents/non-api-agent';
 import openaiAgent from '@/agents/openai';
 import realtimeVoiceAgent from '@/agents/realtime-voice-agent';
 import testAgent1 from '@/agents/test-agent-1';
+import browserAgent from '@/agents/browser-agent';
 
 const allAgents: AgentDefinition[] = [
     myAgent,
     nonApiAgent,
     openaiAgent,
     realtimeVoiceAgent,
-    testAgent1
+    testAgent1,
+    browserAgent
 ];
 
 function getAgent(name: string): AgentDefinition | undefined {
@@ -43,6 +46,9 @@ async function streamAgentResponse(request: NextRequest, agent: AgentDefinition)
   const body = await request.json();
   const { input, sessionId } = body;
   
+  // Use sessionID for traceId to maintain browser state across messages in a session
+  const traceId = sessionId || crypto.randomUUID();
+
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
@@ -84,7 +90,8 @@ async function streamAgentResponse(request: NextRequest, agent: AgentDefinition)
             history: conversationHistory.map(m => ({ role: m.role, content: [{text: m.content}]})),
             config: {
                 responseFormat: agent.responseFormat,
-            }
+            },
+            context: { traceId }, // Pass traceId here
         });
 
         for await (const chunk of responseStream) {
@@ -146,6 +153,9 @@ async function streamAgentResponse(request: NextRequest, agent: AgentDefinition)
         });
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: errorMessage })}\n\n`));
       } finally {
+        if (agent.tools.includes('navigateToUrl')) {
+          await closeBrowser(traceId);
+        }
         controller.close();
       }
     },

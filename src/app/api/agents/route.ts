@@ -7,6 +7,7 @@ import nonApiAgent from '@/agents/non-api-agent';
 import openaiAgent from '@/agents/openai';
 import realtimeVoiceAgent from '@/agents/realtime-voice-agent';
 import testAgent1 from '@/agents/test-agent-1';
+import browserAgent from '@/agents/browser-agent';
 
 
 // Create a static list of all agents
@@ -15,7 +16,8 @@ const allAgents: AgentDefinition[] = [
     nonApiAgent,
     openaiAgent,
     realtimeVoiceAgent,
-    testAgent1
+    testAgent1,
+    browserAgent
 ];
 
 function loadAgents(): AgentDefinition[] {

@@ -8,7 +8,6 @@ export interface Message {
 
 export interface Conversation {
   sessionId: string;
-  agentName: string; // Dodano za per-agent memoriju
   messages: string; // Stored as a JSON string
   createdAt: Date;
   updatedAt: Date;
