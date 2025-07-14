@@ -39,7 +39,7 @@ export async function GET() {
     });
     return NextResponse.json(toolInfo);
   } catch (error) {
-      console.error("Error fetching tools:", error);
+      console.error("Error fetching Genkit tools:", error);
       const errorMessage = error instanceof Error ? error.message : "An internal server error occurred."
       return NextResponse.json({ error: errorMessage }, { status: 500 });
   }

@@ -332,8 +332,8 @@ const AgentForm = ({
           render={() => (
             <FormItem>
               <div className="mb-4">
-                <FormLabel>Tools (from MCP Servers)</FormLabel>
-                <FormDescription>Select the tools this agent can use. These are provided by your configured MCP servers.</FormDescription>
+                <FormLabel>Genkit Tools</FormLabel>
+                <FormDescription>Select the TypeScript functions this agent can use.</FormDescription>
               </div>
               <div className="grid grid-cols-2 gap-4 max-h-48 overflow-y-auto p-1 rounded-md border">
                 {availableTools.length > 0 ? availableTools.map((tool) => (
@@ -361,7 +361,7 @@ const AgentForm = ({
                     )}
                   />
                 )) : (
-                    <p className="text-sm text-muted-foreground p-2 col-span-2 text-center">No tools available from MCP servers.</p>
+                    <p className="text-sm text-muted-foreground p-2 col-span-2 text-center">No Genkit tools available.</p>
                 )}
               </div>
               <FormMessage />
