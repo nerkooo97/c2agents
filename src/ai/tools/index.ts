@@ -5,8 +5,7 @@ import type { Tool } from 'genkit/tool';
 import { ai } from '@/ai/genkit';
 import { calculator, webSearch, navigateToUrlTool, clickElementTool, typeTextTool, readPageContentTool } from './definitions';
 
-// This list is now the single source of truth for tool names.
-export const allDefinedTools: Tool<any, any>[] = [
+const allDefinedTools: Tool<any, any>[] = [
     calculator, 
     webSearch,
     navigateToUrlTool,
@@ -15,10 +14,14 @@ export const allDefinedTools: Tool<any, any>[] = [
     readPageContentTool,
 ];
 
-// The map is still useful for server-side actions to find tool functions.
+export function getAllTools(): Tool<any, any>[] {
+    return allDefinedTools;
+}
+
 export function getToolMap(): Record<string, Tool<any, any>> {
     const toolMap: Record<string, Tool<any, any>> = {};
-    allDefinedTools.forEach(tool => {
+    const allTools = getAllTools();
+    allTools.forEach(tool => {
         if (tool.name) {
             toolMap[tool.name] = tool;
         }
