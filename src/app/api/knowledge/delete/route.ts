@@ -1,5 +1,3 @@
-// This is a new file for the RAG Knowledge Base API.
-'use server';
 
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';

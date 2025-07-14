@@ -1,34 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { AgentDefinition } from '@/lib/types';
-
-// Explicitly import all agent definitions
-import myAgent from '@/agents/my-agent';
-import nonApiAgent from '@/agents/non-api-agent';
-import openaiAgent from '@/agents/openai';
-import realtimeVoiceAgent from '@/agents/realtime-voice-agent';
-import testAgent1 from '@/agents/test-agent-1';
-import browserAgent from '@/agents/browser-agent';
-
-
-// Create a static list of all agents
-const allAgents: AgentDefinition[] = [
-    myAgent,
-    nonApiAgent,
-    openaiAgent,
-    realtimeVoiceAgent,
-    testAgent1,
-    browserAgent
-];
-
-function loadAgents(): AgentDefinition[] {
-    // Sort agents by name for consistent ordering
-    allAgents.sort((a, b) => a.name.localeCompare(b.name));
-    return allAgents;
-}
-
+import { loadAgents } from '@/lib/agent-registry';
 
 export async function GET() {
-  const agents = loadAgents();
+  const agents = await loadAgents();
   // We map to AgentDefinition to send the full agent data to the dashboard
   // In a real app with sensitive data, this would be a different, public type.
   const agentInfos: AgentDefinition[] = agents.map(agent => ({

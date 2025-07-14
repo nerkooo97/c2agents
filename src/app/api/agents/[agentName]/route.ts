@@ -1,31 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getToolsForAgent } from '@/ai/tools';
+import { getToolsForAgent, getAllTools } from '@/ai/tools';
 import { ai } from '@/ai/genkit';
 import type { AgentDefinition, Message } from '@/lib/types';
 import db from '@/lib/db';
 import type { ModelReference } from 'genkit/model';
 import { closeBrowser } from '@/ai/tools/browser';
+import { getAgentDefinition } from '@/lib/agent-registry';
 
-// Explicitly import all agent definitions for reliability
-import myAgent from '@/agents/my-agent';
-import nonApiAgent from '@/agents/non-api-agent';
-import openaiAgent from '@/agents/openai';
-import realtimeVoiceAgent from '@/agents/realtime-voice-agent';
-import testAgent1 from '@/agents/test-agent-1';
-import browserAgent from '@/agents/browser-agent';
-
-const allAgents: AgentDefinition[] = [
-    myAgent,
-    nonApiAgent,
-    openaiAgent,
-    realtimeVoiceAgent,
-    testAgent1,
-    browserAgent
-];
-
-function getAgent(name: string): AgentDefinition | undefined {
-    return allAgents.find(agent => agent.name === name);
-}
 
 // Helper to construct the full model reference string
 const getModelReference = (modelName: string): string => {
@@ -35,9 +16,11 @@ const getModelReference = (modelName: string): string => {
     if (modelName.startsWith('gemini')) {
         return `googleai/${modelName}`;
     }
+    // All gpt models from openAI need the prefix.
     if (modelName.startsWith('gpt')) {
         return `openai/${modelName}`;
     }
+    // Fallback for custom models or other providers
     return modelName;
 };
 
@@ -79,17 +62,19 @@ async function streamAgentResponse(request: NextRequest, agent: AgentDefinition)
         if (agent.responseFormat === 'json') {
             fullSystemPrompt += `\n\n## RESPONSE FORMAT\nYou MUST provide your final response in a valid JSON format. Do not include any explanatory text before or after the JSON object.`;
         }
-
-        const agentTools = getToolsForAgent(agent);
         
-        const { stream: responseStream, response: responsePromise } = ai.generateStream({
+        // Load only the tools required by this agent.
+        const allAvailableTools = getAllTools();
+        const agentTools = getToolsForAgent(agent, allAvailableTools);
+        
+        const { stream: responseStream, response: responsePromise } = await ai.generateStream({
             model: getModelReference(agent.model) as ModelReference<any>,
             system: fullSystemPrompt,
             prompt: input,
             tools: agentTools,
             history: conversationHistory.map(m => ({ role: m.role, content: [{text: m.content}]})),
             config: {
-                responseFormat: agent.responseFormat,
+                responseFormat: agent.responseFormat as any,
             },
             context: { traceId }, // Pass traceId here
         });
@@ -153,9 +138,9 @@ async function streamAgentResponse(request: NextRequest, agent: AgentDefinition)
         });
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: errorMessage })}\n\n`));
       } finally {
-        if (agent.tools.includes('navigateToUrl')) {
-          await closeBrowser(traceId);
-        }
+        // Since we are using a shared browser state managed by the workflow,
+        // we should not close it here after a single agent run in a session.
+        // The workflow flow is responsible for cleanup.
         controller.close();
       }
     },
@@ -176,7 +161,7 @@ export async function POST(
 ) {
   try {
     const agentName = decodeURIComponent(params.agentName);
-    const agent = getAgent(agentName);
+    const agent = await getAgentDefinition(agentName);
 
     if (!agent) {
       console.error(`[API POST] Agent '${agentName}' not found.`);

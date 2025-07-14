@@ -1,5 +1,4 @@
 
-'use server';
 
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
@@ -28,7 +27,8 @@ export async function POST(request: Request) {
         const newWorkflow = await db.workflow.create({
             data: {
                 ...workflowData,
-                planSteps: JSON.stringify(workflowData.planSteps),
+                nodes: JSON.stringify(workflowData.nodes),
+                edges: JSON.stringify(workflowData.edges),
             }
         });
         

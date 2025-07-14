@@ -8,7 +8,7 @@
  *
  * To run this server, use the command: `npm run mcp:serve`
  */
-import { ai } from '@/ai/genkit';
+import { getAi } from '@/ai/genkit';
 import { mcpServer } from 'genkitx-mcp';
 
 // Define the name and version for your MCP server
@@ -17,8 +17,13 @@ const serverOptions = {
   version: '0.0.1',
 };
 
-// Start the MCP server, passing in the main `ai` instance.
-// This will automatically discover and expose all defined tools and prompts.
-mcpServer(ai, serverOptions).start();
+async function startServer() {
+  const ai = await getAi();
+  // Start the MCP server, passing in the main `ai` instance.
+  // This will automatically discover and expose all defined tools and prompts.
+  mcpServer(ai, serverOptions).start();
 
-console.log(`MCP server '${serverOptions.name}' is running.`);
+  console.log(`MCP server '${serverOptions.name}' is running.`);
+}
+
+startServer();

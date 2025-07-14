@@ -326,14 +326,16 @@ const AgentForm = ({
                 </FormItem>
             )}
         />
+        
+        
         <FormField
-          control={form.control}
-          name="tools"
-          render={() => (
+            control={form.control}
+            name="tools"
+            render={() => (
             <FormItem>
               <div className="mb-4">
-                <FormLabel>Genkit Tools</FormLabel>
-                <FormDescription>Select the TypeScript functions this agent can use.</FormDescription>
+                <FormLabel>Available Tools</FormLabel>
+                <FormDescription>Select the Genkit tools or Plugin tools this agent can use.</FormDescription>
               </div>
               <div className="grid grid-cols-2 gap-4 max-h-48 overflow-y-auto p-1 rounded-md border">
                 {availableTools.length > 0 ? availableTools.map((tool) => (
@@ -361,13 +363,14 @@ const AgentForm = ({
                     )}
                   />
                 )) : (
-                    <p className="text-sm text-muted-foreground p-2 col-span-2 text-center">No Genkit tools available.</p>
+                    <p className="text-sm text-muted-foreground p-2 col-span-2 text-center">No tools defined or loaded.</p>
                 )}
               </div>
               <FormMessage />
             </FormItem>
           )}
         />
+        
 
         <div className="flex space-x-8">
           <FormField
@@ -714,7 +717,7 @@ export default function AgentsDashboardPage() {
                 <Link href="/" className="rounded-lg px-3 py-1 bg-primary text-primary-foreground shadow-sm">Agents</Link>
                 <Link href="/composer" className="rounded-lg px-3 py-1 text-muted-foreground transition-colors hover:text-foreground">Composer</Link>
                 <Link href="/knowledge" className="rounded-lg px-3 py-1 text-muted-foreground transition-colors hover:text-foreground">Knowledge</Link>
-                <Link href="/tools" className="rounded-lg px-3 py-1 text-muted-foreground transition-colors hover:text-foreground">MCP Tools</Link>
+                <Link href="/plugins" className="rounded-lg px-3 py-1 text-muted-foreground transition-colors hover:text-foreground">Plugins</Link>
                 <Link href="/analytics" className="rounded-lg px-3 py-1 text-muted-foreground transition-colors hover:text-foreground">Analytics</Link>
             </nav>
         </div>
@@ -732,7 +735,7 @@ export default function AgentsDashboardPage() {
                     <DropdownMenuItem asChild><Link href="/">Agents</Link></DropdownMenuItem>
                     <DropdownMenuItem asChild><Link href="/composer">Composer</Link></DropdownMenuItem>
                      <DropdownMenuItem asChild><Link href="/knowledge">Knowledge</Link></DropdownMenuItem>
-                     <DropdownMenuItem asChild><Link href="/tools">MCP Tools</Link></DropdownMenuItem>
+                     <DropdownMenuItem asChild><Link href="/plugins">Plugins</Link></DropdownMenuItem>
                     <DropdownMenuItem asChild><Link href="/analytics">Analytics</Link></DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>

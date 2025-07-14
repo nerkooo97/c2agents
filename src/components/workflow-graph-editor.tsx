@@ -45,6 +45,7 @@ const WorkflowGraphEditor: React.FC<WorkflowGraphEditorProps> = ({
                 defaultEdgeOptions={defaultEdgeOptions}
                 fitView
                 className="bg-muted"
+                proOptions={{ hideAttribution: true }}
             >
                 <Controls />
                 <Background variant="lines" gap={24} size={1} color="hsl(var(--border))" />

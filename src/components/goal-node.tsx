@@ -3,12 +3,21 @@
 
 import { Handle, Position, type NodeProps } from 'reactflow';
 import { Target } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Card } from '@/components/ui/card';
 
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+interface GoalNodeData {
+    isExecuting: boolean;
+}
 
-const GoalNode = ({ data }: NodeProps) => {
+const GoalNode = ({ data }: NodeProps<GoalNodeData>) => {
+    const { isExecuting } = data;
+    
     return (
-        <Card className="p-4 border-dashed border-primary shadow-lg rounded-lg w-80 bg-card/50">
+        <Card className={cn(
+            "p-4 border-dashed border-primary shadow-lg rounded-lg w-80 bg-card/50 transition-all duration-300",
+             isExecuting && "border-2 border-primary ring-4 ring-primary/20 animate-pulse"
+        )}>
             <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                     <Target className="h-6 w-6 text-primary" />

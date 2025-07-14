@@ -1,4 +1,4 @@
-'use server';
+
 
 import { generateSpeech } from '@/ai/flows/text-to-speech';
 import { NextRequest, NextResponse } from 'next/server';

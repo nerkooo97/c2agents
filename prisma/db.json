@@ -13,6 +13,59 @@
           "task": ""
         }
       ]
+    },
+    {
+      "id": "8d4f354a-a39b-4d81-aa48-c3d7502cea89",
+      "name": "test flow",
+      "description": "test flow",
+      "goal": "koja je tvoja uloga",
+      "enableApiAccess": false,
+      "planSteps": "[{\"id\":\"node_1752603938714\",\"type\":\"agent\",\"agentName\":\"openai\"},{\"id\":\"node_1752603948897\",\"type\":\"agent\",\"agentName\":\"non-api-agent\"}]",
+      "createdAt": "2025-07-15T18:29:02.822Z",
+      "updatedAt": "2025-07-15T18:29:02.822Z"
+    },
+    {
+      "id": "b6d41459-a0a7-434e-bb55-b4c06090f13c",
+      "name": "test 123",
+      "description": "test 123",
+      "goal": "mozes li mi napisati jedan vic",
+      "enableApiAccess": false,
+      "planSteps": "[{\"id\":\"node_1752604502365\",\"type\":\"agent\",\"agentName\":\"openai\",\"task\":\"\"},{\"id\":\"node_1752604517398\",\"type\":\"agent\",\"agentName\":\"my-agent\",\"task\":\"\"}]",
+      "createdAt": "2025-07-15T18:37:57.254Z",
+      "updatedAt": "2025-07-15T18:54:38.983Z"
+    },
+    {
+      "id": "917b83dd-6781-4302-8c8a-ddd7cd92ffff",
+      "name": "Novi test",
+      "description": "Novi test",
+      "goal": "Matematicke operacije i psianej sala",
+      "enableApiAccess": false,
+      "nodes": "[{\"id\":\"goal_node\",\"type\":\"goalNode\",\"position\":{\"x\":50,\"y\":150},\"data\":{\"isExecuting\":false},\"deletable\":false,\"draggable\":false,\"width\":320,\"height\":78},{\"id\":\"node_1752606776530\",\"type\":\"customAgentNode\",\"position\":{\"x\":450,\"y\":50},\"data\":{\"agentName\":\"openai\",\"task\":\"\",\"availableAgents\":[{\"name\":\"browser-agent\",\"description\":\"An AI agent that can control a web browser to perform tasks.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are an AI agent that controls a web browser. Your goal is to fulfill the user's request.\\nYou have a set of tools to interact with the page: navigateToUrl, typeText, clickElement, and readPageContent.\\nFollow these steps in a loop:\\n1. Analyze the user's goal and the current page content (if any) to decide on the best single action (tool) to take.\\n2. After navigating or clicking, ALWAYS use the 'readPageContent' tool to observe the outcome and get new information for your next step.\\n3. When you believe the task is complete, respond directly to the user with a final confirmation message.\\n4. If you get stuck or cannot proceed, explain the issue to the user.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"\",\"tags\":[],\"icon\":\"Globe\",\"iconColor\":\"hsl(180 80% 40%)\"},{\"name\":\"my-agent\",\"description\":\"A helpful AI assistant that can use tools to answer questions.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a helpful AI assistant called MyAgent. You have access to a variety of tools to help answer user questions and complete tasks. When you use a tool, tell the user which tool you are using and what the result was.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[\"calculator\",\"webSearch\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"Tvoj zadatak je da izvrsis neku matematicku operaciju ako je to trazeno od tebe\",\"tags\":[],\"icon\":\"Bot\",\"iconColor\":\"hsl(221.2 83.2% 53.3%)\"},{\"name\":\"non-api-agent\",\"description\":\"An example of an agent not exposed via the API.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a document summarizer.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":false,\"defaultTask\":\"Tvoj osnovni zadatak je da napises neki vic ako se to od tebe trazi\",\"tags\":[],\"icon\":\"Book\",\"iconColor\":\"hsl(24.6 95.0% 53.1%)\"},{\"name\":\"openai\",\"description\":\"Calculator ai agent\",\"model\":\"gpt-4o\",\"systemPrompt\":\"Agent for calculate\",\"constraints\":\"You have access to the full conversation history. Always use previous messages to inform your answers. If the user asks about the conversation so far, summarize or recall what has been discussed.\",\"responseFormat\":\"json\",\"tools\":[\"calculator\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"Ti si agent koji ima ulogu da dodjeljuje zadatke drugim agentima na osnovu inputa koji dobijes.\",\"tags\":[],\"icon\":\"Rocket\",\"iconColor\":\"hsl(142.1 76.2% 36.3%)\"},{\"name\":\"Realtime Voice Agent\",\"description\":\"A voice-enabled agent for realtime conversations.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a helpful and friendly voice assistant. Your goal is to have a natural, real-time conversation. Keep your responses concise, conversational, and to the point. Do not use markdown or any special formatting.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":true,\"enableMemory\":true,\"defaultTask\":\"\",\"tags\":[],\"icon\":\"Mic\",\"iconColor\":\"hsl(333.3 83.3% 57.8%)\"},{\"name\":\"test agent 1\",\"description\":\"test agent\",\"model\":\"gpt-4o\",\"systemPrompt\":\"test agent\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":false,\"defaultTask\":\"Perform the test task as instructed.\",\"tags\":[],\"icon\":\"TestTube2\",\"iconColor\":\"hsl(262.1 83.3% 57.8%)\"}],\"isExecuting\":false},\"width\":320,\"height\":258},{\"id\":\"node_1752606780948\",\"type\":\"customAgentNode\",\"position\":{\"x\":919.0122386087553,\"y\":-95.29145997605383},\"data\":{\"agentName\":\"my-agent\",\"task\":\"\",\"availableAgents\":[{\"name\":\"browser-agent\",\"description\":\"An AI agent that can control a web browser to perform tasks.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are an AI agent that controls a web browser. Your goal is to fulfill the user's request.\\nYou have a set of tools to interact with the page: navigateToUrl, typeText, clickElement, and readPageContent.\\nFollow these steps in a loop:\\n1. Analyze the user's goal and the current page content (if any) to decide on the best single action (tool) to take.\\n2. After navigating or clicking, ALWAYS use the 'readPageContent' tool to observe the outcome and get new information for your next step.\\n3. When you believe the task is complete, respond directly to the user with a final confirmation message.\\n4. If you get stuck or cannot proceed, explain the issue to the user.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"\",\"tags\":[],\"icon\":\"Globe\",\"iconColor\":\"hsl(180 80% 40%)\"},{\"name\":\"my-agent\",\"description\":\"A helpful AI assistant that can use tools to answer questions.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a helpful AI assistant called MyAgent. You have access to a variety of tools to help answer user questions and complete tasks. When you use a tool, tell the user which tool you are using and what the result was.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[\"calculator\",\"webSearch\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"Tvoj zadatak je da izvrsis neku matematicku operaciju ako je to trazeno od tebe\",\"tags\":[],\"icon\":\"Bot\",\"iconColor\":\"hsl(221.2 83.2% 53.3%)\"},{\"name\":\"non-api-agent\",\"description\":\"An example of an agent not exposed via the API.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a document summarizer.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":false,\"defaultTask\":\"Tvoj osnovni zadatak je da napises neki vic ako se to od tebe trazi\",\"tags\":[],\"icon\":\"Book\",\"iconColor\":\"hsl(24.6 95.0% 53.1%)\"},{\"name\":\"openai\",\"description\":\"Calculator ai agent\",\"model\":\"gpt-4o\",\"systemPrompt\":\"Agent for calculate\",\"constraints\":\"You have access to the full conversation history. Always use previous messages to inform your answers. If the user asks about the conversation so far, summarize or recall what has been discussed.\",\"responseFormat\":\"json\",\"tools\":[\"calculator\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"Ti si agent koji ima ulogu da dodjeljuje zadatke drugim agentima na osnovu inputa koji dobijes.\",\"tags\":[],\"icon\":\"Rocket\",\"iconColor\":\"hsl(142.1 76.2% 36.3%)\"},{\"name\":\"Realtime Voice Agent\",\"description\":\"A voice-enabled agent for realtime conversations.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a helpful and friendly voice assistant. Your goal is to have a natural, real-time conversation. Keep your responses concise, conversational, and to the point. Do not use markdown or any special formatting.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":true,\"enableMemory\":true,\"defaultTask\":\"\",\"tags\":[],\"icon\":\"Mic\",\"iconColor\":\"hsl(333.3 83.3% 57.8%)\"},{\"name\":\"test agent 1\",\"description\":\"test agent\",\"model\":\"gpt-4o\",\"systemPrompt\":\"test agent\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":false,\"defaultTask\":\"Perform the test task as instructed.\",\"tags\":[],\"icon\":\"TestTube2\",\"iconColor\":\"hsl(262.1 83.3% 57.8%)\"}],\"isExecuting\":false},\"width\":320,\"height\":258,\"selected\":false,\"positionAbsolute\":{\"x\":919.0122386087553,\"y\":-95.29145997605383},\"dragging\":false},{\"id\":\"node_1752606792447\",\"type\":\"customAgentNode\",\"position\":{\"x\":924.0917935395361,\"y\":250.1020863613121},\"data\":{\"agentName\":\"non-api-agent\",\"task\":\"\",\"availableAgents\":[{\"name\":\"browser-agent\",\"description\":\"An AI agent that can control a web browser to perform tasks.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are an AI agent that controls a web browser. Your goal is to fulfill the user's request.\\nYou have a set of tools to interact with the page: navigateToUrl, typeText, clickElement, and readPageContent.\\nFollow these steps in a loop:\\n1. Analyze the user's goal and the current page content (if any) to decide on the best single action (tool) to take.\\n2. After navigating or clicking, ALWAYS use the 'readPageContent' tool to observe the outcome and get new information for your next step.\\n3. When you believe the task is complete, respond directly to the user with a final confirmation message.\\n4. If you get stuck or cannot proceed, explain the issue to the user.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"\",\"tags\":[],\"icon\":\"Globe\",\"iconColor\":\"hsl(180 80% 40%)\"},{\"name\":\"my-agent\",\"description\":\"A helpful AI assistant that can use tools to answer questions.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a helpful AI assistant called MyAgent. You have access to a variety of tools to help answer user questions and complete tasks. When you use a tool, tell the user which tool you are using and what the result was.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[\"calculator\",\"webSearch\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"Tvoj zadatak je da izvrsis neku matematicku operaciju ako je to trazeno od tebe\",\"tags\":[],\"icon\":\"Bot\",\"iconColor\":\"hsl(221.2 83.2% 53.3%)\"},{\"name\":\"non-api-agent\",\"description\":\"An example of an agent not exposed via the API.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a document summarizer.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":false,\"defaultTask\":\"Tvoj osnovni zadatak je da napises neki vic ako se to od tebe trazi\",\"tags\":[],\"icon\":\"Book\",\"iconColor\":\"hsl(24.6 95.0% 53.1%)\"},{\"name\":\"openai\",\"description\":\"Calculator ai agent\",\"model\":\"gpt-4o\",\"systemPrompt\":\"Agent for calculate\",\"constraints\":\"You have access to the full conversation history. Always use previous messages to inform your answers. If the user asks about the conversation so far, summarize or recall what has been discussed.\",\"responseFormat\":\"json\",\"tools\":[\"calculator\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"Ti si agent koji ima ulogu da dodjeljuje zadatke drugim agentima na osnovu inputa koji dobijes.\",\"tags\":[],\"icon\":\"Rocket\",\"iconColor\":\"hsl(142.1 76.2% 36.3%)\"},{\"name\":\"Realtime Voice Agent\",\"description\":\"A voice-enabled agent for realtime conversations.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a helpful and friendly voice assistant. Your goal is to have a natural, real-time conversation. Keep your responses concise, conversational, and to the point. Do not use markdown or any special formatting.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":true,\"enableMemory\":true,\"defaultTask\":\"\",\"tags\":[],\"icon\":\"Mic\",\"iconColor\":\"hsl(333.3 83.3% 57.8%)\"},{\"name\":\"test agent 1\",\"description\":\"test agent\",\"model\":\"gpt-4o\",\"systemPrompt\":\"test agent\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":false,\"defaultTask\":\"Perform the test task as instructed.\",\"tags\":[],\"icon\":\"TestTube2\",\"iconColor\":\"hsl(262.1 83.3% 57.8%)\"}],\"isExecuting\":false},\"width\":320,\"height\":258,\"selected\":false,\"positionAbsolute\":{\"x\":924.0917935395361,\"y\":250.1020863613121},\"dragging\":false}]",
+      "edges": "[{\"animated\":true,\"style\":{\"strokeWidth\":2},\"source\":\"goal_node\",\"sourceHandle\":null,\"target\":\"node_1752606776530\",\"targetHandle\":\"sequence-in\",\"id\":\"reactflow__edge-goal_node-node_1752606776530sequence-in\"},{\"animated\":true,\"style\":{\"strokeWidth\":2},\"source\":\"node_1752606776530\",\"sourceHandle\":\"sequence-out\",\"target\":\"node_1752606780948\",\"targetHandle\":\"sequence-in\",\"id\":\"reactflow__edge-node_1752606776530sequence-out-node_1752606780948sequence-in\"},{\"animated\":true,\"style\":{\"strokeWidth\":2},\"source\":\"node_1752606776530\",\"sourceHandle\":\"sequence-out\",\"target\":\"node_1752606792447\",\"targetHandle\":\"sequence-in\",\"id\":\"reactflow__edge-node_1752606776530sequence-out-node_1752606792447sequence-in\"}]",
+      "createdAt": "2025-07-15T19:14:12.843Z",
+      "updatedAt": "2025-07-15T19:14:12.843Z"
+    },
+    {
+      "id": "0008dc94-70a7-4f27-ad93-2ae694c720a7",
+      "name": "test 654",
+      "description": "test 654",
+      "goal": "Napisi mi neku salu",
+      "enableApiAccess": false,
+      "nodes": "[{\"id\":\"goal_node\",\"type\":\"goalNode\",\"position\":{\"x\":50,\"y\":150},\"data\":{\"isExecuting\":false},\"deletable\":false,\"draggable\":false,\"width\":320,\"height\":78},{\"id\":\"node_1752607128664\",\"type\":\"customAgentNode\",\"position\":{\"x\":450,\"y\":50},\"data\":{\"agentName\":\"non-api-agent\",\"task\":\"Tvoj osnovni zadatak je da delegiras zadatke ostalim agentima\",\"availableAgents\":[{\"name\":\"my-agent\",\"description\":\"A helpful AI assistant that can use tools to answer questions.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a helpful AI assistant called MyAgent. You have access to a variety of tools to help answer user questions and complete tasks. When you use a tool, tell the user which tool you are using and what the result was.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[\"calculator\",\"webSearch\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"Tvoj zadatak je da izvrsis neku matematicku operaciju ako je to trazeno od tebe\",\"tags\":[],\"icon\":\"Bot\",\"iconColor\":\"hsl(221.2 83.2% 53.3%)\"},{\"name\":\"non-api-agent\",\"description\":\"An example of an agent not exposed via the API.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a document summarizer.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":false,\"defaultTask\":\"Tvoj osnovni zadatak je da napises neki vic ako se to od tebe trazi\",\"tags\":[],\"icon\":\"Book\",\"iconColor\":\"hsl(24.6 95.0% 53.1%)\"},{\"name\":\"openai\",\"description\":\"Calculator ai agent\",\"model\":\"gpt-4o\",\"systemPrompt\":\"Agent for calculate\",\"constraints\":\"You have access to the full conversation history. Always use previous messages to inform your answers. If the user asks about the conversation so far, summarize or recall what has been discussed.\",\"responseFormat\":\"json\",\"tools\":[\"calculator\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"Ti si agent koji ima ulogu da dodjeljuje zadatke drugim agentima na osnovu inputa koji dobijes.\",\"tags\":[],\"icon\":\"Rocket\",\"iconColor\":\"hsl(142.1 76.2% 36.3%)\"},{\"name\":\"Realtime Voice Agent\",\"description\":\"A voice-enabled agent for realtime conversations.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a helpful and friendly voice assistant. Your goal is to have a natural, real-time conversation. Keep your responses concise, conversational, and to the point. Do not use markdown or any special formatting.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":true,\"enableMemory\":true,\"defaultTask\":\"\",\"tags\":[],\"icon\":\"Mic\",\"iconColor\":\"hsl(333.3 83.3% 57.8%)\"},{\"name\":\"test agent 1\",\"description\":\"test agent\",\"model\":\"gpt-4o\",\"systemPrompt\":\"test agent\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":false,\"defaultTask\":\"Perform the test task as instructed.\",\"tags\":[],\"icon\":\"TestTube2\",\"iconColor\":\"hsl(262.1 83.3% 57.8%)\"}],\"isExecuting\":false},\"width\":320,\"height\":258,\"selected\":false,\"dragging\":false},{\"id\":\"node_1752607159416\",\"type\":\"customAgentNode\",\"position\":{\"x\":904,\"y\":-78},\"data\":{\"agentName\":\"non-api-agent\",\"task\":\"Tvoj osnovni zadatak je da napises neku salu\",\"availableAgents\":[{\"name\":\"my-agent\",\"description\":\"A helpful AI assistant that can use tools to answer questions.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a helpful AI assistant called MyAgent. You have access to a variety of tools to help answer user questions and complete tasks. When you use a tool, tell the user which tool you are using and what the result was.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[\"calculator\",\"webSearch\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"Tvoj zadatak je da izvrsis neku matematicku operaciju ako je to trazeno od tebe\",\"tags\":[],\"icon\":\"Bot\",\"iconColor\":\"hsl(221.2 83.2% 53.3%)\"},{\"name\":\"non-api-agent\",\"description\":\"An example of an agent not exposed via the API.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a document summarizer.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":false,\"defaultTask\":\"Tvoj osnovni zadatak je da napises neki vic ako se to od tebe trazi\",\"tags\":[],\"icon\":\"Book\",\"iconColor\":\"hsl(24.6 95.0% 53.1%)\"},{\"name\":\"openai\",\"description\":\"Calculator ai agent\",\"model\":\"gpt-4o\",\"systemPrompt\":\"Agent for calculate\",\"constraints\":\"You have access to the full conversation history. Always use previous messages to inform your answers. If the user asks about the conversation so far, summarize or recall what has been discussed.\",\"responseFormat\":\"json\",\"tools\":[\"calculator\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"Ti si agent koji ima ulogu da dodjeljuje zadatke drugim agentima na osnovu inputa koji dobijes.\",\"tags\":[],\"icon\":\"Rocket\",\"iconColor\":\"hsl(142.1 76.2% 36.3%)\"},{\"name\":\"Realtime Voice Agent\",\"description\":\"A voice-enabled agent for realtime conversations.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a helpful and friendly voice assistant. Your goal is to have a natural, real-time conversation. Keep your responses concise, conversational, and to the point. Do not use markdown or any special formatting.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":true,\"enableMemory\":true,\"defaultTask\":\"\",\"tags\":[],\"icon\":\"Mic\",\"iconColor\":\"hsl(333.3 83.3% 57.8%)\"},{\"name\":\"test agent 1\",\"description\":\"test agent\",\"model\":\"gpt-4o\",\"systemPrompt\":\"test agent\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":false,\"defaultTask\":\"Perform the test task as instructed.\",\"tags\":[],\"icon\":\"TestTube2\",\"iconColor\":\"hsl(262.1 83.3% 57.8%)\"}],\"isExecuting\":false},\"width\":320,\"height\":258,\"selected\":false,\"positionAbsolute\":{\"x\":904,\"y\":-78},\"dragging\":false},{\"id\":\"node_1752607176348\",\"type\":\"customAgentNode\",\"position\":{\"x\":958,\"y\":264},\"data\":{\"agentName\":\"my-agent\",\"task\":\"Tvoj zadatak je da rjesavas matematicke operacije\",\"availableAgents\":[{\"name\":\"my-agent\",\"description\":\"A helpful AI assistant that can use tools to answer questions.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a helpful AI assistant called MyAgent. You have access to a variety of tools to help answer user questions and complete tasks. When you use a tool, tell the user which tool you are using and what the result was.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[\"calculator\",\"webSearch\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"Tvoj zadatak je da izvrsis neku matematicku operaciju ako je to trazeno od tebe\",\"tags\":[],\"icon\":\"Bot\",\"iconColor\":\"hsl(221.2 83.2% 53.3%)\"},{\"name\":\"non-api-agent\",\"description\":\"An example of an agent not exposed via the API.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a document summarizer.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":false,\"defaultTask\":\"Tvoj osnovni zadatak je da napises neki vic ako se to od tebe trazi\",\"tags\":[],\"icon\":\"Book\",\"iconColor\":\"hsl(24.6 95.0% 53.1%)\"},{\"name\":\"openai\",\"description\":\"Calculator ai agent\",\"model\":\"gpt-4o\",\"systemPrompt\":\"Agent for calculate\",\"constraints\":\"You have access to the full conversation history. Always use previous messages to inform your answers. If the user asks about the conversation so far, summarize or recall what has been discussed.\",\"responseFormat\":\"json\",\"tools\":[\"calculator\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"Ti si agent koji ima ulogu da dodjeljuje zadatke drugim agentima na osnovu inputa koji dobijes.\",\"tags\":[],\"icon\":\"Rocket\",\"iconColor\":\"hsl(142.1 76.2% 36.3%)\"},{\"name\":\"Realtime Voice Agent\",\"description\":\"A voice-enabled agent for realtime conversations.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a helpful and friendly voice assistant. Your goal is to have a natural, real-time conversation. Keep your responses concise, conversational, and to the point. Do not use markdown or any special formatting.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":true,\"enableMemory\":true,\"defaultTask\":\"\",\"tags\":[],\"icon\":\"Mic\",\"iconColor\":\"hsl(333.3 83.3% 57.8%)\"},{\"name\":\"test agent 1\",\"description\":\"test agent\",\"model\":\"gpt-4o\",\"systemPrompt\":\"test agent\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":false,\"defaultTask\":\"Perform the test task as instructed.\",\"tags\":[],\"icon\":\"TestTube2\",\"iconColor\":\"hsl(262.1 83.3% 57.8%)\"}],\"isExecuting\":false},\"width\":320,\"height\":258,\"selected\":false,\"positionAbsolute\":{\"x\":958,\"y\":264},\"dragging\":false}]",
+      "edges": "[{\"animated\":true,\"style\":{\"strokeWidth\":2},\"source\":\"goal_node\",\"sourceHandle\":null,\"target\":\"node_1752607128664\",\"targetHandle\":\"sequence-in\",\"id\":\"reactflow__edge-goal_node-node_1752607128664sequence-in\"},{\"animated\":true,\"style\":{\"strokeWidth\":2},\"source\":\"node_1752607128664\",\"sourceHandle\":\"sequence-out\",\"target\":\"node_1752607159416\",\"targetHandle\":\"sequence-in\",\"id\":\"reactflow__edge-node_1752607128664sequence-out-node_1752607159416sequence-in\"},{\"animated\":true,\"style\":{\"strokeWidth\":2},\"source\":\"node_1752607128664\",\"sourceHandle\":\"sequence-out\",\"target\":\"node_1752607176348\",\"targetHandle\":\"sequence-in\",\"id\":\"reactflow__edge-node_1752607128664sequence-out-node_1752607176348sequence-in\"}]",
+      "createdAt": "2025-07-15T19:21:30.986Z",
+      "updatedAt": "2025-07-15T19:21:30.986Z"
+    },
+    {
+      "id": "a801c499-ce47-4821-973f-d74d0544a677",
+      "name": "novi flow",
+      "description": "novi flow",
+      "goal": "Napisi mi jednu salu",
+      "enableApiAccess": false,
+      "nodes": "[{\"id\":\"goal_node\",\"type\":\"goalNode\",\"position\":{\"x\":50,\"y\":150},\"data\":{\"isExecuting\":false},\"deletable\":false,\"draggable\":false,\"width\":320,\"height\":78},{\"id\":\"node_1752607710735\",\"type\":\"customAgentNode\",\"position\":{\"x\":560,\"y\":52},\"data\":{\"agentName\":\"openai\",\"task\":\"Tvoja uloga je da delegiras zadatke drugim agentima\",\"availableAgents\":[{\"name\":\"browser-agent\",\"description\":\"An AI agent that can control a web browser to perform tasks.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are an AI agent that controls a web browser. Your goal is to fulfill the user's request.\\nYou have a set of tools to interact with the page: navigateToUrl, typeText, clickElement, and readPageContent.\\nFollow these steps in a loop:\\n1. Analyze the user's goal and the current page content (if any) to decide on the best single action (tool) to take.\\n2. After navigating or clicking, ALWAYS use the 'readPageContent' tool to observe the outcome and get new information for your next step.\\n3. When you believe the task is complete, respond directly to the user with a final confirmation message.\\n4. If you get stuck or cannot proceed, explain the issue to the user.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[\"navigateToUrl\",\"typeText\",\"clickElement\",\"readPageContent\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"\",\"tags\":[],\"icon\":\"Globe\",\"iconColor\":\"hsl(180 80% 40%)\"},{\"name\":\"my-agent\",\"description\":\"A helpful AI assistant that can use tools to answer questions.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a helpful AI assistant called MyAgent. You have access to a variety of tools to help answer user questions and complete tasks. When you use a tool, tell the user which tool you are using and what the result was.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[\"calculator\",\"webSearch\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"Tvoj zadatak je da izvrsis neku matematicku operaciju ako je to trazeno od tebe\",\"tags\":[],\"icon\":\"Bot\",\"iconColor\":\"hsl(221.2 83.2% 53.3%)\"},{\"name\":\"non-api-agent\",\"description\":\"An example of an agent not exposed via the API.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a document summarizer.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":false,\"defaultTask\":\"Tvoj osnovni zadatak je da napises neki vic ako se to od tebe trazi\",\"tags\":[],\"icon\":\"Book\",\"iconColor\":\"hsl(24.6 95.0% 53.1%)\"},{\"name\":\"openai\",\"description\":\"Calculator ai agent\",\"model\":\"gpt-4o\",\"systemPrompt\":\"Agent for calculate\",\"constraints\":\"You have access to the full conversation history. Always use previous messages to inform your answers. If the user asks about the conversation so far, summarize or recall what has been discussed.\",\"responseFormat\":\"json\",\"tools\":[\"calculator\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"Ti si agent koji ima ulogu da dodjeljuje zadatke drugim agentima na osnovu inputa koji dobijes.\",\"tags\":[],\"icon\":\"Rocket\",\"iconColor\":\"hsl(142.1 76.2% 36.3%)\"},{\"name\":\"Realtime Voice Agent\",\"description\":\"A voice-enabled agent for realtime conversations.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a helpful and friendly voice assistant. Your goal is to have a natural, real-time conversation. Keep your responses concise, conversational, and to the point. Do not use markdown or any special formatting.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":true,\"enableMemory\":true,\"defaultTask\":\"\",\"tags\":[],\"icon\":\"Mic\",\"iconColor\":\"hsl(333.3 83.3% 57.8%)\"},{\"name\":\"test agent 1\",\"description\":\"test agent\",\"model\":\"gpt-4o\",\"systemPrompt\":\"test agent\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":false,\"defaultTask\":\"Perform the test task as instructed.\",\"tags\":[],\"icon\":\"TestTube2\",\"iconColor\":\"hsl(262.1 83.3% 57.8%)\"}],\"isExecuting\":false},\"width\":320,\"height\":258,\"selected\":false,\"positionAbsolute\":{\"x\":560,\"y\":52},\"dragging\":false},{\"id\":\"node_1752607715633\",\"type\":\"customAgentNode\",\"position\":{\"x\":1172,\"y\":-76},\"data\":{\"agentName\":\"openai\",\"task\":\"Tvoja uloga je da izvrsavas matematicke operacije\",\"availableAgents\":[{\"name\":\"browser-agent\",\"description\":\"An AI agent that can control a web browser to perform tasks.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are an AI agent that controls a web browser. Your goal is to fulfill the user's request.\\nYou have a set of tools to interact with the page: navigateToUrl, typeText, clickElement, and readPageContent.\\nFollow these steps in a loop:\\n1. Analyze the user's goal and the current page content (if any) to decide on the best single action (tool) to take.\\n2. After navigating or clicking, ALWAYS use the 'readPageContent' tool to observe the outcome and get new information for your next step.\\n3. When you believe the task is complete, respond directly to the user with a final confirmation message.\\n4. If you get stuck or cannot proceed, explain the issue to the user.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[\"navigateToUrl\",\"typeText\",\"clickElement\",\"readPageContent\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"\",\"tags\":[],\"icon\":\"Globe\",\"iconColor\":\"hsl(180 80% 40%)\"},{\"name\":\"my-agent\",\"description\":\"A helpful AI assistant that can use tools to answer questions.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a helpful AI assistant called MyAgent. You have access to a variety of tools to help answer user questions and complete tasks. When you use a tool, tell the user which tool you are using and what the result was.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[\"calculator\",\"webSearch\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"Tvoj zadatak je da izvrsis neku matematicku operaciju ako je to trazeno od tebe\",\"tags\":[],\"icon\":\"Bot\",\"iconColor\":\"hsl(221.2 83.2% 53.3%)\"},{\"name\":\"non-api-agent\",\"description\":\"An example of an agent not exposed via the API.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a document summarizer.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":false,\"defaultTask\":\"Tvoj osnovni zadatak je da napises neki vic ako se to od tebe trazi\",\"tags\":[],\"icon\":\"Book\",\"iconColor\":\"hsl(24.6 95.0% 53.1%)\"},{\"name\":\"openai\",\"description\":\"Calculator ai agent\",\"model\":\"gpt-4o\",\"systemPrompt\":\"Agent for calculate\",\"constraints\":\"You have access to the full conversation history. Always use previous messages to inform your answers. If the user asks about the conversation so far, summarize or recall what has been discussed.\",\"responseFormat\":\"json\",\"tools\":[\"calculator\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"Ti si agent koji ima ulogu da dodjeljuje zadatke drugim agentima na osnovu inputa koji dobijes.\",\"tags\":[],\"icon\":\"Rocket\",\"iconColor\":\"hsl(142.1 76.2% 36.3%)\"},{\"name\":\"Realtime Voice Agent\",\"description\":\"A voice-enabled agent for realtime conversations.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a helpful and friendly voice assistant. Your goal is to have a natural, real-time conversation. Keep your responses concise, conversational, and to the point. Do not use markdown or any special formatting.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":true,\"enableMemory\":true,\"defaultTask\":\"\",\"tags\":[],\"icon\":\"Mic\",\"iconColor\":\"hsl(333.3 83.3% 57.8%)\"},{\"name\":\"test agent 1\",\"description\":\"test agent\",\"model\":\"gpt-4o\",\"systemPrompt\":\"test agent\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":false,\"defaultTask\":\"Perform the test task as instructed.\",\"tags\":[],\"icon\":\"TestTube2\",\"iconColor\":\"hsl(262.1 83.3% 57.8%)\"}],\"isExecuting\":false},\"width\":320,\"height\":258,\"selected\":false,\"positionAbsolute\":{\"x\":1172,\"y\":-76},\"dragging\":false},{\"id\":\"node_1752607725334\",\"type\":\"customAgentNode\",\"position\":{\"x\":1162,\"y\":358},\"data\":{\"agentName\":\"openai\",\"task\":\"Tvoja uloga je da pises sale kada je to trazeno\",\"availableAgents\":[{\"name\":\"browser-agent\",\"description\":\"An AI agent that can control a web browser to perform tasks.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are an AI agent that controls a web browser. Your goal is to fulfill the user's request.\\nYou have a set of tools to interact with the page: navigateToUrl, typeText, clickElement, and readPageContent.\\nFollow these steps in a loop:\\n1. Analyze the user's goal and the current page content (if any) to decide on the best single action (tool) to take.\\n2. After navigating or clicking, ALWAYS use the 'readPageContent' tool to observe the outcome and get new information for your next step.\\n3. When you believe the task is complete, respond directly to the user with a final confirmation message.\\n4. If you get stuck or cannot proceed, explain the issue to the user.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[\"navigateToUrl\",\"typeText\",\"clickElement\",\"readPageContent\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"\",\"tags\":[],\"icon\":\"Globe\",\"iconColor\":\"hsl(180 80% 40%)\"},{\"name\":\"my-agent\",\"description\":\"A helpful AI assistant that can use tools to answer questions.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a helpful AI assistant called MyAgent. You have access to a variety of tools to help answer user questions and complete tasks. When you use a tool, tell the user which tool you are using and what the result was.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[\"calculator\",\"webSearch\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"Tvoj zadatak je da izvrsis neku matematicku operaciju ako je to trazeno od tebe\",\"tags\":[],\"icon\":\"Bot\",\"iconColor\":\"hsl(221.2 83.2% 53.3%)\"},{\"name\":\"non-api-agent\",\"description\":\"An example of an agent not exposed via the API.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a document summarizer.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":false,\"defaultTask\":\"Tvoj osnovni zadatak je da napises neki vic ako se to od tebe trazi\",\"tags\":[],\"icon\":\"Book\",\"iconColor\":\"hsl(24.6 95.0% 53.1%)\"},{\"name\":\"openai\",\"description\":\"Calculator ai agent\",\"model\":\"gpt-4o\",\"systemPrompt\":\"Agent for calculate\",\"constraints\":\"You have access to the full conversation history. Always use previous messages to inform your answers. If the user asks about the conversation so far, summarize or recall what has been discussed.\",\"responseFormat\":\"json\",\"tools\":[\"calculator\"],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":true,\"defaultTask\":\"Ti si agent koji ima ulogu da dodjeljuje zadatke drugim agentima na osnovu inputa koji dobijes.\",\"tags\":[],\"icon\":\"Rocket\",\"iconColor\":\"hsl(142.1 76.2% 36.3%)\"},{\"name\":\"Realtime Voice Agent\",\"description\":\"A voice-enabled agent for realtime conversations.\",\"model\":\"gpt-4o\",\"systemPrompt\":\"You are a helpful and friendly voice assistant. Your goal is to have a natural, real-time conversation. Keep your responses concise, conversational, and to the point. Do not use markdown or any special formatting.\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":true,\"enableMemory\":true,\"defaultTask\":\"\",\"tags\":[],\"icon\":\"Mic\",\"iconColor\":\"hsl(333.3 83.3% 57.8%)\"},{\"name\":\"test agent 1\",\"description\":\"test agent\",\"model\":\"gpt-4o\",\"systemPrompt\":\"test agent\",\"constraints\":\"\",\"responseFormat\":\"text\",\"tools\":[],\"enableApiAccess\":true,\"realtime\":false,\"enableMemory\":false,\"defaultTask\":\"Perform the test task as instructed.\",\"tags\":[],\"icon\":\"TestTube2\",\"iconColor\":\"hsl(262.1 83.3% 57.8%)\"}],\"isExecuting\":false},\"width\":320,\"height\":258,\"selected\":false,\"positionAbsolute\":{\"x\":1162,\"y\":358},\"dragging\":false}]",
+      "edges": "[{\"animated\":true,\"style\":{\"strokeWidth\":2},\"source\":\"goal_node\",\"sourceHandle\":null,\"target\":\"node_1752607710735\",\"targetHandle\":\"sequence-in\",\"id\":\"reactflow__edge-goal_node-node_1752607710735sequence-in\"},{\"animated\":true,\"style\":{\"strokeWidth\":2},\"source\":\"node_1752607710735\",\"sourceHandle\":\"sequence-out\",\"target\":\"node_1752607715633\",\"targetHandle\":\"sequence-in\",\"id\":\"reactflow__edge-node_1752607710735sequence-out-node_1752607715633sequence-in\"},{\"animated\":true,\"style\":{\"strokeWidth\":2},\"source\":\"node_1752607710735\",\"sourceHandle\":\"sequence-out\",\"target\":\"node_1752607725334\",\"targetHandle\":\"sequence-in\",\"id\":\"reactflow__edge-node_1752607710735sequence-out-node_1752607725334sequence-in\"}]",
+      "createdAt": "2025-07-15T19:31:18.756Z",
+      "updatedAt": "2025-07-15T19:31:18.756Z"
     }
   ],
   "agentExecutionLogs": [
@@ -901,6 +954,398 @@
       "inputTokens": 164,
       "outputTokens": 11,
       "totalTokens": 175
+    },
+    {
+      "id": "7a07fce6-13b1-4453-bc46-6dc38afa34c3",
+      "timestamp": "2025-07-14T21:21:44.898Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "error",
+      "latency": 5,
+      "errorDetails": "(0 , genkit__WEBPACK_IMPORTED_MODULE_6__.runInAction) is not a function"
+    },
+    {
+      "id": "e6beb0d8-6fba-414b-9e8a-f964a1fe1212",
+      "timestamp": "2025-07-14T21:23:01.454Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "error",
+      "latency": 32,
+      "errorDetails": "(0 , genkit__WEBPACK_IMPORTED_MODULE_6__.runInAction) is not a function"
+    },
+    {
+      "id": "64c6ccd4-bbf9-4931-aea5-4503baaf2bfa",
+      "timestamp": "2025-07-14T21:24:50.470Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "error",
+      "latency": 41,
+      "errorDetails": "(0 , genkit__WEBPACK_IMPORTED_MODULE_6__.runInAction) is not a function"
+    },
+    {
+      "id": "6c856c45-fc9b-48a7-bd52-23901ce3218a",
+      "timestamp": "2025-07-14T21:26:45.199Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 3252,
+      "inputTokens": 58,
+      "outputTokens": 39,
+      "totalTokens": 97
+    },
+    {
+      "id": "7ef5dd22-a546-43a1-b11e-bd155d302d3c",
+      "timestamp": "2025-07-14T21:26:52.619Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 1275,
+      "inputTokens": 58,
+      "outputTokens": 30,
+      "totalTokens": 88
+    },
+    {
+      "id": "920bdec4-0a1f-4397-b358-d43873fe2d41",
+      "timestamp": "2025-07-14T21:27:25.057Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 3669,
+      "inputTokens": 59,
+      "outputTokens": 14,
+      "totalTokens": 73
+    },
+    {
+      "id": "3b74ebf3-eba1-43a6-b2ae-2049400e9813",
+      "timestamp": "2025-07-14T21:27:41.910Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 1361,
+      "inputTokens": 57,
+      "outputTokens": 33,
+      "totalTokens": 90
+    },
+    {
+      "id": "2892daab-5855-442e-a611-79da334da5ef",
+      "timestamp": "2025-07-14T21:27:59.066Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 1415,
+      "inputTokens": 57,
+      "outputTokens": 14,
+      "totalTokens": 71
+    },
+    {
+      "id": "4826033e-3208-4158-825c-21a197a9cf22",
+      "timestamp": "2025-07-15T18:26:17.077Z",
+      "agentName": "openai",
+      "status": "error",
+      "latency": 0,
+      "errorDetails": "Cannot read properties of undefined (reading 'registry')"
+    },
+    {
+      "id": "7545e788-5839-4dc7-9914-470801ba1fde",
+      "timestamp": "2025-07-15T18:26:35.073Z",
+      "agentName": "openai",
+      "status": "error",
+      "latency": 0,
+      "errorDetails": "Cannot read properties of undefined (reading 'registry')"
+    },
+    {
+      "id": "552dd879-06fc-4adb-a1d3-d1f2748cffa4",
+      "timestamp": "2025-07-15T18:26:45.209Z",
+      "agentName": "openai",
+      "status": "error",
+      "latency": 0,
+      "errorDetails": "Cannot read properties of undefined (reading 'registry')"
+    },
+    {
+      "id": "889f101d-7b5f-418a-9b0b-3fac04601eee",
+      "timestamp": "2025-07-15T18:30:34.532Z",
+      "agentName": "openai",
+      "status": "error",
+      "latency": 0,
+      "errorDetails": "_ai_genkit__WEBPACK_IMPORTED_MODULE_4__.ai.registry.listTools is not a function"
+    },
+    {
+      "id": "093a6c8a-8311-4e69-8834-b0b7a7c3f99b",
+      "timestamp": "2025-07-15T18:32:48.736Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1840,
+      "inputTokens": 172,
+      "outputTokens": 39,
+      "totalTokens": 211
+    },
+    {
+      "id": "1cc86872-3061-45d8-b114-db0f9cb73c32",
+      "timestamp": "2025-07-15T18:34:24.045Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1890,
+      "inputTokens": 175,
+      "outputTokens": 56,
+      "totalTokens": 231
+    },
+    {
+      "id": "858e8034-c3f9-4cca-bb0d-e2bb737b161c",
+      "timestamp": "2025-07-15T18:35:49.499Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 2186,
+      "inputTokens": 175,
+      "outputTokens": 25,
+      "totalTokens": 200
+    },
+    {
+      "id": "b3d47b9b-dd72-407c-9192-b4657451528f",
+      "timestamp": "2025-07-15T18:35:54.001Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "latency": 4246,
+      "inputTokens": 146,
+      "outputTokens": 156,
+      "totalTokens": 302
+    },
+    {
+      "id": "7c4d9b27-8855-474d-b085-b2740c142474",
+      "timestamp": "2025-07-15T19:24:07.199Z",
+      "agentName": "non-api-agent",
+      "status": "error",
+      "latency": 15717,
+      "errorDetails": "MCP error -32000: Connection closed"
+    },
+    {
+      "id": "1d6dd3de-13d6-44ed-9f5e-1623c66efd49",
+      "timestamp": "2025-07-15T19:33:37.349Z",
+      "agentName": "openai",
+      "status": "error",
+      "latency": 2,
+      "errorDetails": "NOT_FOUND: Model 'gpt-4o' not found"
+    },
+    {
+      "id": "912b9f3a-ec00-4f15-bb90-e9260b3a12a1",
+      "timestamp": "2025-07-15T19:35:54.198Z",
+      "agentName": "openai",
+      "status": "error",
+      "latency": 2,
+      "errorDetails": "NOT_FOUND: Model 'openai/gpt-4o' not found"
+    },
+    {
+      "id": "2bd2cabd-04ee-4998-80a5-3088f6b5df44",
+      "timestamp": "2025-07-15T19:40:52.209Z",
+      "agentName": "openai",
+      "status": "error",
+      "latency": 30,
+      "errorDetails": "NOT_FOUND: Model 'openai/gpt-4o' not found"
+    },
+    {
+      "id": "3f78ea24-3b3b-4642-9606-4fa6b9ec0273",
+      "timestamp": "2025-07-15T19:44:39.083Z",
+      "agentName": "openai",
+      "status": "error",
+      "latency": 40,
+      "errorDetails": "NOT_FOUND: Model 'openai/gpt-4o' not found"
+    },
+    {
+      "id": "9d1253aa-baa8-4ef4-8d24-d8a026725333",
+      "timestamp": "2025-07-15T19:49:18.484Z",
+      "agentName": "openai",
+      "status": "error",
+      "latency": 11,
+      "errorDetails": "NOT_FOUND: Model 'openai/gpt-4o' not found"
+    },
+    {
+      "id": "4a8ee843-19c0-44f6-9504-a0b484f0837c",
+      "timestamp": "2025-07-15T19:52:34.455Z",
+      "agentName": "openai",
+      "status": "error",
+      "latency": 21,
+      "errorDetails": "NOT_FOUND: Model 'openai/gpt-4o' not found"
+    },
+    {
+      "id": "9cf7d3f6-ee8d-4310-a082-9289a0317432",
+      "timestamp": "2025-07-15T19:55:27.180Z",
+      "agentName": "openai",
+      "status": "error",
+      "latency": 24,
+      "errorDetails": "NOT_FOUND: Model 'openai/gpt-4o' not found"
+    },
+    {
+      "id": "3715c9d6-7d18-4c12-ac19-801b266e8a4a",
+      "timestamp": "2025-07-15T19:58:08.119Z",
+      "agentName": "openai",
+      "status": "error",
+      "latency": 4628,
+      "errorDetails": "MCP error -32000: Connection closed"
+    },
+    {
+      "id": "f387000c-6c3a-49d2-aa26-9c26bf5576ff",
+      "timestamp": "2025-07-15T20:02:20.030Z",
+      "agentName": "openai",
+      "status": "error",
+      "latency": 5862,
+      "errorDetails": "MCP error -32000: Connection closed"
+    },
+    {
+      "id": "56de4326-7cdb-469e-91f1-d4dfb54c4774",
+      "timestamp": "2025-07-15T20:05:52.761Z",
+      "agentName": "openai",
+      "status": "error",
+      "latency": 3362,
+      "errorDetails": "MCP error -32000: Connection closed"
+    },
+    {
+      "id": "0022d527-5a67-4f00-afc0-ffcfcdad7756",
+      "timestamp": "2025-07-15T20:08:47.254Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 6329,
+      "inputTokens": 104,
+      "outputTokens": 49,
+      "totalTokens": 153
+    },
+    {
+      "id": "0174f4ae-b4a1-4b9e-bc8e-c852680c4d77",
+      "timestamp": "2025-07-15T20:09:04.451Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1897,
+      "inputTokens": 111,
+      "outputTokens": 31,
+      "totalTokens": 142
+    },
+    {
+      "id": "2b698ed9-ea33-4bdb-bb6a-df17d81dd7a5",
+      "timestamp": "2025-07-15T20:37:31.869Z",
+      "agentName": "openai",
+      "status": "error",
+      "latency": 9,
+      "errorDetails": "NOT_FOUND: Model 'openai/gpt-4o' not found"
+    },
+    {
+      "id": "8bd8bb5d-08e7-4c5c-96ec-1c62c69f956c",
+      "timestamp": "2025-07-15T20:39:50.241Z",
+      "agentName": "openai",
+      "status": "error",
+      "latency": 5,
+      "errorDetails": "NOT_FOUND: Model 'openai/gpt-4o' not found"
+    },
+    {
+      "id": "2a3e22ae-9ab2-44b3-ae95-501a6b96af2a",
+      "timestamp": "2025-07-15T21:03:05.062Z",
+      "agentName": "my-agent",
+      "status": "error",
+      "latency": 591,
+      "errorDetails": "_genkit__WEBPACK_IMPORTED_MODULE_1__.ai.registry.list is not a function"
+    },
+    {
+      "id": "d07b8dec-36c3-4e05-8d73-0c60ef51c9e6",
+      "timestamp": "2025-07-15T21:03:31.999Z",
+      "agentName": "my-agent",
+      "status": "error",
+      "latency": 53,
+      "errorDetails": "_genkit__WEBPACK_IMPORTED_MODULE_1__.ai.registry.list is not a function"
+    },
+    {
+      "id": "99f714a5-1bca-42a6-9f29-e1e3a7947bab",
+      "timestamp": "2025-07-15T21:05:34.242Z",
+      "agentName": "my-agent",
+      "status": "error",
+      "latency": 62,
+      "errorDetails": "_genkit__WEBPACK_IMPORTED_MODULE_1__.ai.registry.list is not a function"
+    },
+    {
+      "id": "c810608e-92e9-461d-b4da-55d81452f6f2",
+      "timestamp": "2025-07-15T21:08:35.152Z",
+      "agentName": "my-agent",
+      "status": "error",
+      "latency": 12,
+      "errorDetails": "_genkit__WEBPACK_IMPORTED_MODULE_1__.ai.registry.list is not a function"
+    },
+    {
+      "id": "b4a328de-381c-4298-8244-abc248a1c9d5",
+      "timestamp": "2025-07-15T21:10:03.206Z",
+      "agentName": "my-agent",
+      "status": "error",
+      "latency": 29,
+      "errorDetails": "_genkit__WEBPACK_IMPORTED_MODULE_1__.ai.registry.list is not a function"
+    },
+    {
+      "id": "5aee6600-31fe-4845-9c55-21f0d1c7c13b",
+      "timestamp": "2025-07-15T21:23:06.808Z",
+      "agentName": "openai",
+      "status": "error",
+      "latency": 8,
+      "errorDetails": "_genkit__WEBPACK_IMPORTED_MODULE_1__.ai.registry.list is not a function"
+    },
+    {
+      "id": "d89c7667-e17c-4fab-9661-75202ff2e244",
+      "timestamp": "2025-07-15T21:24:21.626Z",
+      "agentName": "openai",
+      "status": "error",
+      "latency": 659,
+      "errorDetails": "_genkit__WEBPACK_IMPORTED_MODULE_0__.ai.registry.list is not a function"
+    },
+    {
+      "id": "66c14d94-f243-4e41-b190-16a5130f56f7",
+      "timestamp": "2025-07-17T21:21:46.265Z",
+      "agentName": "my-agent",
+      "status": "error",
+      "latency": 15,
+      "errorDetails": "_genkit__WEBPACK_IMPORTED_MODULE_0__.ai.registry.list is not a function"
+    },
+    {
+      "id": "94efadb6-07d5-46e2-be3b-319222a0048f",
+      "timestamp": "2025-07-17T21:23:27.495Z",
+      "agentName": "my-agent",
+      "status": "error",
+      "latency": 53,
+      "errorDetails": "_genkit__WEBPACK_IMPORTED_MODULE_0__.ai.registry.list is not a function"
+    },
+    {
+      "id": "66ea6584-feda-4e3a-a40f-9b58a9be8770",
+      "timestamp": "2025-07-17T21:23:39.501Z",
+      "agentName": "my-agent",
+      "status": "error",
+      "latency": 13,
+      "errorDetails": "_genkit__WEBPACK_IMPORTED_MODULE_0__.ai.registry.list is not a function"
+    },
+    {
+      "id": "14dfaad1-8a09-4645-95cb-29ebbb502815",
+      "timestamp": "2025-07-17T21:25:03.628Z",
+      "agentName": "my-agent",
+      "status": "error",
+      "latency": 52,
+      "errorDetails": "_genkit__WEBPACK_IMPORTED_MODULE_0__.ai.registry.list is not a function"
+    },
+    {
+      "id": "7324cc94-234a-4da3-8ca2-40d431d0b16f",
+      "timestamp": "2025-07-17T21:25:21.341Z",
+      "agentName": "my-agent",
+      "status": "error",
+      "latency": 11,
+      "errorDetails": "_genkit__WEBPACK_IMPORTED_MODULE_0__.ai.registry.list is not a function"
+    },
+    {
+      "id": "2c09c338-0262-4180-9e80-3a44aa05145f",
+      "timestamp": "2025-07-17T21:26:10.011Z",
+      "agentName": "my-agent",
+      "status": "error",
+      "latency": 8,
+      "errorDetails": "_genkit__WEBPACK_IMPORTED_MODULE_0__.ai.registry.list is not a function"
+    },
+    {
+      "id": "1c309a91-36f4-47b6-a746-5c304a451cb2",
+      "timestamp": "2025-07-17T21:29:42.480Z",
+      "agentName": "my-agent",
+      "status": "error",
+      "latency": 13,
+      "errorDetails": "_genkit__WEBPACK_IMPORTED_MODULE_0__.ai.registry.list is not a function"
+    },
+    {
+      "id": "8949ebd6-9446-4826-931d-51356d34dfd9",
+      "timestamp": "2025-07-17T21:34:24.507Z",
+      "agentName": "my-agent",
+      "status": "success",
+      "latency": 4815,
+      "inputTokens": 65,
+      "outputTokens": 88,
+      "totalTokens": 153
     }
   ],
   "conversations": [
@@ -1101,6 +1546,36 @@
       "messages": "[{\"role\":\"user\",\"content\":\"idi na www.klix.ba\"},{\"role\":\"model\",\"content\":\"To visit the website, I'll navigate to www.klix.ba for you.\"},{\"role\":\"user\",\"content\":\"idi na google.com\"},{\"role\":\"model\",\"content\":\"Ninahodha in uende kwa Google mara moja.\"}]",
       "createdAt": "2025-07-14T10:34:05.285Z",
       "updatedAt": "2025-07-14T10:35:20.398Z"
+    },
+    {
+      "sessionId": "2442b358-e5fa-420a-8b7b-606ac1c693d1",
+      "messages": "[{\"role\":\"user\",\"content\":\"hey what is your role\"},{\"role\":\"model\",\"content\":\"Hey! I'm here to answer questions, assist with information, and help out with anything else you might need. Think of me as a helpful, friendly guide. How can I assist you today?\"}]",
+      "createdAt": "2025-07-14T21:26:45.226Z",
+      "updatedAt": "2025-07-14T21:26:45.226Z"
+    },
+    {
+      "sessionId": "5c9f7ccc-610d-409b-8c01-0856825d6a5e",
+      "messages": "[{\"role\":\"user\",\"content\":\"hey what is your role\"},{\"role\":\"model\",\"content\":\"Hey! I'm here to chat with you, provide information, answer questions, and help with a variety of topics. How can I assist you today?\"},{\"role\":\"user\",\"content\":\"can you tell me some joke\"},{\"role\":\"model\",\"content\":\"Sure! Why don't scientists trust atoms? Because they make up everything!\"},{\"role\":\"user\",\"content\":\"what is your role\"},{\"role\":\"model\",\"content\":\"I'm here to assist you with information, answer questions, and help with a variety of tasks to make your day a little easier. Let me know what you need!\"},{\"role\":\"user\",\"content\":\"I need some joke\"},{\"role\":\"model\",\"content\":\"Sure! Why don't scientists trust atoms? Because they make up everything!\"}]",
+      "createdAt": "2025-07-14T21:26:52.654Z",
+      "updatedAt": "2025-07-14T21:27:59.078Z"
+    },
+    {
+      "sessionId": "b25daa38-5799-4724-9e7c-080bf4f86f9c",
+      "messages": "[{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"{\\n    \\\"response\\\": \\\"Moja uloga je da pomognem korisnicima pružanjem informacija, odgovaranjem na pitanja i obavljanjem zadataka u skladu sa zadatim ograničenjima i dostupnim informacijama.\\\"\\n}\"}]",
+      "createdAt": "2025-07-15T20:08:47.308Z",
+      "updatedAt": "2025-07-15T20:08:47.308Z"
+    },
+    {
+      "sessionId": "f92bbd74-a7b8-4adc-b046-216183f6e5f8",
+      "messages": "[{\"role\":\"user\",\"content\":\"Sorry, an error occurred: MCP error -32000: Connection closed\"},{\"role\":\"model\",\"content\":\"```json\\n{\\n  \\\"message\\\": \\\"It seems there was an error with the connection. Please try reconnecting or check your network settings.\\\"\\n}\\n```\"}]",
+      "createdAt": "2025-07-15T20:09:04.463Z",
+      "updatedAt": "2025-07-15T20:09:04.463Z"
+    },
+    {
+      "sessionId": "2b16106d-825e-46b3-8288-f3857486b37c",
+      "messages": "[{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Moja uloga je da vam pomognem sa informacijama, odgovorim na vaša pitanja i pružim podršku u rešavanju problema. Mogu vam pomoći sa različitim temama, uključujući tehničku podršku, pružanje informacija i asistenciju u planiranju ili donošenju odluka. Ako imate bilo kakve specifične zahteve ili pitanja, slobodno ih postavite!\"}]",
+      "createdAt": "2025-07-17T21:34:24.512Z",
+      "updatedAt": "2025-07-17T21:34:24.512Z"
     }
   ]
 }

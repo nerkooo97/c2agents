@@ -1,5 +1,3 @@
-// This is a new file for the file-based tool management system.
-'use server';
 
 import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
@@ -15,22 +13,22 @@ export async function POST(request: Request) {
         const { name } = await request.json() as { name: string };
 
         if (!name) {
-            return NextResponse.json({ error: 'Tool name is required.' }, { status: 400 });
+            return NextResponse.json({ error: 'Plugin name is required.' }, { status: 400 });
         }
         
-        const toolFolderName = sanitizeToolName(name);
-        const toolDir = path.join(process.cwd(), 'src', 'tools', toolFolderName);
+        const pluginFolderName = sanitizeToolName(name);
+        const toolDir = path.join(process.cwd(), 'src', 'plugins', pluginFolderName);
 
         try {
             await fs.access(toolDir);
         } catch (error) {
             // If the folder doesn't exist, we can consider the deletion successful.
-            return NextResponse.json({ message: `Tool '${name}' not found, nothing to delete.` }, { status: 200 });
+            return NextResponse.json({ message: `Plugin '${name}' not found, nothing to delete.` }, { status: 200 });
         }
         
         await fs.rm(toolDir, { recursive: true, force: true });
         
-        return NextResponse.json({ message: `Tool '${name}' deleted successfully.` });
+        return NextResponse.json({ message: `Plugin '${name}' deleted successfully.` });
 
     } catch (e) {
         console.error('Error deleting tool:', e);

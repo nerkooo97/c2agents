@@ -1,12 +1,10 @@
-// This file is intentionally left mostly blank to resolve a build issue.
-// The correct configuration is in the root next.config.ts file.
-import type { AgentDefinition } from '@/lib/types';
 import type { Tool } from 'genkit/tool';
-import { ai } from '@/ai/genkit';
 import { calculator, webSearch, navigateToUrlTool, clickElementTool, typeTextTool, readPageContentTool } from './definitions';
 
-const allDefinedTools: Tool<any, any>[] = [
-    calculator, 
+// Statically define all tools available in the application.
+// This is more stable than dynamic discovery.
+export const allDefinedTools: Tool<any, any>[] = [
+    calculator,
     webSearch,
     navigateToUrlTool,
     clickElementTool,
@@ -14,14 +12,15 @@ const allDefinedTools: Tool<any, any>[] = [
     readPageContentTool,
 ];
 
+// This function now returns the statically defined list of tools.
 export function getAllTools(): Tool<any, any>[] {
     return allDefinedTools;
 }
 
+// Creates a map of tools for quick lookup.
 export function getToolMap(): Record<string, Tool<any, any>> {
     const toolMap: Record<string, Tool<any, any>> = {};
-    const allTools = getAllTools();
-    allTools.forEach(tool => {
+    getAllTools().forEach(tool => {
         if (tool.name) {
             toolMap[tool.name] = tool;
         }
@@ -29,11 +28,15 @@ export function getToolMap(): Record<string, Tool<any, any>> {
     return toolMap;
 }
 
-export function getToolsForAgent(agent: AgentDefinition): Tool<any, any>[] {
-  if (!agent.tools || agent.tools.length === 0) return [];
-  const availableTools = getToolMap();
+// Filters the provided list of tools based on an agent's definition.
+export function getToolsForAgent(
+    agent: import('@/lib/types').AgentDefinition
+): Tool<any, any>[] {
+    if (!agent.tools || agent.tools.length === 0) return [];
   
-  return agent.tools
-    .map(toolName => availableTools[toolName])
-    .filter((t): t is Tool<any, any> => t !== undefined);
+    const toolMap = getToolMap();
+
+    return agent.tools
+        .map(toolName => toolMap[toolName])
+        .filter((t): t is Tool<any, any> => t !== undefined);
 };

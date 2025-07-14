@@ -1,3 +1,4 @@
+
 // =================================================================================================
 // DATABASE ADAPTER
 // =================================================================================================
@@ -13,7 +14,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import type { WorkflowDefinition, AgentExecutionLog, Conversation, Message, PlanStep, KnowledgeDocument } from '@/lib/types';
+import type { WorkflowDefinition, AgentExecutionLog, Conversation, Message, KnowledgeDocument } from '@/lib/types';
 
 const dbPath = path.join(process.cwd(), 'prisma', 'db.json');
 
@@ -75,7 +76,7 @@ const db = {
                 return nameMatch;
             }) || null;
         },
-        async create(query: { data: Omit<WorkflowDefinition, 'id' | 'createdAt' | 'updatedAt'> & {planSteps: string} }): Promise<WorkflowDefinition> {
+        async create(query: { data: Omit<WorkflowDefinition, 'id' | 'createdAt' | 'updatedAt'> & {nodes: string, edges: string} }): Promise<WorkflowDefinition> {
             const data = await readDb();
             const newWorkflow: WorkflowDefinition = {
                 id: crypto.randomUUID(),
@@ -87,7 +88,7 @@ const db = {
             await writeDb(data);
             return newWorkflow;
         },
-         async update(query: { where: { id: string }, data: Omit<WorkflowDefinition, 'id' | 'createdAt' | 'updatedAt'> & {planSteps: string} }): Promise<WorkflowDefinition> {
+         async update(query: { where: { id: string }, data: Omit<WorkflowDefinition, 'id' | 'createdAt' | 'updatedAt'> & {nodes: string, edges: string} }): Promise<WorkflowDefinition> {
             const data = await readDb();
             const index = data.workflows.findIndex(wf => wf.id === query.where.id);
             if (index === -1) {

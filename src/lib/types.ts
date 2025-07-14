@@ -1,5 +1,6 @@
 
 import { z } from 'zod';
+import type { Node, Edge } from 'reactflow';
 
 export interface Message {
   role: 'user' | 'model';
@@ -68,24 +69,20 @@ export type AgentFormData = z.infer<typeof AgentDefinitionSchema>;
 
 // Workflow Types
 
-export interface PlanStepNode {
+export interface AgentPlanStep {
   id: string;
-  type: 'agent' | 'delay';
-}
-
-export interface AgentPlanStep extends PlanStepNode {
   type: 'agent';
   agentName: string;
-  task?: string;
+  task: string;
 }
 
-export interface DelayPlanStep extends PlanStepNode {
+export interface DelayPlanStep {
+  id: string;
   type: 'delay';
   delay: number; // in milliseconds
 }
 
 export type PlanStep = AgentPlanStep | DelayPlanStep;
-
 
 // This represents a full workflow object, stored in the file-based DB.
 export interface WorkflowDefinition {
@@ -94,29 +91,14 @@ export interface WorkflowDefinition {
   description: string;
   goal: string;
   enableApiAccess: boolean;
-  planSteps: string; // Stored as JSON string
+  nodes: string; // Stored as JSON string of ReactFlow Nodes
+  edges: string; // Stored as JSON string of ReactFlow Edges
   createdAt: Date;
   updatedAt: Date;
 }
 
-// Zod schema for validating a plan step from the client.
-export const AgentPlanStepSchema = z.object({
-    id: z.string(),
-    type: z.literal('agent'),
-    agentName: z.string().min(1, "Agent must be selected for each step."),
-    task: z.string().optional(),
-});
-
-export const DelayPlanStepSchema = z.object({
-    id: z.string(),
-    type: z.literal('delay'),
-    delay: z.number().min(0),
-});
-
-export const PlanStepSchema = z.discriminatedUnion('type', [
-  AgentPlanStepSchema,
-  DelayPlanStepSchema,
-]);
+export const NodeSchema = z.any();
+export const EdgeSchema = z.any();
 
 
 // Zod schema for validating the data needed to create a new workflow.
@@ -125,7 +107,8 @@ export const WorkflowCreateAPISchema = z.object({
   description: z.string().min(1, 'Description is required.'),
   goal: z.string().min(1, 'Workflow goal is required.'),
   enableApiAccess: z.boolean().default(false),
-  planSteps: z.array(PlanStepSchema).min(1, "At least one step is required."),
+  nodes: z.array(NodeSchema),
+  edges: z.array(EdgeSchema),
 });
 
 // Zod schema for the save/update form in the composer.
@@ -174,7 +157,7 @@ export interface AppSettings {
 }
 
 // This is the definition of a tool as it is stored in its `index.ts` file.
-export interface ToolDefinition {
+export interface PluginDefinition {
   name: string;
   description: string;
   command: string;
@@ -185,10 +168,10 @@ export interface ToolDefinition {
 
 // This is the schema used in the form for creating/editing a tool.
 // It handles transformations from form-friendly formats (string) to the stored format (array/object).
-const ToolEnvSchema = z.record(z.string(), z.any());
+const PluginEnvSchema = z.record(z.string(), z.any());
 
-export const ToolFormSchema = z.object({
-  name: z.string().min(1, 'Tool name is required.').regex(/^[a-zA-Z0-9_-]+$/, 'Name can only contain letters, numbers, hyphens, and underscores.'),
+export const PluginFormSchema = z.object({
+  name: z.string().min(1, 'Plugin name is required.').regex(/^[a-zA-Z0-9_-]+$/, 'Name can only contain letters, numbers, hyphens, and underscores.'),
   description: z.string().optional(),
   command: z.string().min(1, 'Command is required.'),
   // Transforms space-separated string of args into an array
@@ -205,10 +188,10 @@ export const ToolFormSchema = z.object({
       } catch(e) {
           throw new Error("Environment variables must be a valid JSON object.");
       }
-  }).refine(data => ToolEnvSchema.safeParse(data).success, {
+  }).refine(data => PluginEnvSchema.safeParse(data).success, {
       message: "Invalid environment variable format."
   }).optional(),
   enabled: z.boolean().default(true),
 });
 
-export type ToolFormData = z.infer<typeof ToolFormSchema>;
+export type PluginFormData = z.infer<typeof PluginFormSchema>;

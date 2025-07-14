@@ -15,12 +15,7 @@ Follow these steps in a loop:
   constraints: ``,
   defaultTask: ``,
   responseFormat: 'text',
-  tools: [
-    "navigateToUrl",
-    "typeText",
-    "clickElement",
-    "readPageContent"
-  ],
+  tools: ["navigateToUrl","typeText","clickElement","readPageContent"],
   enableApiAccess: true,
   realtime: false,
   enableMemory: true,

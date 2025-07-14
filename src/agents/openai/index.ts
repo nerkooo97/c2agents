@@ -7,7 +7,7 @@ const agent: AgentDefinition = {
   model: 'gpt-4o',
   systemPrompt: `Agent for calculate`,
   constraints: `You have access to the full conversation history. Always use previous messages to inform your answers. If the user asks about the conversation so far, summarize or recall what has been discussed.`,
-  defaultTask: ``,
+  defaultTask: `Ti si agent koji ima ulogu da dodjeljuje zadatke drugim agentima na osnovu inputa koji dobijes.`,
   responseFormat: 'json',
   tools: ["calculator"],
   enableApiAccess: true,

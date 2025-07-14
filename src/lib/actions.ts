@@ -1,38 +1,21 @@
 
+
 'use server';
 
-import { getToolsForAgent } from '@/ai/tools';
-import { runAgentWithConfig } from '@/ai/flows/run-agent';
-import type { AgentDefinition, ExecutionStep, Message } from '@/lib/types';
+import type { AgentDefinition, Message } from '@/lib/types';
 import db from '@/lib/db';
-import { closeBrowser } from '@/ai/tools/browser';
-import { getFlow, runInAction } from 'genkit';
+import { getAgentDefinition } from './agent-registry';
+import { runWorkflowFlow } from '@/ai/flows/run-workflow';
+import type { Node, Edge } from 'reactflow';
+import { ai } from '@/ai/genkit';
+import { getToolsForAgent } from '@/ai/tools';
+import { initBrowser, closeBrowser, type BrowserSession } from '@/ai/tools/browser';
 
-// Explicitly import all agent definitions for reliability
-import myAgent from '@/agents/my-agent';
-import nonApiAgent from '@/agents/non-api-agent';
-import openaiAgent from '@/agents/openai';
-import realtimeVoiceAgent from '@/agents/realtime-voice-agent';
-import testAgent1 from '@/agents/test-agent-1';
-import browserAgent from '@/agents/browser-agent';
 
-const allAgents: AgentDefinition[] = [
-    myAgent,
-    nonApiAgent,
-    openaiAgent,
-    realtimeVoiceAgent,
-    testAgent1,
-    browserAgent,
-];
-
-function getAgent(name: string): AgentDefinition | undefined {
-    return allAgents.find(agent => agent.name === name);
-}
-
-// Helper to construct the full model reference string
+// Helper to construct the full model reference string for Genkit
 const getModelReference = (modelName: string): string => {
     if (modelName.includes('/')) {
-        return modelName; // Already a full path
+        return modelName; // Already a full path, e.g., 'googleai/gemini-1.5-pro'
     }
     if (modelName.startsWith('gemini')) {
         return `googleai/${modelName}`;
@@ -40,148 +23,140 @@ const getModelReference = (modelName: string): string => {
     if (modelName.startsWith('gpt')) {
         return `openai/${modelName}`;
     }
+    // Fallback for custom models or other providers
     return modelName;
 };
 
+// Minimal agent runner for single, direct calls (e.g., from Test pages)
+// This does NOT handle complex workflow logic.
 export async function runAgent(
   agentName: string,
   prompt: string,
   sessionId?: string
-): Promise<{ response?: string; steps?: ExecutionStep[]; error?: string }> {
-    const agent = getAgent(agentName);
-    if (!agent) {
-        return { error: `Agent '${agentName}' not found.` };
+): Promise<{ response?: string; error?: string }> {
+  const agent = await getAgentDefinition(agentName);
+  if (!agent) {
+    return { error: `Agent '${agentName}' not found.` };
+  }
+
+  const startTime = Date.now();
+  // For single agent runs, we manage browser sessions directly if needed.
+  const workflowExecutionId = sessionId || crypto.randomUUID();
+  const browserSessions = new Map<string, BrowserSession>();
+  
+  try {
+    if (agent.tools.some(t => ['navigateToUrl', 'clickElement', 'typeText', 'readPageContent'].includes(t))) {
+      browserSessions.set(workflowExecutionId, await initBrowser());
     }
 
-    // Use a unique ID for each agent run to manage browser state.
-    // If a session ID is provided, use it to maintain state across messages.
-    const traceId = sessionId || crypto.randomUUID();
-    const startTime = Date.now();
-
-    try {
-        let conversationHistory: Message[] = [];
-        if (agent.enableMemory && sessionId) {
-            const conversation = await db.conversation.findUnique({ where: { sessionId } });
-            if (conversation) {
-                try {
-                    const parsedMessages = JSON.parse(conversation.messages) as Message[];
-                    if (Array.isArray(parsedMessages)) {
-                        conversationHistory = parsedMessages;
-                    }
-                } catch (e) {
-                    console.error("Error parsing conversation history from DB:", e);
-                }
-            }
+    let conversationHistory: Message[] = [];
+    if (agent.enableMemory && sessionId) {
+      const conversation = await db.conversation.findUnique({
+        where: { sessionId },
+      });
+      if (conversation?.messages) {
+        try {
+          const parsedMessages = JSON.parse(
+            conversation.messages
+          ) as Message[];
+          if (Array.isArray(parsedMessages)) {
+            conversationHistory = parsedMessages;
+          }
+        } catch (e) {
+          console.error('Error parsing conversation history from DB:', e);
         }
-
-        const steps: ExecutionStep[] = [{
-            type: 'prompt',
-            title: 'User Prompt',
-            content: prompt,
-        }];
-
-        const agentTools = getToolsForAgent(agent);
-
-        const genkitResponse = await runInAction({ name: 'run-agent-flow' }, async () => {
-            return await runAgentWithConfig({
-                systemPrompt: agent.systemPrompt,
-                constraints: agent.constraints,
-                responseFormat: agent.responseFormat,
-                userInput: prompt,
-                tools: agentTools,
-                model: getModelReference(agent.model),
-                history: conversationHistory,
-                traceId: traceId, // Pass traceId to the config
-            });
-        });
-
-        const endTime = Date.now();
-        const latency = endTime - startTime;
-        const usage = genkitResponse.usage;
-
-        await db.agentExecutionLog.create({
-            data: {
-                agentName,
-                status: 'success',
-                latency,
-                inputTokens: usage?.inputTokens,
-                outputTokens: usage?.outputTokens,
-                totalTokens: usage?.totalTokens,
-            },
-        });
-
-        if (genkitResponse.history) {
-            for (const message of genkitResponse.history) {
-                if (message.role === 'model' && message.content.some(p => p.toolRequest)) {
-                    const toolRequestPart = message.content.find(p => p.toolRequest)!;
-                    const toolRequest = toolRequestPart.toolRequest!;
-                    steps.push({
-                        type: 'tool',
-                        title: `Tool Call: ${toolRequest.name}`,
-                        content: `The agent decided to use the '${toolRequest.name}' tool.`,
-                        toolName: toolRequest.name,
-                        toolInput: JSON.stringify(toolRequest.input, null, 2),
-                    });
-                } else if (message.role === 'tool') {
-                    const toolResponsePart = message.content.find(p => p.toolResponse)!;
-                    const toolResponse = toolResponsePart.toolResponse!;
-                    steps.push({
-                        type: 'tool',
-                        title: `Tool Result: ${toolResponse.name}`,
-                        content: `${JSON.stringify(toolResponse.output, null, 2)}`,
-                        toolName: toolResponse.name,
-                    });
-                }
-            }
-        }
-
-        const finalResponse = genkitResponse.text ?? 'I was unable to generate a response.';
-        steps.push({
-            type: 'response',
-            title: 'Final Response',
-            content: finalResponse,
-        });
-
-        if (agent.enableMemory && sessionId) {
-            const newHistory = [
-                ...conversationHistory,
-                { role: 'user', content: prompt },
-                { role: 'model', content: finalResponse },
-            ];
-            await db.conversation.upsert({
-                where: { sessionId },
-                create: { sessionId, messages: JSON.stringify(newHistory) },
-                update: { messages: JSON.stringify(newHistory) },
-            });
-        }
-
-        return {
-            response: finalResponse,
-            steps: steps,
-        };
-
-    } catch (error) {
-        const endTime = Date.now();
-        const latency = endTime - startTime;
-        console.error(`[runAgent Error] for agent '${agentName}':`, error);
-        const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
-        
-        await db.agentExecutionLog.create({
-            data: {
-                agentName,
-                status: 'error',
-                latency,
-                errorDetails: errorMessage,
-            },
-        });
-
-        return {
-            error: errorMessage,
-        };
-    } finally {
-         // This block ensures the browser is always closed if it was opened.
-        if (agent.tools.includes('navigateToUrl')) {
-            await closeBrowser(traceId);
-        }
+      }
     }
+
+    const agentTools = getToolsForAgent(agent);
+
+    let fullSystemPrompt = agent.systemPrompt;
+    if (agent.constraints) {
+      fullSystemPrompt += `\n\n## CONSTRAINTS\nThe user has provided the following constraints that you MUST follow:\n${agent.constraints}`;
+    }
+    if (agent.responseFormat === 'json') {
+      fullSystemPrompt += `\n\n## RESPONSE FORMAT\nYou MUST provide your final response in a valid JSON object. Do not include any explanatory text before or after the JSON object.`;
+    }
+
+    const genkitResponse = await ai.generate({
+      model: getModelReference(agent.model) as any,
+      system: fullSystemPrompt,
+      prompt,
+      tools: agentTools,
+      history: conversationHistory.map((m) => ({
+        role: m.role,
+        content: [{ text: m.content }],
+      })),
+      config: {
+        responseFormat: agent.responseFormat as any,
+      },
+      context: { workflowExecutionId, browserSessions } // Pass context
+    });
+
+    const endTime = Date.now();
+    const latency = endTime - startTime;
+    const usage = genkitResponse.usage;
+    const finalResponse =
+      genkitResponse.text ?? 'I was unable to generate a response.';
+
+    await db.agentExecutionLog.create({
+      data: {
+        agentName,
+        status: 'success',
+        latency,
+        inputTokens: usage?.inputTokens,
+        outputTokens: usage?.outputTokens,
+        totalTokens: usage?.totalTokens,
+      },
+    });
+     if (agent.enableMemory && sessionId) {
+      const newHistory = [
+        ...conversationHistory,
+        { role: 'user', content: prompt },
+        { role: 'model', content: finalResponse },
+      ];
+      await db.conversation.upsert({
+        where: { sessionId },
+        create: { sessionId, messages: JSON.stringify(newHistory) },
+        update: { messages: JSON.stringify(newHistory) },
+      });
+    }
+
+    return { response: finalResponse };
+  } catch (error) {
+    const endTime = Date.now();
+    const latency = endTime - startTime;
+    const errorMessage =
+      error instanceof Error ? error.message : 'An unexpected error occurred.';
+    await db.agentExecutionLog.create({
+      data: {
+        agentName,
+        status: 'error',
+        latency,
+        errorDetails: errorMessage,
+      },
+    });
+    return { error: errorMessage };
+  } finally {
+     const session = browserSessions.get(workflowExecutionId);
+     if (session) {
+         await closeBrowser(session);
+         browserSessions.delete(workflowExecutionId);
+     }
+  }
+}
+
+export async function runWorkflow(
+    goal: string, 
+    nodes: Node[], 
+    edges: Edge[]
+) {
+  const result = runWorkflowFlow.run({
+    goal,
+    nodes,
+    edges,
+    workflowExecutionId: crypto.randomUUID(),
+    browserSessions: new Map(), // Not supported for non-streamed workflows yet
+  });
+  return { response: result, responsePromise: Promise.resolve({ response: result, error: null }) };
 }

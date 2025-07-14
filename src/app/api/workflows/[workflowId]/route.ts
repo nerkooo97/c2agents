@@ -1,10 +1,10 @@
 
-'use server';
 
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
-import { runAgent } from '@/lib/actions';
-import type { ExecutionStep, PlanStep, WorkflowDefinition } from '@/lib/types';
+import { runWorkflow } from '@/lib/actions';
+import type { WorkflowDefinition } from '@/lib/types';
+import { getAgentDefinition } from '@/lib/agent-registry';
 
 
 export async function POST(
@@ -30,43 +30,22 @@ export async function POST(
     }
     
     const goal = input || workflow.goal;
-    const planSteps = JSON.parse(workflow.planSteps) as PlanStep[];
+    const nodes = JSON.parse(workflow.nodes);
+    const edges = JSON.parse(workflow.edges);
 
 
     if (!goal) {
         return NextResponse.json({ error: 'Workflow goal is not defined.' }, { status: 400 });
     }
     
-    let previousStepOutput = `Initial goal: ${goal}`;
-    const allSteps: ExecutionStep[] = [];
-    
-    for (const step of planSteps) {
-        if (step.type === 'agent') {
-            const currentPrompt = `Based on the overall goal and the previous step's result, perform your task.
-\nOverall Goal: "${goal}"
-\nPrevious Step Result: "${previousStepOutput}"
-\nYour Task: "${step.task}"`;
-            
-            const result = await runAgent(step.agentName, currentPrompt);
-            
-            if (result.error) {
-                return NextResponse.json({ error: `Error in step for agent ${step.agentName}: ${result.error}` }, { status: 500 });
-            }
-            
-            previousStepOutput = result.response || 'No output from this step.';
-            if (result.steps) {
-                allSteps.push(...result.steps);
-            }
-        } else if (step.type === 'delay') {
-            const delayTime = step.delay || 0;
-            if (delayTime > 0) {
-                 await new Promise(resolve => setTimeout(resolve, delayTime));
-            }
-            // No change to previousStepOutput during a delay
-        }
+    const result = await runWorkflow(goal, nodes, edges);
+    const finalResponse = await result.responsePromise;
+
+    if (finalResponse.error) {
+        return NextResponse.json({ error: finalResponse.error }, { status: 500 });
     }
 
-    return NextResponse.json({ response: previousStepOutput, steps: allSteps });
+    return NextResponse.json({ response: finalResponse.response });
 
   } catch (e) {
     console.error(`Error in workflow API call for ${workflowId}:`, e);

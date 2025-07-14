@@ -8,14 +8,16 @@ import { Timer } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 interface DelayNodeData {
     delay: number;
     onChange: (id: string, field: 'delay', value: number) => void;
+    isExecuting: boolean;
 }
 
 const DelayNode = ({ id, data }: NodeProps<DelayNodeData>) => {
-    const { delay, onChange } = data;
+    const { delay, onChange, isExecuting } = data;
 
     const handleValueChange = useCallback(
         (evt: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,7 +27,10 @@ const DelayNode = ({ id, data }: NodeProps<DelayNodeData>) => {
     );
 
     return (
-        <Card className="p-4 border-accent shadow-lg rounded-lg w-80 bg-card">
+        <Card className={cn(
+            "p-4 border-accent shadow-lg rounded-lg w-80 bg-card transition-all duration-300",
+            isExecuting && "border-2 border-amber-500 ring-4 ring-amber-500/20 animate-pulse"
+        )}>
             <Handle type="target" position={Position.Left} className="!bg-accent" />
             <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/10">
