@@ -7,9 +7,9 @@ import type { Message } from '@/lib/types';
 
 export async function GET(
   request: Request,
-  { params }: { params: { sessionId: string } }
+  context: { params: { sessionId: string } }
 ) {
-  const { sessionId } = params;
+  const { sessionId } = context.params;
 
   if (!sessionId) {
     return NextResponse.json({ error: 'Session ID is required' }, { status: 400 });

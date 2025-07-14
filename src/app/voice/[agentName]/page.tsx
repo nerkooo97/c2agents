@@ -25,7 +25,7 @@ type ConversationState = 'idle' | 'listening' | 'processing' | 'speaking';
 
 const SpeechRecognitionAPI =
   typeof window !== 'undefined'
-    ? window.SpeechRecognition || window.webkitSpeechRecognition
+    ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)
     : null;
 
 export default function VoiceChatPage() {
@@ -39,11 +39,13 @@ export default function VoiceChatPage() {
   const [ttsModel, setTtsModel] = useState('gpt-4o');
   const [subtitle, setSubtitle] = useState("I'm ready to help.");
   const [sessionId, setSessionId] = useState<string>('');
-
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const sessionIdRef = useRef(sessionId);
+  
+  const recognitionRef = useRef<any>(null);
   const audioQueueRef = useRef<HTMLAudioElement[]>([]);
   const isPlayingRef = useRef(false);
   const transcriptRef = useRef('');
+  const conversationStateRef = useRef(conversationState);
   
   const { toast } = useToast();
   
@@ -67,12 +69,17 @@ export default function VoiceChatPage() {
       audio.onended = () => {
         isPlayingRef.current = false;
         processQueue();
+        // Kada se završi puštanje zvuka, vrati state na idle
+        setConversationState('idle');
+        setSubtitle("Tap the mic to speak.");
       };
       audio.onerror = (e) => {
         console.error("Error playing audio.", e);
         toast({ variant: 'destructive', title: 'Audio Error', description: "Could not play the agent's response." });
         isPlayingRef.current = false;
         processQueue();
+        setConversationState('idle');
+        setSubtitle("Tap the mic to speak.");
       }
     } else {
         isPlayingRef.current = false;
@@ -82,6 +89,7 @@ export default function VoiceChatPage() {
   }, [toast]);
 
   const processRequest = useCallback(async (text: string, currentSessionId: string) => {
+    console.log('processRequest called', { text, currentSessionId, agentName });
     if (!agentName || !currentSessionId || !text.trim()) {
       setConversationState('idle');
       return;
@@ -95,26 +103,31 @@ export default function VoiceChatPage() {
 
     try {
       const agentResult = await runAgent(agentName, text, currentSessionId);
+      console.log('Agent result:', agentResult); // Debug log
       if (agentResult.error) throw new Error(agentResult.error);
-      
       const responseText = agentResult.response ?? "I didn't get a response.";
       const modelMessage: Message = { role: 'model', content: responseText };
       setMessages(prev => [...prev, modelMessage]);
       setSubtitle(responseText);
-      
-      const speechResponse = await fetch('/api/speech', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: responseText, model: ttsModel }),
-      });
-
-      const result = await speechResponse.json();
-      if (!speechResponse.ok) throw new Error(result.error || `Failed to get audio stream: ${speechResponse.status}`);
-      
-      const audio = new Audio(result.audio);
-      audioQueueRef.current.push(audio);
-      processQueue();
-
+      // Pokušaj TTS
+      try {
+        const speechResponse = await fetch('/api/speech', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: responseText, model: ttsModel }),
+        });
+        const result = await speechResponse.json();
+        console.log('TTS response:', result); // Debug log
+        if (!speechResponse.ok) throw new Error(result.error || `Failed to get audio stream: ${speechResponse.status}`);
+        const audio = new Audio(result.audio);
+        audioQueueRef.current.push(audio);
+        processQueue();
+      } catch (ttsError) {
+        // Prikaži tekstualni odgovor i obavesti korisnika o TTS grešci
+        const ttsErrorMessage = ttsError instanceof Error ? ttsError.message : 'Unknown TTS error';
+        toast({ variant: 'destructive', title: 'TTS Error', description: ttsErrorMessage });
+        setConversationState('idle');
+      }
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
       const errorResponse: Message = { role: 'model', content: 'Sorry, an error occurred.' };
@@ -140,12 +153,13 @@ export default function VoiceChatPage() {
     setSubtitle(initialMessage);
 
     const recognition = new SpeechRecognitionAPI();
-    recognition.continuous = false;
+    recognition.continuous = false; // stabilniji mod
     recognition.interimResults = true;
     recognition.lang = 'en-US';
     recognitionRef.current = recognition;
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: any) => {
+      console.log('recognition.onresult', event);
       let interimTranscript = '';
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         interimTranscript += event.results[i][0].transcript;
@@ -155,16 +169,19 @@ export default function VoiceChatPage() {
     };
 
     recognition.onend = () => {
-        const finalTranscript = transcriptRef.current.trim();
-        // Check conversation state to avoid processing on abort
-        if (conversationState === 'listening' && finalTranscript) {
-          processRequest(finalTranscript, newSessionId);
-        } else {
-          setConversationState('idle');
-        }
+      console.log('recognition.onend', { transcript: transcriptRef.current, conversationState: conversationStateRef.current });
+      const finalTranscript = transcriptRef.current.trim();
+      // Check conversation state to avoid processing on abort
+      if (conversationStateRef.current === 'listening' && finalTranscript) {
+        console.log('calling processRequest from onend');
+        processRequest(finalTranscript, sessionIdRef.current);
+      } else {
+        setConversationState('idle');
+        setSubtitle("Tap the mic to speak.");
+      }
     };
     
-    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+    recognition.onerror = (event: any) => {
       console.error('Speech recognition error', event.error);
       if (event.error !== 'no-speech' && event.error !== 'aborted') {
         toast({ variant: 'destructive', title: 'Speech Recognition Error', description: event.error });
@@ -178,6 +195,11 @@ export default function VoiceChatPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    conversationStateRef.current = conversationState;
+    sessionIdRef.current = sessionId;
+  }, [conversationState, sessionId]);
+
   const handleToggleListening = () => {
     const recognition = recognitionRef.current;
     if (!recognition || !isSupported) return;
@@ -187,6 +209,7 @@ export default function VoiceChatPage() {
         transcriptRef.current = '';
         setConversationState('listening');
         setSubtitle('Listening...');
+        console.log('recognition.start()');
         recognition.start();
       } catch (e) {
         console.error("Error starting recognition:", e);

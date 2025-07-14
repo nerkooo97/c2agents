@@ -139,19 +139,22 @@ const db = {
         },
     },
     conversation: {
-        async findUnique(query: { where: { sessionId: string } }): Promise<Conversation | null> {
+        async findUnique(query: { where?: { sessionId: string, agentName: string } }): Promise<Conversation | null> {
             const data = await readDb();
-            return data.conversations.find(c => c.sessionId === query.where.sessionId) || null;
+            if (!query.where) return null;
+            const { sessionId, agentName } = query.where;
+            return data.conversations.find(c => c.sessionId === sessionId && c.agentName === agentName) || null;
         },
-        async upsert(query: { where: { sessionId: string }, create: { sessionId: string, messages: string }, update: { messages: string } }): Promise<void> {
+        async upsert(query: { where: { sessionId: string, agentName: string }, create: { sessionId: string, agentName: string, messages: string }, update: { messages: string } }): Promise<void> {
             const data = await readDb();
-            const index = data.conversations.findIndex(c => c.sessionId === query.where.sessionId);
+            const index = data.conversations.findIndex(c => c.sessionId === query.where.sessionId && c.agentName === query.where.agentName);
             if (index !== -1) { // Update
                 data.conversations[index].messages = query.update.messages;
                 data.conversations[index].updatedAt = new Date();
             } else { // Create
                 const newConversation: Conversation = {
                     sessionId: query.create.sessionId,
+                    agentName: query.create.agentName,
                     messages: query.create.messages,
                     createdAt: new Date(),
                     updatedAt: new Date(),
@@ -159,6 +162,13 @@ const db = {
                 data.conversations.push(newConversation);
             }
             await writeDb(data);
+        },
+        async findMany(query?: { where?: { agentName?: string } }): Promise<Conversation[]> {
+            const data = await readDb();
+            if (query?.where?.agentName) {
+                return data.conversations.filter(c => c.agentName === query.where!.agentName);
+            }
+            return data.conversations;
         },
     },
     knowledge: {

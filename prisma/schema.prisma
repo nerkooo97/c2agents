@@ -39,6 +39,7 @@ model AgentExecutionLog {
 
 model Conversation {
   sessionId String   @id
+  agentName String // Dodano za per-agent memoriju
   messages  String // JSON string of Message[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

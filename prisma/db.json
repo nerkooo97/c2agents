@@ -421,6 +421,416 @@
       "inputTokens": 68,
       "outputTokens": 303,
       "totalTokens": 371
+    },
+    {
+      "id": "0b115c3a-fdc9-4918-ac52-8247bcc62634",
+      "timestamp": "2025-07-13T20:38:43.270Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 2189,
+      "inputTokens": 51,
+      "outputTokens": 66,
+      "totalTokens": 117
+    },
+    {
+      "id": "62b596d0-9a93-4717-927f-136805b3562a",
+      "timestamp": "2025-07-13T20:42:56.271Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 1749,
+      "inputTokens": 57,
+      "outputTokens": 24,
+      "totalTokens": 81
+    },
+    {
+      "id": "19144e77-db4c-4f0e-8dde-0de1a95c982a",
+      "timestamp": "2025-07-13T20:43:19.405Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 1818,
+      "inputTokens": 60,
+      "outputTokens": 32,
+      "totalTokens": 92
+    },
+    {
+      "id": "034491b9-d00e-41f4-be4e-d2dfbd418064",
+      "timestamp": "2025-07-13T20:43:39.036Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 1159,
+      "inputTokens": 59,
+      "outputTokens": 14,
+      "totalTokens": 73
+    },
+    {
+      "id": "32eec5c7-da65-49d1-9669-d9fc6c3b0f3e",
+      "timestamp": "2025-07-13T20:44:37.306Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 863,
+      "inputTokens": 60,
+      "outputTokens": 16,
+      "totalTokens": 76
+    },
+    {
+      "id": "22b312c4-ecd5-4ab0-9122-7bc6f93d7a19",
+      "timestamp": "2025-07-13T20:44:50.240Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 841,
+      "inputTokens": 57,
+      "outputTokens": 28,
+      "totalTokens": 85
+    },
+    {
+      "id": "fbfa94d8-183f-4bf1-8d7a-9970a18eb135",
+      "timestamp": "2025-07-13T20:52:12.604Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 2088,
+      "inputTokens": 51,
+      "outputTokens": 59,
+      "totalTokens": 110
+    },
+    {
+      "id": "676d1f49-5a48-4cd1-93dc-f581fcfcf6de",
+      "timestamp": "2025-07-13T20:52:20.238Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1477,
+      "inputTokens": 49,
+      "outputTokens": 47,
+      "totalTokens": 96
+    },
+    {
+      "id": "3976509a-c7ce-45e5-8dd0-97a07d9b15c0",
+      "timestamp": "2025-07-13T20:52:34.795Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 858,
+      "inputTokens": 48,
+      "outputTokens": 18,
+      "totalTokens": 66
+    },
+    {
+      "id": "ba8b82ca-9267-4f73-988f-29c1dc43cf12",
+      "timestamp": "2025-07-13T20:52:47.743Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1214,
+      "inputTokens": 53,
+      "outputTokens": 26,
+      "totalTokens": 79
+    },
+    {
+      "id": "77bb3400-d9e4-41e1-b06f-08166be8e296",
+      "timestamp": "2025-07-13T20:54:38.852Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1168,
+      "inputTokens": 102,
+      "outputTokens": 25,
+      "totalTokens": 127
+    },
+    {
+      "id": "79ab9862-ad64-4d0f-ba47-49c3b3ed690b",
+      "timestamp": "2025-07-13T20:54:45.105Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 483,
+      "inputTokens": 104,
+      "outputTokens": 1,
+      "totalTokens": 105
+    },
+    {
+      "id": "51f4cf58-da88-4417-945d-35afb76225bb",
+      "timestamp": "2025-07-13T20:54:55.727Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1877,
+      "inputTokens": 107,
+      "outputTokens": 32,
+      "totalTokens": 139
+    },
+    {
+      "id": "eccafe86-15c4-4357-a05c-3b38a1ca773f",
+      "timestamp": "2025-07-13T20:55:05.520Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 673,
+      "inputTokens": 105,
+      "outputTokens": 23,
+      "totalTokens": 128
+    },
+    {
+      "id": "1a02325b-5377-4192-adae-065efa8cf773",
+      "timestamp": "2025-07-13T20:55:27.650Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1119,
+      "inputTokens": 107,
+      "outputTokens": 32,
+      "totalTokens": 139
+    },
+    {
+      "id": "ba6b627d-0e9b-4055-b9ea-0919958cf246",
+      "timestamp": "2025-07-13T20:55:36.347Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1243,
+      "inputTokens": 105,
+      "outputTokens": 25,
+      "totalTokens": 130
+    },
+    {
+      "id": "caad1c90-4731-4f6e-9f19-b0aaac2d25bd",
+      "timestamp": "2025-07-13T20:55:40.507Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 674,
+      "inputTokens": 103,
+      "outputTokens": 15,
+      "totalTokens": 118
+    },
+    {
+      "id": "4248481f-f1c9-40e9-ac6b-038ad03e6927",
+      "timestamp": "2025-07-13T20:55:51.320Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 995,
+      "inputTokens": 102,
+      "outputTokens": 42,
+      "totalTokens": 144
+    },
+    {
+      "id": "6af83670-19f0-4d36-aeef-8d7bc7ecbad5",
+      "timestamp": "2025-07-13T20:56:22.224Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 960,
+      "inputTokens": 138,
+      "outputTokens": 32,
+      "totalTokens": 170
+    },
+    {
+      "id": "a142fbfd-d40f-433b-9f8b-c1123a77a2b3",
+      "timestamp": "2025-07-13T20:56:30.648Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 938,
+      "inputTokens": 101,
+      "outputTokens": 30,
+      "totalTokens": 131
+    },
+    {
+      "id": "713b6866-42ad-43b0-8c3f-fb76283e33ac",
+      "timestamp": "2025-07-13T21:10:49.450Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 1350,
+      "inputTokens": 58,
+      "outputTokens": 30,
+      "totalTokens": 88
+    },
+    {
+      "id": "0a82a66d-8c61-47b9-aada-9d10a1262b68",
+      "timestamp": "2025-07-13T21:11:12.776Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 733,
+      "inputTokens": 57,
+      "outputTokens": 14,
+      "totalTokens": 71
+    },
+    {
+      "id": "504c6e66-2056-4a47-814d-31a2508b0d3f",
+      "timestamp": "2025-07-13T21:13:16.301Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 1504,
+      "inputTokens": 57,
+      "outputTokens": 26,
+      "totalTokens": 83
+    },
+    {
+      "id": "48cd08e7-1360-4bb8-9829-3b98f5eff541",
+      "timestamp": "2025-07-13T21:14:30.086Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 1817,
+      "inputTokens": 60,
+      "outputTokens": 26,
+      "totalTokens": 86
+    },
+    {
+      "id": "b9ddcc99-3a4d-4760-af72-407b5b74132a",
+      "timestamp": "2025-07-13T21:14:45.725Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 806,
+      "inputTokens": 58,
+      "outputTokens": 24,
+      "totalTokens": 82
+    },
+    {
+      "id": "c75d646a-0202-4e6f-9191-c30add819ac9",
+      "timestamp": "2025-07-13T21:15:00.294Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 989,
+      "inputTokens": 62,
+      "outputTokens": 11,
+      "totalTokens": 73
+    },
+    {
+      "id": "aa09ec81-67e1-47fc-a31c-b2319a9f13ad",
+      "timestamp": "2025-07-13T21:15:11.017Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 868,
+      "inputTokens": 59,
+      "outputTokens": 19,
+      "totalTokens": 78
+    },
+    {
+      "id": "f02e0b9b-4e43-4dee-8d4c-1a93a4b9a9c9",
+      "timestamp": "2025-07-13T21:15:25.378Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 1263,
+      "inputTokens": 58,
+      "outputTokens": 33,
+      "totalTokens": 91
+    },
+    {
+      "id": "876705a1-281c-44a4-aee6-318c57950901",
+      "timestamp": "2025-07-13T21:15:47.625Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 926,
+      "inputTokens": 62,
+      "outputTokens": 29,
+      "totalTokens": 91
+    },
+    {
+      "id": "81fc4e0e-3ce2-4de1-9864-33b8dd087790",
+      "timestamp": "2025-07-13T21:16:02.068Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 732,
+      "inputTokens": 58,
+      "outputTokens": 17,
+      "totalTokens": 75
+    },
+    {
+      "id": "dd178b6b-1b96-4762-b242-31ba557cf4ba",
+      "timestamp": "2025-07-13T21:16:19.075Z",
+      "agentName": "Realtime Voice Agent",
+      "status": "success",
+      "latency": 5619,
+      "inputTokens": 57,
+      "outputTokens": 87,
+      "totalTokens": 144
+    },
+    {
+      "id": "4ac1f82f-d956-411d-b8b3-5cecf0e33f6a",
+      "timestamp": "2025-07-13T21:19:06.378Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1265,
+      "inputTokens": 104,
+      "outputTokens": 42,
+      "totalTokens": 146
+    },
+    {
+      "id": "d709b789-9d7e-4bd9-b9a7-7b330c97b64f",
+      "timestamp": "2025-07-13T21:22:40.144Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1174,
+      "inputTokens": 99,
+      "outputTokens": 15,
+      "totalTokens": 114
+    },
+    {
+      "id": "d9ec2904-de0e-434b-8031-1e580a76e834",
+      "timestamp": "2025-07-13T21:22:45.602Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1378,
+      "inputTokens": 104,
+      "outputTokens": 42,
+      "totalTokens": 146
+    },
+    {
+      "id": "0e352747-380f-48a8-b891-683d06514889",
+      "timestamp": "2025-07-13T21:24:56.920Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 929,
+      "inputTokens": 104,
+      "outputTokens": 41,
+      "totalTokens": 145
+    },
+    {
+      "id": "6e32cda8-1910-4ae8-9de1-2069b637e0c9",
+      "timestamp": "2025-07-13T21:26:26.793Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1789,
+      "inputTokens": 106,
+      "outputTokens": 49,
+      "totalTokens": 155
+    },
+    {
+      "id": "1274f093-306b-4739-ba77-2316f00f095b",
+      "timestamp": "2025-07-13T21:26:54.620Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1421,
+      "inputTokens": 104,
+      "outputTokens": 32,
+      "totalTokens": 136
+    },
+    {
+      "id": "c5cee989-7c27-4989-bd67-765cda419f18",
+      "timestamp": "2025-07-13T21:34:30.520Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1637,
+      "inputTokens": 104,
+      "outputTokens": 46,
+      "totalTokens": 150
+    },
+    {
+      "id": "88330ce3-23eb-4de0-bfd8-1d41866be3f6",
+      "timestamp": "2025-07-13T21:34:36.747Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1190,
+      "inputTokens": 102,
+      "outputTokens": 25,
+      "totalTokens": 127
+    },
+    {
+      "id": "fcc50f28-7b20-42da-af6c-e11782d06d11",
+      "timestamp": "2025-07-13T21:34:43.502Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1077,
+      "inputTokens": 104,
+      "outputTokens": 19,
+      "totalTokens": 123
+    },
+    {
+      "id": "a5ed63cf-b99b-4459-9101-0d5014525a57",
+      "timestamp": "2025-07-13T21:46:23.024Z",
+      "agentName": "openai",
+      "status": "success",
+      "latency": 1081,
+      "inputTokens": 104,
+      "outputTokens": 35,
+      "totalTokens": 139
     }
   ],
   "conversations": [
@@ -534,15 +944,75 @@
     },
     {
       "sessionId": "17427bc0-62e6-4d4b-a753-88ce887a8b61",
-      "messages": "[{\"role\":\"user\",\"content\":\"hey what is your role\"},{\"role\":\"model\",\"content\":\"Hey! I'm here to provide information, answer questions, and help with anything you need. How can I assist you today?\"}]",
+      "messages": "[{\"role\":\"user\",\"content\":\"hey what is your role\"},{\"role\":\"model\",\"content\":\"Hey! I'm here to provide information, answer questions, and help with anything you need. How can I assist you today?\"},{\"role\":\"user\",\"content\":\"Napisi mi summary ovog razgovora\"},{\"role\":\"model\",\"content\":\"```json\\n{\\n    \\\"summary\\\": \\\"The user asked for a summary of the ongoing conversation. There have been no prior interactions or details provided in this conversation.\\\"\\n}\\n```\"}]",
       "createdAt": "2025-07-13T19:24:16.688Z",
-      "updatedAt": "2025-07-13T19:24:16.688Z"
+      "updatedAt": "2025-07-13T21:46:23.026Z"
     },
     {
       "sessionId": "ad8b4cd6-4bdf-49ff-a15f-b4b04f463f2b",
       "messages": "[{\"role\":\"user\",\"content\":\"koaj je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Moja uloga je da ti pomognem s informacijama, odgovorim na pitanja i pružim podršku u razgovoru. Kako ti mogu pomoći danas?\"}]",
       "createdAt": "2025-07-13T20:11:33.235Z",
       "updatedAt": "2025-07-13T20:11:33.235Z"
+    },
+    {
+      "sessionId": "edbb920a-aa17-438f-b7b6-c665d3716e4d",
+      "messages": "[{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Moja uloga je da pomažem korisnicima u pronalaženju odgovora na pitanja, pisanju tekstova, rješavanju problema, učenju novih informacija i još mnogo toga. Ako imate konkretno pitanje ili zadatak, slobodno mi se obratite!\\n\\nKako vam mogu pomoći danas?\"},{\"role\":\"user\",\"content\":\"hej koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"Moja uloga je da pružam pomoć i odgovaram na razna pitanja, uključujući kalkulacije, objašnjenja koncepata, informacije o raznim temama i još mnogo toga. Ukoliko imate pitanje ili zadatak, slobodno mi se obratite!\"},{\"role\":\"user\",\"content\":\"napisi mi jedan vic\"},{\"role\":\"model\",\"content\":\"{\\\"joke\\\": \\\"Kako programer broji do deset? 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10.\\\"}\"},{\"role\":\"user\",\"content\":\"daj mi jos neki\"},{\"role\":\"model\",\"content\":\"{\\\"error\\\": \\\"The request is unclear. Please provide more specific details or instructions.\\\"}\"},{\"role\":\"user\",\"content\":\"o cemu smo ovdje pricali\"},{\"role\":\"model\",\"content\":\"I'm sorry, I do not have access to past conversations. Can I assist you with anything else or provide information you might need?\"},{\"role\":\"user\",\"content\":\"napisi mi jedan vic\"},{\"role\":\"model\",\"content\":\"{\\\"joke\\\": \\\"Zašto matematika nije dobra u šali? Zato što je nula smiješna!\\\"}\"},{\"role\":\"user\",\"content\":\"o cemu smo razgovarali\"},{\"role\":\"model\",\"content\":\"{}\"},{\"role\":\"user\",\"content\":\"da li imas pristup historiji razgovora\"},{\"role\":\"model\",\"content\":\"{\\\"answer\\\": \\\"Da, imam pristup cijeloj historiji razgovora, pa mogu koristiti prethodne poruke kako bih dao bolje odgovore.\\\"}\"},{\"role\":\"user\",\"content\":\"koje su nase prethodne poruke\"},{\"role\":\"model\",\"content\":\"{\\\"prethodne_poruke\\\": \\\"Nema prethodnih poruka u ovoj sesiji razgovora.\\\"}\"}]",
+      "createdAt": "2025-07-13T20:38:43.271Z",
+      "updatedAt": "2025-07-13T20:55:05.521Z"
+    },
+    {
+      "sessionId": "07aa8239-ef12-4a09-a36e-dec5aba83e64",
+      "messages": "[{\"role\":\"user\",\"content\":\"hey what is your\"},{\"role\":\"model\",\"content\":\"Hi there! I'm a voice assistant here to help with your questions or tasks. What can I do for you today?\"},{\"role\":\"user\",\"content\":\"do you have access for some tools\"},{\"role\":\"model\",\"content\":\"I don't have access to external tools or the ability to access the internet. I can provide information and help with questions based on the data I've been trained on.\"},{\"role\":\"user\",\"content\":\"can you tell me some joke\"},{\"role\":\"model\",\"content\":\"Sure! Why don't scientists trust atoms? Because they make up everything!\"},{\"role\":\"user\",\"content\":\"hey can you tell me some joke\"},{\"role\":\"model\",\"content\":\"Sure! Why don't skeletons fight each other? They don't have the guts.\"},{\"role\":\"user\",\"content\":\"what is your own\"},{\"role\":\"model\",\"content\":\"I don't own anything, but I'm here to assist you with information and tasks as best as I can. How can I help you today?\"}]",
+      "createdAt": "2025-07-13T20:42:56.272Z",
+      "updatedAt": "2025-07-13T20:44:50.241Z"
+    },
+    {
+      "sessionId": "17a43ede-788a-4254-9250-25c106f29322",
+      "messages": "[{\"role\":\"user\",\"content\":\"da li imas pristup historiji razgovora\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Da, imam pristup cjelokupnoj historiji razgovora i koristim je da bih informisao svoje odgovore.\\\"}\"},{\"role\":\"user\",\"content\":\"mozes li mi napisati jedan vic\"},{\"role\":\"model\",\"content\":\"{\\\"vic\\\": \\\"Zašto staviš laptop u hladnjak? Da surfuješ na hladnom internetu!\\\"}\"},{\"role\":\"user\",\"content\":\"mozes li jso jedan\"},{\"role\":\"model\",\"content\":\"{\\\"odgovor\\\": \\\"Da, mogu ti pomoći s time.\\\"}\"},{\"role\":\"user\",\"content\":\"daj mi onda jos jedan\"},{\"role\":\"model\",\"content\":\"{\\\"message\\\": \\\"Nažalost, bez više konteksta, ne mogu tačno razumeti šta očekujete. Molim vas da pružite više informacija ili ponovite vaš zahtev.\\\"}\"},{\"role\":\"user\",\"content\":\"rekao si da imas pristup historiji, ali ja te pitam o cmeu smo pisali ti kayes da ne mozes mi vise reci kao da nemas pristup\"},{\"role\":\"model\",\"content\":\"{\\\"error\\\": \\\"I'm sorry for any confusion. I do have access to the conversation history and can provide a summary or details based on our previous interactions.\\\"}\"},{\"role\":\"user\",\"content\":\"napisi mi summary\"},{\"role\":\"model\",\"content\":\"{\\\"conversation_summary\\\": \\\"The user has requested a summary of the conversation so far, but there have been no other messages or topics discussed yet.\\\"}\"},{\"role\":\"user\",\"content\":\"napisi mi summary ovog razgovora\"},{\"role\":\"model\",\"content\":\"{\\\"summary\\\": \\\"Korisnik je tražio sažetak trenutnog razgovora, ali nije bilo prethodnih poruka prije ovog zahtjeva.\\\"}\"}]",
+      "createdAt": "2025-07-13T20:55:27.651Z",
+      "updatedAt": "2025-07-13T21:26:54.621Z"
+    },
+    {
+      "sessionId": "3092806c-ec27-4025-90ac-22bca22b9127",
+      "messages": "[{\"role\":\"user\",\"content\":\"hey what is your role\"},{\"role\":\"model\",\"content\":\"Hey! I'm here to help answer your questions, provide information, and chat about just about anything you need. What can I help you with today?\"},{\"role\":\"user\",\"content\":\"tell me one joke\"},{\"role\":\"model\",\"content\":\"Why don't skeletons fight each other? They don't have the guts!\"}]",
+      "createdAt": "2025-07-13T21:10:49.452Z",
+      "updatedAt": "2025-07-13T21:11:12.777Z"
+    },
+    {
+      "sessionId": "81f5ef16-cae3-4fb5-9cab-3eb7a6e3eb47",
+      "messages": "[{\"role\":\"user\",\"content\":\"tell me one two\"},{\"role\":\"model\",\"content\":\"It sounds like you might be referencing the band One Two or are you asking me to count? Could you clarify a bit more?\"}]",
+      "createdAt": "2025-07-13T21:13:16.303Z",
+      "updatedAt": "2025-07-13T21:13:16.303Z"
+    },
+    {
+      "sessionId": "61b08723-5631-4173-8ed5-a94a533e133c",
+      "messages": "[{\"role\":\"user\",\"content\":\"do you have history of this conversation\"},{\"role\":\"model\",\"content\":\"No, I don't have access to the history of our conversations. Each session is treated independently. How can I help you today?\"},{\"role\":\"user\",\"content\":\"what is this session ID\"},{\"role\":\"model\",\"content\":\"I'm sorry, but I can't help with that. Could you provide more context or details about what you're trying to achieve?\"},{\"role\":\"user\",\"content\":\"can you subtract number 8 and number two\"},{\"role\":\"model\",\"content\":\"Sure, 8 minus 2 equals 6.\"},{\"role\":\"user\",\"content\":\"can you tell me one joke\"},{\"role\":\"model\",\"content\":\"Sure! Why did the scarecrow win an award? Because he was outstanding in his field!\"},{\"role\":\"user\",\"content\":\"can you sync one song\"},{\"role\":\"model\",\"content\":\"No, I can't sync music or songs. I can help with questions or information about music, though. Let me know if there's anything specific you need help with.\"},{\"role\":\"user\",\"content\":\"brought me short song and play that song\"},{\"role\":\"model\",\"content\":\"I can't play songs directly, but I can suggest one or summarize its themes. Let me know what you'd like, and I can help out!\"},{\"role\":\"user\",\"content\":\"I like hard rock songs\"},{\"role\":\"model\",\"content\":\"That's awesome! Do you have any favorite bands or songs in the hard rock genre?\"},{\"role\":\"user\",\"content\":\"guns n' Roses\"},{\"role\":\"model\",\"content\":\"Guns N' Roses is an American rock band formed in 1985, known for their energetic performances and iconic hits like \\\"Sweet Child o' Mine,\\\" \\\"Welcome to the Jungle,\\\" and \\\"November Rain.\\\" The band, led by vocalist Axl Rose and originally featuring legendary guitarist Slash, became one of the most popular rock acts in the late 80s and early 90s. Are you a fan of their music?\"}]",
+      "createdAt": "2025-07-13T21:14:30.087Z",
+      "updatedAt": "2025-07-13T21:16:19.083Z"
+    },
+    {
+      "sessionId": "e50782c8-6ea9-4080-ba8e-b4732263c9e6",
+      "messages": "[{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Moja uloga je da asistiram u pronalaženju informacija, odgovorima na pitanja i izvršavanju jednostavnih zadataka prema korisničkim zahtevima.\\\"}\"}]",
+      "createdAt": "2025-07-13T21:19:06.379Z",
+      "updatedAt": "2025-07-13T21:19:06.379Z"
+    },
+    {
+      "sessionId": "e2b74d79-3b2f-4627-aefb-43cc488389a9",
+      "messages": "[{\"role\":\"user\",\"content\":\"pozdrav\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Zdravo! Kako vam mogu pomoći danas?\\\"}\"},{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"{\\\"response\\\": \\\"Moja uloga je da pružim informacije, odgovorim na pitanja, pomognem u rešavanju problema i izvršim zadatke u okviru mojih sposobnosti.\\\"}\"},{\"role\":\"user\",\"content\":\"o cemu smo ovjde pricali\"},{\"role\":\"model\",\"content\":\"{\\\"conversation_summary\\\": \\\"Razgovarali smo o temi vezanoj uz pružanje sažetka prethodnog razgovora i o tome kako je potrebno koristiti povijest razgovora kako bi se pružila informirana odgovora.\\\"}\"}]",
+      "createdAt": "2025-07-13T21:22:40.145Z",
+      "updatedAt": "2025-07-13T21:26:26.795Z"
+    },
+    {
+      "sessionId": "a53910ac-2fde-4ba7-b129-58d14e21d97f",
+      "messages": "[{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"{\\\"uloga\\\": \\\"Moja uloga je da pomažem korisnicima pružanjem informacija, odgovaranjem na pitanja i rješavanjem problema putem tekstualne komunikacije.\\\"}\"}]",
+      "createdAt": "2025-07-13T21:24:56.921Z",
+      "updatedAt": "2025-07-13T21:24:56.921Z"
+    },
+    {
+      "sessionId": "f2098afe-04ed-4dd2-ae6a-8a5aaf81d94f",
+      "messages": "[{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"{\\n    \\\"response\\\": \\\"Moja uloga je da pomognem korisnicima odgovarajući na pitanja, pružanjem informacija i izvršavanjem različitih zadataka prema njihovim uputstvima.\\\"\\n}\"},{\"role\":\"user\",\"content\":\"napisi mi jedan vic\"},{\"role\":\"model\",\"content\":\"{\\\"vic\\\": \\\"Što radi programer kad mu je vruće?\\\\nOtvori prozore.\\\"}\"},{\"role\":\"user\",\"content\":\"napisi mi summary ovog razgovora\"},{\"role\":\"model\",\"content\":\"Na temelju dostupnih podataka, ne postoji prethodni razgovor u povijesti.\"}]",
+      "createdAt": "2025-07-13T21:34:30.527Z",
+      "updatedAt": "2025-07-13T21:34:43.503Z"
     }
   ]
 }

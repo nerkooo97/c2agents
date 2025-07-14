@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { useRouter } from 'next/navigation'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const ChatMessageContent = ({ content }: { content: string }) => {
     try {
@@ -50,9 +51,11 @@ export default function AgentTestPage() {
   const [logs, setLogs] = useState<AgentExecutionLog[]>([]);
   const [isLogsLoading, setIsLogsLoading] = useState(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [availableSessions, setAvailableSessions] = useState<{ sessionId: string, createdAt: string }[]>([]);
 
   const { toast } = useToast()
   const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchLogs = useCallback(async () => {
@@ -121,12 +124,61 @@ export default function AgentTestPage() {
     fetchLogs();
   }, [agentName, fetchLogs, startNewSession]);
 
+  // Fetch all sessions for this agent
+  useEffect(() => {
+    async function fetchSessions() {
+      try {
+        const res = await fetch(`/api/conversations/all?agentName=${encodeURIComponent(agentName)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setAvailableSessions(data.sessions || []);
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    if (agentName) fetchSessions();
+  }, [agentName]);
+
+  // Kada se sessionId promeni, učitaj poruke za tu sesiju
+  useEffect(() => {
+    if (!sessionId) {
+      // Ako nema sessionId, a ima dostupnih sesija, automatski izaberi prvu
+      if (availableSessions.length > 0) {
+        setSessionId(availableSessions[0].sessionId);
+      }
+      return;
+    }
+    // Učitaj poruke za izabrani sessionId
+    const fetchMessages = async () => {
+      try {
+        const res = await fetch(`/api/conversations/${sessionId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.messages && data.messages.length > 0) {
+            setMessages(data.messages);
+          } else {
+            setMessages([{ role: 'model', content: `No messages found for this session.` }]);
+          }
+        } else {
+          setMessages([{ role: 'model', content: `Failed to load messages for this session.` }]);
+        }
+      } catch {
+        setMessages([{ role: 'model', content: `Failed to load messages for this session.` }]);
+      }
+    };
+    fetchMessages();
+  }, [sessionId, availableSessions]);
+
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTo({
         top: scrollAreaRef.current.scrollHeight,
         behavior: 'smooth',
       })
+    }
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
 
@@ -246,6 +298,27 @@ export default function AgentTestPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* SessionId select */}
+          <Select value={sessionId || ''} onValueChange={val => {
+            if (val === 'new') {
+              startNewSession();
+            } else {
+              localStorage.setItem(`agent-session-${agentName}`, val);
+              setSessionId(val);
+            }
+          }}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder={availableSessions.length === 0 ? 'No sessions found' : 'Select session'} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="new">+ New Session</SelectItem>
+              {availableSessions.map(s => (
+                <SelectItem key={s.sessionId} value={s.sessionId}>
+                  {s.sessionId.slice(0, 8)}... ({new Date(s.createdAt).toLocaleString()})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
            <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm"><ChevronsUpDown className="mr-2 h-4 w-4" /> Test Mode</Button>
@@ -299,6 +372,7 @@ export default function AgentTestPage() {
                       )}
                     </div>
                   ))}
+                  <div ref={messagesEndRef} />
                    {isLoading && (
                      <div className="flex items-start gap-4">
                         <Avatar className="h-9 w-9 border">

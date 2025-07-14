@@ -1,5 +1,5 @@
 // This is a new file for the file-based tool management system.
-import fs from 'fs/promises';
+import fs from 'fs';
 import path from 'path';
 import type { ToolDefinition } from '@/lib/types';
 
@@ -43,4 +43,20 @@ export async function loadTools(): Promise<ToolDefinition[]> {
     
     tools.sort((a, b) => a.name.localeCompare(b.name));
     return tools;
+}
+
+export function getAllMcpTools(): any[] {
+  const toolsDir = path.join(process.cwd(), 'src', 'tools');
+  if (!fs.existsSync(toolsDir)) return [];
+  const toolFolders = fs.readdirSync(toolsDir).filter(f => fs.statSync(path.join(toolsDir, f)).isDirectory());
+  const tools = [];
+  for (const folder of toolFolders) {
+    const toolPath = path.join(toolsDir, folder, 'index.ts');
+    if (fs.existsSync(toolPath)) {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const tool = require(toolPath);
+      tools.push(tool.default || tool);
+    }
+  }
+  return tools;
 }
