@@ -1,5 +1,5 @@
 // This is a new file for the file-based tool management system.
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import type { ToolDefinition } from '@/lib/types';
 
