@@ -16,7 +16,7 @@ export async function initBrowser(traceId: string): Promise<Page> {
   if (browserState.has(traceId)) {
     return browserState.get(traceId)!.page;
   }
-  const browser = await chromium.launch({ headless: true, slowMo: 50 });
+  const browser = await chromium.launch({ headless: false, slowMo: 50 });
   const page = await browser.newPage();
   browserState.set(traceId, { browser, page });
   return page;

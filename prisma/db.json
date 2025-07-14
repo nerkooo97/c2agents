@@ -861,6 +861,46 @@
       "inputTokens": 174,
       "outputTokens": 27,
       "totalTokens": 201
+    },
+    {
+      "id": "f4b9287c-d843-4d2b-aabe-6417f4fddcf9",
+      "timestamp": "2025-07-14T10:27:03.514Z",
+      "agentName": "browser-agent",
+      "status": "success",
+      "latency": 662,
+      "inputTokens": 171,
+      "outputTokens": 18,
+      "totalTokens": 189
+    },
+    {
+      "id": "d3b014ac-d338-4a7a-92b2-3d43fd2bbc19",
+      "timestamp": "2025-07-14T10:31:26.154Z",
+      "agentName": "browser-agent",
+      "status": "success",
+      "latency": 751,
+      "inputTokens": 169,
+      "outputTokens": 13,
+      "totalTokens": 182
+    },
+    {
+      "id": "3f799b5a-3ada-453b-ab64-5e752c1f3dd0",
+      "timestamp": "2025-07-14T10:34:05.283Z",
+      "agentName": "browser-agent",
+      "status": "success",
+      "latency": 1078,
+      "inputTokens": 167,
+      "outputTokens": 16,
+      "totalTokens": 183
+    },
+    {
+      "id": "a5fc152a-76bd-460c-b925-ee65b634a680",
+      "timestamp": "2025-07-14T10:35:20.398Z",
+      "agentName": "browser-agent",
+      "status": "success",
+      "latency": 969,
+      "inputTokens": 164,
+      "outputTokens": 11,
+      "totalTokens": 175
     }
   ],
   "conversations": [
@@ -1049,6 +1089,18 @@
       "messages": "[{\"role\":\"user\",\"content\":\"otvori mi klix.ba webstranicu i procitaj mi posljednjih 10 novosti\"},{\"role\":\"model\",\"content\":\"Krenut ću otvaranjem web stranice klix.ba da pročitam posljednjih 10 novosti.\"},{\"role\":\"user\",\"content\":\"da li si procitao\"},{\"role\":\"model\",\"content\":\"Mogu vam pomoći s traženjem ili čitanjem informacija na webu. Recite mi više o tome što želite da pronađem ili pročitam.\"},{\"role\":\"user\",\"content\":\"zanimaju me posljednje novosti na www.klix.ba\"},{\"role\":\"model\",\"content\":\"Odlično, odmah ću provjeriti najnovije vijesti na web stranici www.klix.ba za vas.\"}]",
       "createdAt": "2025-07-14T10:21:20.169Z",
       "updatedAt": "2025-07-14T10:21:47.149Z"
+    },
+    {
+      "sessionId": "14c534d8-9cd9-4bae-b7a6-f3bc7df71417",
+      "messages": "[{\"role\":\"user\",\"content\":\"mozes li mi otvoriti www.klix.ba\"},{\"role\":\"model\",\"content\":\"Odmah ću otvoriti web stranicu www.klix.ba za vas.\"},{\"role\":\"user\",\"content\":\"otvori mi www.klix.ba\"},{\"role\":\"model\",\"content\":\"Navigating to the website www.klix.ba for you.\"}]",
+      "createdAt": "2025-07-14T10:27:03.515Z",
+      "updatedAt": "2025-07-14T10:31:26.155Z"
+    },
+    {
+      "sessionId": "bd0b45b7-5c74-4355-b061-ecb560502028",
+      "messages": "[{\"role\":\"user\",\"content\":\"idi na www.klix.ba\"},{\"role\":\"model\",\"content\":\"To visit the website, I'll navigate to www.klix.ba for you.\"},{\"role\":\"user\",\"content\":\"idi na google.com\"},{\"role\":\"model\",\"content\":\"Ninahodha in uende kwa Google mara moja.\"}]",
+      "createdAt": "2025-07-14T10:34:05.285Z",
+      "updatedAt": "2025-07-14T10:35:20.398Z"
     }
   ]
 }
