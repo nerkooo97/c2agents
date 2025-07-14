@@ -831,6 +831,36 @@
       "inputTokens": 104,
       "outputTokens": 35,
       "totalTokens": 139
+    },
+    {
+      "id": "35eb7331-f69f-4665-8e9d-fffa1fa0c157",
+      "timestamp": "2025-07-14T10:21:20.162Z",
+      "agentName": "browser-agent",
+      "status": "success",
+      "latency": 1515,
+      "inputTokens": 181,
+      "outputTokens": 24,
+      "totalTokens": 205
+    },
+    {
+      "id": "edccdfa6-7498-4ef9-9eeb-35400c07dfcf",
+      "timestamp": "2025-07-14T10:21:34.646Z",
+      "agentName": "browser-agent",
+      "status": "success",
+      "latency": 1585,
+      "inputTokens": 165,
+      "outputTokens": 34,
+      "totalTokens": 199
+    },
+    {
+      "id": "a19f19cd-4942-4587-a97c-5c2643955b48",
+      "timestamp": "2025-07-14T10:21:47.135Z",
+      "agentName": "browser-agent",
+      "status": "success",
+      "latency": 1128,
+      "inputTokens": 174,
+      "outputTokens": 27,
+      "totalTokens": 201
     }
   ],
   "conversations": [
@@ -1013,6 +1043,12 @@
       "messages": "[{\"role\":\"user\",\"content\":\"koja je tvoja uloga\"},{\"role\":\"model\",\"content\":\"{\\n    \\\"response\\\": \\\"Moja uloga je da pomognem korisnicima odgovarajući na pitanja, pružanjem informacija i izvršavanjem različitih zadataka prema njihovim uputstvima.\\\"\\n}\"},{\"role\":\"user\",\"content\":\"napisi mi jedan vic\"},{\"role\":\"model\",\"content\":\"{\\\"vic\\\": \\\"Što radi programer kad mu je vruće?\\\\nOtvori prozore.\\\"}\"},{\"role\":\"user\",\"content\":\"napisi mi summary ovog razgovora\"},{\"role\":\"model\",\"content\":\"Na temelju dostupnih podataka, ne postoji prethodni razgovor u povijesti.\"}]",
       "createdAt": "2025-07-13T21:34:30.527Z",
       "updatedAt": "2025-07-13T21:34:43.503Z"
+    },
+    {
+      "sessionId": "811fe444-0181-4e43-8dbe-a469ae72c0e4",
+      "messages": "[{\"role\":\"user\",\"content\":\"otvori mi klix.ba webstranicu i procitaj mi posljednjih 10 novosti\"},{\"role\":\"model\",\"content\":\"Krenut ću otvaranjem web stranice klix.ba da pročitam posljednjih 10 novosti.\"},{\"role\":\"user\",\"content\":\"da li si procitao\"},{\"role\":\"model\",\"content\":\"Mogu vam pomoći s traženjem ili čitanjem informacija na webu. Recite mi više o tome što želite da pronađem ili pročitam.\"},{\"role\":\"user\",\"content\":\"zanimaju me posljednje novosti na www.klix.ba\"},{\"role\":\"model\",\"content\":\"Odlično, odmah ću provjeriti najnovije vijesti na web stranici www.klix.ba za vas.\"}]",
+      "createdAt": "2025-07-14T10:21:20.169Z",
+      "updatedAt": "2025-07-14T10:21:47.149Z"
     }
   ]
 }

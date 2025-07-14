@@ -26,6 +26,7 @@ const nextConfig: NextConfig = {
         'node:async_hooks': false,
         'async_hooks': false,
         'handlebars': false,
+        'playwright': false,
         // These are Node.js modules, and should not be bundled for the client.
         'fs': false,
         'child_process': false,
